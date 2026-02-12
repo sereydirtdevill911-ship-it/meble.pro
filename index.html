@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Konfigurator Mebli PRO 4.0</title>
+<title>Konfigurator Mebli PRO 4.1</title>
+
 <style>
 body{
-font-family: Arial;
+font-family:Arial;
 background:#f4f6f9;
 padding:20px;
 }
@@ -51,12 +52,17 @@ padding:15px;
 border-radius:8px;
 white-space:pre-wrap;
 }
+.section-title{
+margin-top:20px;
+font-weight:bold;
+font-size:18px;
+}
 </style>
 </head>
 <body>
 
 <div class="card">
-<h1>Konfigurator Mebli PRO 4.0</h1>
+<h1>Konfigurator Mebli PRO 4.1</h1>
 
 <label>Typ modułu</label>
 <select id="typ">
@@ -75,14 +81,8 @@ white-space:pre-wrap;
 <label>System szuflad</label>
 <select id="system">
 <option>Antaro</option>
-<option>Tandembox</option>
 <option>Merivobox</option>
-</select>
-
-<label>Typ boków</label>
-<select id="bok">
-<option>M</option>
-<option>K</option>
+<option>Tandembox</option>
 </select>
 
 <label>Wysokość (mm)</label>
@@ -105,61 +105,55 @@ function oblicz(){
 let typ = document.getElementById("typ").value;
 let config = document.getElementById("config").value;
 let system = document.getElementById("system").value;
-let bok = document.getElementById("bok").value;
 
 let H = parseInt(document.getElementById("h").value);
 let W = parseInt(document.getElementById("w").value);
 let D = parseInt(document.getElementById("d").value);
 
-let plyta = 18;
+let plyta = 16;
 let plecy = 3;
 let zazor = 2;
 
-// FORMATKI
+let wynik = "";
+
+// FORMATKI KORPUSU
 let bokH = H;
 let bokD = D;
 
-let dnoW = W - (2 * plyta);
-let dnoD = D - plecy;
-
-let wieniecW = dnoW;
-let wieniecD = 100;
+let swiatlo = W - (2 * plyta);
+let dnoKorpusuW = swiatlo;
+let dnoKorpusuD = D - plecy;
 
 let frontW = W - zazor;
 let frontH = H - zazor;
 
-// OKUCIA
-let zawiasy = 0;
-let prowadnice = 0;
+wynik += "=== FORMATKI KORPUSU ===\n\n";
+wynik += "Bok x2: " + bokH + " x " + bokD + " x 16\n";
+wynik += "Dno: " + dnoKorpusuW + " x " + dnoKorpusuD + " x 16\n";
+wynik += "Plecy HDF: " + W + " x " + H + " x 3\n";
+wynik += "Front: " + frontW + " x " + frontH + " x 18\n\n";
 
-if(config === "Drzwi"){
-zawiasy = H < 900 ? 2 : 3;
-}
-
+// LOGIKA SZUFLAD
 if(config === "Szuflady" && typ !== "Wisząca"){
-prowadnice = 2;
+
+if(system !== "Antaro"){
+wynik += "Logika szczegółowa tylko dla Antaro\n\n";
+} else {
+
+let bottomWidth = swiatlo - 42;
+let backWidth = bottomWidth;
+
+let nominal = 450;
+if(D >= 550) nominal = 550;
+else if(D >= 500) nominal = 500;
+
+wynik += "=== ANTRARO ===\n\n";
+wynik += "Światło: " + swiatlo + " mm\n";
+wynik += "Dno szuflady (szerokość): " + bottomWidth + " mm\n";
+wynik += "Tył szuflady (szerokość): " + backWidth + " mm\n";
+wynik += "Prowadnica: " + nominal + " mm\n";
 }
-
-let wynik = `
-=== FORMATKI ===
-
-Bok x2: ${bokH} x ${bokD}
-Dno: ${dnoW} x ${dnoD}
-Wieniec górny: ${wieniecW} x ${wieniecD}
-Front: ${frontW} x ${frontH}
-Plecy HDF: ${W} x ${H}
-
-=== OKUCIA ===
-
-Zawiasy: ${zawiasy}
-Prowadnice (${system}): ${prowadnice}
-
-=== INFO ===
-Typ modułu: ${typ}
-Konfiguracja: ${config}
-System: ${system}
-Typ boków: ${bok}
-`;
+}
 
 document.getElementById("wynik").innerText = wynik;
 }
