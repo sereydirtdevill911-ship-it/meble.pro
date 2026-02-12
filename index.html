@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konfigurator Mebli PRO 3.3</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f2f4f8;
+margin:0;
+padding:20px;
+}
+.card{
+background:white;
+max-width:500px;
+margin:auto;
+padding:20px;
+border-radius:12px;
+box-shadow:0 5px 20px rgba(0,0,0,0.1);
+}
+h1{
+background:#1f2d3d;
+color:white;
+padding:15px;
+border-radius:10px;
+text-align:center;
+}
+label{
+display:block;
+margin-top:15px;
+font-weight:bold;
+}
+input,select,button{
+width:100%;
+padding:10px;
+margin-top:5px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+button{
+background:#3b5ccc;
+color:white;
+border:none;
+margin-top:20px;
+font-weight:bold;
+}
+.result{
+margin-top:20px;
+}
+table{
+width:100%;
+border-collapse:collapse;
+}
+td,th{
+border:1px solid #ddd;
+padding:8px;
+}
+th{
+background:#eee;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h1>Konfigurator Mebli PRO 3.3</h1>
+
+<label>Typ modułu</label>
+<select id="typ">
+<option>Dolna</option>
+<option>Wisząca</option>
+<option>Wysoka</option>
+<option>Piekarnik</option>
+<option>Zlew</option>
+</select>
+
+<label>Wysokość (mm)</label>
+<input id="h" value="720">
+
+<label>Szerokość (mm)</label>
+<input id="w" value="600">
+
+<label>Głębokość (mm)</label>
+<input id="d" value="560">
+
+<button onclick="licz()">Oblicz</button>
+
+<div class="result" id="wynik"></div>
+</div>
+
+<script>
+function licz(){
+
+let typ=document.getElementById("typ").value;
+let h=parseInt(document.getElementById("h").value);
+let w=parseInt(document.getElementById("w").value);
+let d=parseInt(document.getElementById("d").value);
+
+let korpusW=w-36;
+let frontW=w-2; // зазор 2мм
+let frontH=h-2;
+
+let html="<h3>Projekt</h3><table>";
+html+="<tr><th>Element</th><th>Wymiar</th></tr>";
+
+html+="<tr><td>Boki</td><td>"+h+" x "+d+" x 18</td></tr>";
+html+="<tr><td>Dno</td><td>"+korpusW+" x "+d+" x 18</td></tr>";
+
+if(typ!="Zlew"){
+html+="<tr><td>Wieniec górny</td><td>"+korpusW+" x 100 x 18</td></tr>";
+}
+
+if(typ=="Dolna"||typ=="Wysoka"){
+html+="<tr><td>Trawers tył</td><td>"+korpusW+" x 100 x 18</td></tr>";
+}
+
+html+="<tr><td>Plecy HDF</td><td>"+(w-2)+" x "+(h-2)+" x 3</td></tr>";
+
+if(typ!="Zlew"){
+html+="<tr><td>Front</td><td>"+frontW+" x "+frontH+" x 18</td></tr>";
+}
+
+html+="</table>";
+
+document.getElementById("wynik").innerHTML=html;
+
+}
+</script>
+
+</body>
+</html>
