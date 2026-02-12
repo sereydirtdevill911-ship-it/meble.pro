@@ -1,11 +1,9 @@
-
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Konfigurator Mebli PRO 4.1</title>
+<title>Konfigurator Mebli PRO 3.2 STABLE</title>
 
 <style>
 body{
@@ -17,7 +15,7 @@ padding:20px;
 background:white;
 padding:20px;
 border-radius:12px;
-max-width:600px;
+max-width:650px;
 margin:auto;
 box-shadow:0 5px 20px rgba(0,0,0,0.08);
 }
@@ -28,7 +26,11 @@ padding:15px;
 border-radius:8px;
 text-align:center;
 }
-label{display:block;margin-top:15px;font-weight:bold;}
+label{
+display:block;
+margin-top:15px;
+font-weight:bold;
+}
 input,select{
 width:100%;
 padding:10px;
@@ -53,38 +55,23 @@ background:#eef2ff;
 padding:15px;
 border-radius:8px;
 white-space:pre-wrap;
+font-family:monospace;
 }
-.section-title{
-margin-top:20px;
+.section{
+margin-top:15px;
 font-weight:bold;
-font-size:18px;
 }
 </style>
 </head>
 <body>
 
 <div class="card">
-<h1>Konfigurator Mebli PRO 4.1</h1>
+<h1>Konfigurator Mebli PRO 3.2</h1>
 
 <label>Typ modułu</label>
 <select id="typ">
 <option>Dolna</option>
 <option>Wisząca</option>
-<option>Wysoka</option>
-<option>AGD</option>
-</select>
-
-<label>Konfiguracja</label>
-<select id="config">
-<option>Drzwi</option>
-<option>Szuflady</option>
-</select>
-
-<label>System szuflad</label>
-<select id="system">
-<option>Antaro</option>
-<option>Merivobox</option>
-<option>Tandembox</option>
 </select>
 
 <label>Wysokość (mm)</label>
@@ -105,56 +92,60 @@ font-size:18px;
 function oblicz(){
 
 let typ = document.getElementById("typ").value;
-let config = document.getElementById("config").value;
-let system = document.getElementById("system").value;
-
 let H = parseInt(document.getElementById("h").value);
 let W = parseInt(document.getElementById("w").value);
 let D = parseInt(document.getElementById("d").value);
 
 let plyta = 16;
-let plecy = 3;
 let zazor = 2;
 
-let wynik = "";
+// ŚWIATŁO
+let swiatlo = W - (2 * plyta);
 
-// FORMATKI KORPUSU
+// FORMATKI
 let bokH = H;
 let bokD = D;
 
-let swiatlo = W - (2 * plyta);
-let dnoKorpusuW = swiatlo;
-let dnoKorpusuD = D - plecy;
+let dnoW = swiatlo;
+let dnoD = D;
+
+let wieniecW = swiatlo;
+let wieniecD = 100;
 
 let frontW = W - zazor;
 let frontH = H - zazor;
 
+let wynik = "";
+
+// ===== FORMATKI =====
 wynik += "=== FORMATKI KORPUSU ===\n\n";
+wynik += "Typ: " + typ + "\n\n";
 wynik += "Bok x2: " + bokH + " x " + bokD + " x 16\n";
-wynik += "Dno: " + dnoKorpusuW + " x " + dnoKorpusuD + " x 16\n";
-wynik += "Plecy HDF: " + W + " x " + H + " x 3\n";
-wynik += "Front: " + frontW + " x " + frontH + " x 18\n\n";
+wynik += "Dno: " + dnoW + " x " + dnoD + " x 16\n";
+wynik += "Plecy HDF (nakładane): " + W + " x " + H + " x 3\n";
+wynik += "Wieniec górny: " + wieniecW + " x " + wieniecD + " x 16\n";
 
-// LOGIKA SZUFLAD
-if(config === "Szuflady" && typ !== "Wisząca"){
-
-if(system !== "Antaro"){
-wynik += "Logika szczegółowa tylko dla Antaro\n\n";
-} else {
-
-let bottomWidth = swiatlo - 42;
-let backWidth = bottomWidth;
-
-let nominal = 450;
-if(D >= 550) nominal = 550;
-else if(D >= 500) nominal = 500;
-
-wynik += "=== ANTRARO ===\n\n";
-wynik += "Światło: " + swiatlo + " mm\n";
-wynik += "Dno szuflady (szerokość): " + bottomWidth + " mm\n";
-wynik += "Tył szuflady (szerokość): " + backWidth + " mm\n";
-wynik += "Prowadnica: " + nominal + " mm\n";
+if(typ === "Dolna"){
+wynik += "Trawers tylny: " + wieniecW + " x " + wieniecD + " x 16\n";
 }
+
+wynik += "\nFront: " + frontW + " x " + frontH + " x 18\n";
+
+// ===== SYSTEM 32 =====
+wynik += "\n=== OTWORY SYSTEM 32 ===\n\n";
+wynik += "Pierwszy otwór od dołu: 37 mm\n";
+wynik += "Rozstaw otworów: 32 mm\n";
+wynik += "Ostatni otwór: " + (H - 37) + " mm\n";
+
+// ===== WIENIEC =====
+wynik += "\n=== OTWORY POD WIENIEC ===\n";
+wynik += "37 mm od góry\n";
+wynik += "37 mm od przodu\n";
+
+if(typ === "Dolna"){
+wynik += "\n=== OTWORY POD TRAWERS ===\n";
+wynik += "37 mm od góry\n";
+wynik += "37 mm od tyłu\n";
 }
 
 document.getElementById("wynik").innerText = wynik;
