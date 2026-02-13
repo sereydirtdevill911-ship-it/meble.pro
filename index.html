@@ -3,59 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Konfigurator Mebli PRO 1.1 Stable</title>
+<title>Konfigurator PRO 2.2</title>
 
 <style>
 body{font-family:Arial;background:#eef1f5;margin:0;padding:20px;}
-.container{max-width:700px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
+.container{max-width:800px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
 h1{background:#1f2d3d;color:white;padding:15px;border-radius:8px;text-align:center;}
 label{font-weight:bold;}
 select,input{width:100%;padding:8px;margin:6px 0 14px;border-radius:6px;border:1px solid #ccc;}
-button{width:100%;padding:10px;margin-top:6px;border:none;border-radius:6px;font-weight:bold;color:white;cursor:pointer;}
+button{width:100%;padding:10px;margin-top:8px;border:none;border-radius:6px;font-weight:bold;color:white;cursor:pointer;}
 .primary{background:#2f5bd3;}
 .secondary{background:#777;}
 .danger{background:#c0392b;}
-table{width:100%;border-collapse:collapse;margin-top:10px;}
+table{width:100%;border-collapse:collapse;margin-top:15px;}
 th,td{border:1px solid #ddd;padding:6px;text-align:left;font-size:14px;}
 th{background:#f0f0f0;}
-.section{margin-top:20px;}
-.error{color:red;font-weight:bold;}
 </style>
 </head>
 <body>
 
 <div class="container">
-<h1>Konfigurator Mebli PRO 1.1</h1>
+<h1>Konfigurator Mebli PRO 2.2</h1>
 
-<div id="formSection">
-
-<label>Typ modułu</label>
+<label>Typ korpusu</label>
 <select id="type" onchange="autoLogic()">
 <option>Dolna</option>
+<option>Dolna GOLA</option>
 <option>Wisząca</option>
-<option>Wysoka</option>
+<option>Słupek</option>
 <option>Piekarnik</option>
 <option>Zlew</option>
 </select>
 
-<label>System frontu</label>
-<select id="gola">
-<option value="standard">Standard</option>
-<option value="gola">GOLA</option>
-</select>
-
-<label>Konfiguracja</label>
+<label>Konstrukcja</label>
 <select id="config" onchange="autoLogic()">
-<option>Szuflady</option>
 <option>Drzwi</option>
+<option>Szuflady</option>
+<option>Mieszana</option>
 </select>
 
 <label>System szuflad</label>
 <select id="system">
-<option>BLUM Antaro</option>
-<option>BLUM Tandembox</option>
-<option>BLUM Merivobox</option>
-<option>BLUM Metabox</option>
+<option>Antaro</option>
+<option>Tandembox</option>
+<option>Merivobox</option>
 </select>
 
 <label>Typ boków szuflady</label>
@@ -86,65 +77,61 @@ th{background:#f0f0f0;}
 <label>Ilość szuflad</label>
 <input type="number" id="qty" value="3">
 
-<button class="primary" onclick="addModule()">Dodaj moduł</button>
-<button class="secondary" onclick="showProject()">Pokaż projekt</button>
-<button class="danger" onclick="clearProject()">Wyczyść projekt</button>
+<button class="primary" onclick="calculate()">Oblicz</button>
+<button class="secondary" onclick="resetForm()">Reset ustawień</button>
+<button class="danger" onclick="clearResult()">Wyczyść wynik</button>
 
-</div>
+<div id="result"></div>
 
-<div id="resultSection" style="display:none;"></div>
 </div>
 
 <script>
 
-let project=[];
-
 function autoLogic(){
-let type=document.getElementById("type").value;
-let config=document.getElementById("config").value;
+
+let type = document.getElementById("type").value;
+let configSelect = document.getElementById("config");
+let system = document.getElementById("system");
+let runner = document.getElementById("runner");
+let qty = document.getElementById("qty");
+let depth = document.getElementById("depth");
+
+configSelect.disabled=false;
+system.disabled=false;
+runner.disabled=false;
+qty.disabled=false;
+depth.readOnly=false;
 
 if(type==="Wisząca"){
-document.getElementById("config").value="Drzwi";
-document.getElementById("qty").disabled=true;
-document.getElementById("runner").disabled=true;
-document.getElementById("system").disabled=true;
-document.getElementById("drawerType").disabled=true;
-}else{
-let disable=(config==="Drzwi");
-document.getElementById("qty").disabled=disable;
-document.getElementById("runner").disabled=disable;
-document.getElementById("system").disabled=disable;
-document.getElementById("drawerType").disabled=disable;
-}
+configSelect.value="Drzwi";
+configSelect.disabled=true;
+system.disabled=true;
+runner.disabled=true;
+qty.disabled=true;
+depth.value=320;
+depth.readOnly=true;
 }
 
-function addModule(){
-let m={
-type:document.getElementById("type").value,
-config:document.getElementById("config").value,
-system:document.getElementById("system").value,
-gola:document.getElementById("gola").value,
-drawerType:document.getElementById("drawerType").value,
-h:+document.getElementById("height").value,
-w:+document.getElementById("width").value,
-d:+document.getElementById("depth").value,
-runner:+document.getElementById("runner").value,
-qty:+document.getElementById("qty").value
-};
-project.push(m);
-alert("Moduł dodany");
+if(type==="Zlew" || type==="Piekarnik"){
+configSelect.value="Drzwi";
+configSelect.disabled=true;
+system.disabled=true;
+runner.disabled=true;
+qty.disabled=true;
+depth.value=560;
 }
 
-function clearProject(){
-project=[];
-alert("Projekt wyczyszczony");
+if(type==="Dolna" || type==="Dolna GOLA" || type==="Słupek"){
+depth.value=560;
 }
 
-function getSystemOffsets(system){
-if(system==="BLUM Antaro"||system==="BLUM Tandembox") return {minus:38, minusDepth:0};
-if(system==="BLUM Merivobox") return {minus:42, minusDepth:0};
-if(system==="BLUM Metabox") return {minus:16, minusDepth:17};
-return {minus:38, minusDepth:0};
+}
+
+function getSystemOffset(system){
+if(system==="Antaro") return 38;
+if(system==="Tandembox") return 38;
+if(system==="Merivobox") return 42;
+return 38;
 }
 
 function getBackHeight(type){
@@ -152,174 +139,78 @@ if(type==="N") return 68;
 if(type==="M") return 84;
 if(type==="C") return 148;
 if(type==="D") return 196;
-return 196;
+return 84;
 }
 
-function showProject(){
+function calculate(){
 
-let output="<h2>Projekt kuchni</h2>";
-let totalFront=0,totalRunner=0;
+let h = parseInt(height.value);
+let w = parseInt(width.value);
+let d = parseInt(depth.value);
+let configValue = config.value;
+let systemValue = system.value;
+let drawerTypeValue = drawerType.value;
+let runnerValue = parseInt(runner.value);
+let qtyValue = parseInt(qty.value);
+let typeValue = type.value;
 
-project.forEach((m,i)=>{
+let light = w - 36;
+let offset = getSystemOffset(systemValue);
 
-if(m.qty<1) m.qty=1;
+let output = "<h2>Wynik</h2><table>";
+output += "<tr><th>Element</th><th>Wymiar</th></tr>";
 
-let light=m.w-36;
-let maxRunner=m.d-10;
-let offsets=getSystemOffsets(m.system);
+output += "<tr><td>Bok</td><td>"+h+" x "+d+" x 18</td></tr>";
+output += "<tr><td>Dno korpusu</td><td>"+light+" x "+d+" x 18</td></tr>";
+output += "<tr><td>Wieniec</td><td>"+light+" x "+d+" x 18</td></tr>";
+output += "<tr><td>Plecy HDF</td><td>"+(w-2)+" x "+(h-2)+" x 3</td></tr>";
 
-output+=`<div class="section"><h3>Moduł ${i+1} (${m.type})</h3>`;
-output+="<table><tr><th>Element</th><th>Wymiar</th></tr>";
-
-output+=`<tr><td>Boki</td><td>${m.h} x ${m.d} x 18</td></tr>`;
-output+=`<tr><td>Dno</td><td>${light} x ${m.d} x 18</td></tr>`;
-
-if(m.type==="Piekarnik"){
-output+=`<tr><td>Wnęka piekarnika</td><td>560 mm</td></tr>`;
-output+=`<tr><td>Traverz</td><td>${light} x 100 x 18</td></tr>`;
+if(configValue==="Drzwi"){
+let frontW = w - 4;
+let frontH = h - 4;
+output += "<tr><td>Front</td><td>"+frontW+" x "+frontH+" x 18</td></tr>";
 }
 
-if(m.type==="Zlew"){
-output+=`<tr><td>Plecy dolne HDF</td><td>${m.w-2} x 200 x 3</td></tr>`;
-}else{
-output+=`<tr><td>Plecy HDF</td><td>${m.w-2} x ${m.h-2} x 3</td></tr>`;
+if(configValue==="Szuflady"){
+
+let dnoWidth = light - offset;
+let dnoDepth = runnerValue;
+let backHeight = getBackHeight(drawerTypeValue);
+let golaOffset = (typeValue==="Dolna GOLA") ? 50 : 0;
+
+let frontHeight = Math.floor((h - golaOffset - ((qtyValue+1)*3)) / qtyValue) - 4;
+let frontWidth = w - 4;
+
+for(let i=1;i<=qtyValue;i++){
+output += "<tr><td>Front "+i+"</td><td>"+frontWidth+" x "+frontHeight+" x 18</td></tr>";
+output += "<tr><td>Tył "+i+"</td><td>"+dnoWidth+" x "+backHeight+" x 16</td></tr>";
+output += "<tr><td>Dno "+i+"</td><td>"+dnoWidth+" x "+dnoDepth+" x 16</td></tr>";
 }
 
-if(m.gola==="gola"){
-output+=`<tr><td>Profil GOLA</td><td>${light} mm</td></tr>`;
+output += "<tr><td>Prowadnice</td><td>"+qtyValue+" kpl "+runnerValue+" mm ("+systemValue+")</td></tr>";
 }
 
-if(m.config==="Szuflady" && m.type!=="Wisząca"){
+output += "</table>";
 
-if(m.runner>maxRunner){
-output+=`<tr><td colspan="2" class="error">BŁĄD: prowadnica za długa</td></tr>`;
-}else{
+result.innerHTML = output;
 
-let dnoWidth=light-offsets.minus;
-let dnoDepth=m.runner-offsets.minusDepth;
-let backHeight=getBackHeight(m.drawerType);
-let golaOffset=(m.gola==="gola")?40:0;
-let frontHeight=Math.floor((m.h-golaOffset-((m.qty+1)*3))/m.qty);
-
-for(let j=1;j<=m.qty;j++){
-output+=`<tr><td>Front ${j}</td><td>${m.w} x ${frontHeight} x 18</td></tr>`;
-output+=`<tr><td>Tył ${j}</td><td>${dnoWidth} x ${backHeight} x 16</td></tr>`;
-output+=`<tr><td>Dno ${j}</td><td>${dnoWidth} x ${dnoDepth} x 16</td></tr>`;
-totalFront++;
-}
-output+=`<tr><td>Prowadnice</td><td>${m.qty} kpl – ${m.runner} mm (${m.system})</td></tr>`;
-totalRunner+=m.qty;
-}
 }
 
-if(m.config==="Drzwi"){
-output+=`<tr><td>Front</td><td>${m.w} x ${m.h} x 18</td></tr>`;
-output+=`<tr><td>Zawiasy</td><td>2–3 szt</td></tr>`;
-totalFront++;
+function resetForm(){
+height.value=720;
+width.value=600;
+depth.value=560;
+qty.value=3;
+autoLogic();
 }
 
-output+="</table></div>";
-});
-
-output+=`
-<div class="section">
-<h3>Podsumowanie</h3>
-<table>
-<tr><td>Fronty</td><td>${totalFront} szt</td></tr>
-<tr><td>Prowadnice</td><td>${totalRunner} kpl</td></tr>
-</table>
-</div>
-<button class="secondary" onclick="back()">Wróć do edycji</button>
-`;
-
-document.getElementById("formSection").style.display="none";
-document.getElementById("resultSection").innerHTML=output;
-document.getElementById("resultSection").style.display="block";
-}
-
-function back(){
-document.getElementById("resultSection").style.display="none";
-document.getElementById("formSection").style.display="block";
+function clearResult(){
+result.innerHTML="";
 }
 
 autoLogic();
 
 </script>
+
 </body>
-</html><script>
-
-/* ====== 3.1 EXTENSION – NIE ZMIENIA 3.0 ====== */
-
-(function(){
-
-const luz = 2; // stały luz frontu 2 mm
-
-/* --- PATCH FRONT DRZWI --- */
-const originalShowProject = showProject;
-
-showProject = function(){
-
-originalShowProject();
-
-setTimeout(function(){
-
-const tables = document.querySelectorAll("#resultSection table");
-
-tables.forEach(table => {
-
-table.querySelectorAll("tr").forEach(row => {
-
-if(row.innerHTML.includes("<td>Front</td>")){
-
-const cells = row.querySelectorAll("td");
-if(cells.length === 2){
-
-let parts = cells[1].innerText.split(" x ");
-
-if(parts.length >= 2){
-
-let w = parseInt(parts[0]);
-let h = parseInt(parts[1]);
-
-if(!isNaN(w) && !isNaN(h)){
-cells[1].innerText = (w - luz*2) + " x " + (h - luz*2) + " x 18";
-}
-
-}
-
-}
-
-}
-
-});
-
-});
-
-}, 10);
-
-};
-
-
-/* --- PATCH WISZĄCA --- */
-
-const originalAutoLogic = autoLogic;
-
-autoLogic = function(){
-
-originalAutoLogic();
-
-const type = document.getElementById("type").value;
-const depth = document.getElementById("depth");
-
-if(type === "Wisząca"){
-depth.value = 320;
-depth.readOnly = true;
-}else{
-depth.readOnly = false;
-}
-
-};
-
-})();
-
-</script>
+</html>
