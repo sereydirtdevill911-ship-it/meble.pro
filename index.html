@@ -3,28 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Konfigurator PRO 2.2 – FIXED BASE</title>
+<title>Konfigurator PRO 6.3.3 – ABSOLUTE STABLE</title>
 
 <style>
 body{font-family:Arial;background:#eef1f5;margin:0;padding:20px;}
-.container{max-width:900px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
+.container{max-width:1150px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
 h1{background:#1f2d3d;color:white;padding:15px;border-radius:8px;text-align:center;}
 label{font-weight:bold;}
 select,input{width:100%;padding:8px;margin:6px 0 14px;border-radius:6px;border:1px solid #ccc;}
 button{width:100%;padding:10px;margin-top:8px;border:none;border-radius:6px;font-weight:bold;color:white;cursor:pointer;}
 .primary{background:#2f5bd3;}
-.secondary{background:#777;}
-.danger{background:#c0392b;}
 table{width:100%;border-collapse:collapse;margin-top:15px;}
 th,td{border:1px solid #ddd;padding:6px;text-align:left;font-size:14px;}
 th{background:#f0f0f0;}
 .warning{color:red;font-weight:bold;}
+.drawerBlock{background:#f7f7f7;padding:8px;margin-bottom:8px;border-radius:6px;}
 </style>
 </head>
 <body>
 
 <div class="container">
-<h1>Konfigurator PRO 2.2 – FIXED BASE</h1>
+<h1>Konfigurator PRO 6.3.3 – ABSOLUTE STABLE</h1>
 
 <label>Typ korpusu</label>
 <select id="type" onchange="autoLogic()">
@@ -36,242 +35,231 @@ th{background:#f0f0f0;}
 </select>
 
 <label>Konstrukcja</label>
-<select id="config" onchange="updateQtyState()">
+<select id="config" onchange="updateState(); updateDrawerSelectors();">
 <option>Drzwi</option>
 <option>Szuflady</option>
 </select>
 
+<label>Ilość frontów (Drzwi)</label>
+<select id="frontCount">
+<option value="1">1</option>
+<option value="2">2</option>
+</select>
+
 <label>System szuflad</label>
-<select id="system">
+<select id="system" onchange="updateDrawerSelectors()">
 <option>Antaro</option>
+<option>Tandembox</option>
 <option>Merivobox</option>
-</select>
-
-<label>Typ boków</label>
-<select id="drawerType">
-<option value="N">N</option>
-<option value="M" selected>M</option>
-<option value="C">C</option>
-<option value="D">D</option>
-</select>
-
-<label>Wysokość (mm)</label>
-<input type="number" id="height" value="720" min="200" max="3000">
-
-<label>Szerokość (mm)</label>
-<input type="number" id="width" value="600" min="300" max="1200">
-
-<label>Głębokość (mm)</label>
-<input type="number" id="depth" value="560" min="300" max="800">
-
-<label>Długość prowadnicy</label>
-<select id="runner" onchange="autoRunnerCheck()">
-<option>450</option>
-<option selected>500</option>
-<option>550</option>
-<option>600</option>
+<option>Legrabox</option>
 </select>
 
 <label>Ilość szuflad</label>
-<input type="number" id="qty" value="3" min="1" max="10">
+<input type="number" id="qty" value="3" min="1" onchange="updateDrawerSelectors()">
+
+<div id="drawerSelectors"></div>
+
+<label>Wysokość (mm)</label>
+<input type="number" id="height" value="720">
+
+<label>Szerokość (mm)</label>
+<input type="number" id="width" value="600">
+
+<label>Głębokość (mm)</label>
+<input type="number" id="depth" value="560">
+
+<label>Prowadnica</label>
+<select id="runner">
+<option>450</option>
+<option selected>500</option>
+<option>550</option>
+</select>
 
 <button class="primary" onclick="calculate()">Oblicz</button>
-<button class="secondary" onclick="resetForm()">Reset</button>
-<button class="danger" onclick="clearResult()">Wyczyść</button>
 
 <div id="result"></div>
 </div>
 
 <script>
 
-/* ===== LOCK CONTROL ===== */
+const systemData = {
+Antaro:{ types:{N:68,M:84,C:148,D:196}, minFront:{N:80,M:100,C:160,D:200}, offset:38 },
+Tandembox:{ types:{N:68,M:84,C:148,D:196}, minFront:{N:80,M:100,C:160,D:200}, offset:38 },
+Merivobox:{ types:{E:90,M:130,K:180,H:250}, minFront:{E:110,M:150,K:200,H:270}, offset:42 },
+Legrabox:{ types:{N:66,M:90,C:177,F:241}, minFront:{N:90,M:120,C:190,F:260}, offset:38 }
+};
 
 function autoLogic(){
 
 let t=type.value;
 
-/* unlock */
-height.readOnly=false;
-depth.readOnly=false;
+if(t==="Wisząca" || t==="Pod zmywarkę" || t==="Pod lodówkę"){
+config.value="Drzwi";
+config.disabled=true;
+}else{
 config.disabled=false;
-runner.disabled=false;
-system.disabled=false;
-drawerType.disabled=false;
-
-/* DOLNA */
-if(t==="Dolna" || t==="Dolna GOLA"){
-height.value=720;
-depth.value=560;
 }
 
-/* WISZĄCA */
-if(t==="Wisząca"){
-height.value=720;
-depth.value=320;
+if(t==="Wisząca"){ height.value=720; depth.value=320; }
+if(t==="Pod zmywarkę"){ height.value=720; depth.value=560; }
+if(t==="Pod lodówkę"){ height.value=2130; depth.value=600; }
 
-height.readOnly=true;
-depth.readOnly=true;
-
-config.value="Drzwi";
-config.disabled=true;
-
-runner.disabled=true;
-system.disabled=true;
-drawerType.disabled=true;
+updateState();
+updateDrawerSelectors();
 }
 
-/* ZMYWARKA */
-if(t==="Pod zmywarkę"){
-height.value=720;
-depth.value=560;
-
-height.readOnly=true;
-depth.readOnly=true;
-
-config.value="Drzwi";
-config.disabled=true;
-
-runner.disabled=true;
-system.disabled=true;
-drawerType.disabled=true;
+function updateState(){
+qty.disabled=(config.value==="Drzwi");
+frontCount.disabled=(config.value!=="Drzwi");
+if(config.value==="Drzwi") qty.value=1;
 }
 
-/* LODÓWKA */
-if(t==="Pod lodówkę"){
-height.value=2130;
-depth.value=600;
-
-height.readOnly=true;
-depth.readOnly=true;
-
-config.value="Drzwi";
-config.disabled=true;
-
-runner.disabled=true;
-system.disabled=true;
-drawerType.disabled=true;
+function updateDrawerSelectors(){
+drawerSelectors.innerHTML="";
+if(config.value!=="Szuflady") return;
+let sys=system.value;
+for(let i=1;i<=qty.value;i++){
+let div=document.createElement("div");
+div.className="drawerBlock";
+div.innerHTML="<strong>Szuflada "+i+"</strong><br>";
+let select=document.createElement("select");
+select.id="drawerType_"+i;
+for(let t in systemData[sys].types){
+let opt=document.createElement("option");
+opt.value=t;
+opt.text=t+" ("+systemData[sys].types[t]+" mm)";
+select.appendChild(opt);
 }
-
-updateQtyState();
-}
-
-/* ===== QTY CONTROL ===== */
-
-function updateQtyState(){
-qty.disabled = config.value !== "Szuflady";
-}
-
-/* ===== SYSTEM LOGIC ===== */
-
-function getSystemOffset(system){
-if(system==="Merivobox") return 42;
-return 38;
-}
-
-function getBackHeight(type){
-if(type==="N") return 68;
-if(type==="M") return 84;
-if(type==="C") return 148;
-if(type==="D") return 196;
-return 84;
-}
-
-/* ===== RUNNER CONTROL ===== */
-
-function autoRunnerCheck(){
-let d=parseInt(depth.value);
-let r=parseInt(runner.value);
-
-if(d < r + 20){
-alert("Minimalna głębokość dla prowadnicy "+r+" mm to "+(r+20)+" mm.");
-runner.value=450;
+div.appendChild(select);
+drawerSelectors.appendChild(div);
 }
 }
-
-/* ===== CALCULATION CORE ===== */
 
 function calculate(){
 
 let h=parseInt(height.value);
 let w=parseInt(width.value);
 let d=parseInt(depth.value);
-let runnerValue=parseInt(runner.value);
-let qtyValue=parseInt(qty.value);
-let systemValue=system.value;
-let drawerTypeValue=drawerType.value;
-let configValue=config.value;
+let r=parseInt(runner.value);
+let q=parseInt(qty.value);
+let sys=system.value;
+let c=config.value;
 let typeValue=type.value;
+let fc=parseInt(frontCount.value);
 
 let light=w-36;
-let golaOffset=(typeValue==="Dolna GOLA")?50:0;
-let offset=getSystemOffset(systemValue);
+let gola=(typeValue==="Dolna GOLA")?50:0;
 
-let output="<h2>Wynik</h2><table>";
-output+="<tr><th>Element</th><th>Wymiar</th></tr>";
+if(w<300||w>1200){ result.innerHTML="<span class='warning'>Szerokość 300–1200 mm</span>"; return; }
+if(h<300){ result.innerHTML="<span class='warning'>Minimalna wysokość 300 mm</span>"; return; }
+if(d<r+20){ result.innerHTML="<span class='warning'>Za mała głębokość pod prowadnicę</span>"; return; }
 
-/* KONTROLA RUNNER */
-if(configValue==="Szuflady"){
-if(d < runnerValue + 20){
-output+="<tr><td class='warning'>BŁĄD</td><td>Za mała głębokość pod prowadnicę</td></tr></table>";
-result.innerHTML=output;
+if((typeValue==="Wisząca" || typeValue==="Pod zmywarkę" || typeValue==="Pod lodówkę") && c==="Szuflady"){
+result.innerHTML="<span class='warning'>Ten typ korpusu nie obsługuje szuflad</span>";
 return;
 }
-}
-
-/* KORPUS */
-output+="<tr><td>Bok</td><td>"+h+" x "+d+" x 18</td></tr>";
-output+="<tr><td>Dno</td><td>"+light+" x "+d+" x 18</td></tr>";
-output+="<tr><td>Wieniec</td><td>"+light+" x "+d+" x 18</td></tr>";
-output+="<tr><td>Plecy</td><td>"+(w-2)+" x "+(h-2)+" x 3</td></tr>";
 
 /* DRZWI */
-if(configValue==="Drzwi"){
-output+="<tr><td>Front</td><td>"+(w-4)+" x "+(h-4-golaOffset)+" x 18</td></tr>";
+if(c==="Drzwi"){
+
+let frontHeight=h-4-gola;
+
+let out="<h2>Wynik</h2><table>";
+out+="<tr><th>Element</th><th>Wymiar</th></tr>";
+out+="<tr><td>Bok</td><td>"+h+" x "+d+" x 18</td></tr>";
+out+="<tr><td>Dno</td><td>"+light+" x "+d+" x 18</td></tr>";
+out+="<tr><td>Wieniec</td><td>"+light+" x "+d+" x 18</td></tr>";
+out+="<tr><td>Plecy</td><td>"+(w-2)+" x "+(h-2)+" x 3</td></tr>";
+
+if(w>600){ fc=2; frontCount.value=2; }
+
+if(fc===1){
+if(w-4>600){ result.innerHTML="<span class='warning'>Front >600 mm</span>"; return; }
+out+="<tr><td>Front</td><td>"+(w-4)+" x "+frontHeight+" x 18</td></tr>";
+}else{
+let single=Math.floor((w-6)/2);
+if(single>600){ result.innerHTML="<span class='warning'>Front >600 mm</span>"; return; }
+out+="<tr><td>Front L</td><td>"+single+" x "+frontHeight+" x 18</td></tr>";
+out+="<tr><td>Front P</td><td>"+single+" x "+frontHeight+" x 18</td></tr>";
+}
+
+out+="</table>";
+result.innerHTML=out;
+return;
 }
 
 /* SZUFLADY */
-if(configValue==="Szuflady"){
 
-let frontHeight=Math.floor((h-golaOffset-((qtyValue+1)*3))/qtyValue)-4;
+if(c==="Szuflady"){
 
-if(frontHeight < 60){
-output+="<tr><td class='warning'>BŁĄD</td><td>Za dużo szuflad</td></tr></table>";
-result.innerHTML=output;
+if(w<350){
+result.innerHTML="<span class='warning'>Minimalna szerokość pod szuflady 350 mm</span>";
 return;
 }
 
-let dnoWidth=light-offset;
-let backHeight=getBackHeight(drawerTypeValue);
-
-for(let i=1;i<=qtyValue;i++){
-output+="<tr><td>Front "+i+"</td><td>"+(w-4)+" x "+frontHeight+" x 18</td></tr>";
-output+="<tr><td>Tył "+i+"</td><td>"+dnoWidth+" x "+backHeight+" x 16</td></tr>";
-output+="<tr><td>Dno "+i+"</td><td>"+dnoWidth+" x "+runnerValue+" x 16</td></tr>";
-}
+if(h>1500 && q>5){
+result.innerHTML="<span class='warning'>Maksymalnie 5 szuflad dla wysokiego korpusu</span>";
+return;
 }
 
-output+="</table>";
-result.innerHTML=output;
+if(h>1000 && q<2){
+result.innerHTML="<span class='warning'>Wysoki korpus wymaga min. 2 szuflad</span>";
+return;
 }
 
-function resetForm(){
-type.value="Dolna";
-config.value="Drzwi";
-system.value="Antaro";
-drawerType.value="M";
-height.value=720;
-width.value=600;
-depth.value=560;
-runner.value=500;
-qty.value=3;
-result.innerHTML="";
-autoLogic();
+let frontH=Math.floor((h-gola-((q+1)*3))/q)-4;
+
+if(frontH<=0){
+result.innerHTML="<span class='warning'>Za dużo szuflad dla tej wysokości</span>";
+return;
 }
 
-function clearResult(){
-result.innerHTML="";
+if(frontH>400){
+result.innerHTML="<span class='warning'>Front za wysoki</span>";
+return;
 }
 
+let out="<h2>Wynik</h2><table>";
+out+="<tr><th>Element</th><th>Wymiar</th></tr>";
+out+="<tr><td>Bok</td><td>"+h+" x "+d+" x 18</td></tr>";
+out+="<tr><td>Dno</td><td>"+light+" x "+d+" x 18</td></tr>";
+out+="<tr><td>Wieniec</td><td>"+light+" x "+d+" x 18</td></tr>";
+out+="<tr><td>Plecy</td><td>"+(w-2)+" x "+(h-2)+" x 3</td></tr>";
+
+for(let i=1;i<=q;i++){
+let typeB=document.getElementById("drawerType_"+i).value;
+let backH=systemData[sys].types[typeB];
+let minFront=systemData[sys].minFront[typeB];
+let offset=systemData[sys].offset;
+
+if(frontH < minFront){
+result.innerHTML="<span class='warning'>Szuflada "+i+
+" wymaga min frontu "+minFront+" mm</span>";
+return;
+}
+
+let internal=frontH-backH-20;
+if(internal<30){
+result.innerHTML="<span class='warning'>Szuflada "+i+
+" – za mała wysokość wewnętrzna</span>";
+return;
+}
+
+let dnoW=light-offset;
+
+out+="<tr><td>Front "+i+"</td><td>"+(w-4)+" x "+frontH+" x 18</td></tr>";
+out+="<tr><td>Tył "+i+"</td><td>"+dnoW+" x "+backH+" x 16</td></tr>";
+out+="<tr><td>Dno "+i+"</td><td>"+dnoW+" x "+r+" x 16</td></tr>";
+out+="<tr><td>Wysokość wewn.</td><td>"+internal+" mm</td></tr>";
+}
+
+out+="</table>";
+result.innerHTML=out;
+}
+
+}
+
+updateDrawerSelectors();
 autoLogic();
 
 </script>
