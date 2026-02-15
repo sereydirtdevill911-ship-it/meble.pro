@@ -3,28 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Konfigurator PRO 6.3.5.7 – ABSOLUTE STABLE</title>
+<title>Konfigurator PRO – CORE STABLE R1</title>
 
 <style>
 body{font-family:Arial;background:#eef1f5;margin:0;padding:20px;}
-.container{max-width:1150px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
+.container{max-width:1100px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
 h1{background:#1f2d3d;color:white;padding:15px;border-radius:8px;text-align:center;}
 label{font-weight:bold;}
 select,input{width:100%;padding:8px;margin:6px 0 14px;border-radius:6px;border:1px solid #ccc;}
-button{width:100%;padding:10px;margin-top:8px;border:none;border-radius:6px;font-weight:bold;color:white;cursor:pointer;background:#2f5bd3;}
-button:disabled{background:#999;cursor:not-allowed;}
+button{width:100%;padding:10px;margin-top:8px;border:none;border-radius:6px;font-weight:bold;color:white;cursor:pointer;}
+.primary{background:#2f5bd3;}
+.secondary{background:#666;}
 table{width:100%;border-collapse:collapse;margin-top:15px;}
 th,td{border:1px solid #ddd;padding:6px;text-align:left;font-size:14px;}
 th{background:#f0f0f0;}
-.warning{color:red;font-weight:bold;}
-.hidden{display:none;}
+.warning{color:red;font-weight:bold;margin-top:10px;}
 .drawerBlock{background:#f7f7f7;padding:8px;margin-bottom:8px;border-radius:6px;}
 </style>
 </head>
 <body>
 
 <div class="container">
-<h1>Konfigurator PRO 6.3.5.7 – ABSOLUTE STABLE</h1>
+<h1>Konfigurator PRO – CORE STABLE R1</h1>
 
 <label>Typ korpusu</label>
 <select id="type" onchange="autoLogic()">
@@ -36,23 +36,19 @@ th{background:#f0f0f0;}
 </select>
 
 <label>Konstrukcja</label>
-<select id="config" onchange="updateUI()">
+<select id="config" onchange="updateState(); updateDrawerSelectors();">
 <option>Drzwi</option>
 <option>Szuflady</option>
 </select>
 
-<div id="doorBlock">
-<label>Ilość frontów</label>
+<label>Ilość frontów (Drzwi)</label>
 <select id="frontCount">
 <option value="1">1</option>
 <option value="2">2</option>
 </select>
-</div>
 
-<div id="drawerBlock">
-
-<label>System</label>
-<select id="system" onchange="systemChanged()">
+<label>System szuflad</label>
+<select id="system" onchange="updateDrawerSelectors()">
 <option>Antaro</option>
 <option>Tandembox</option>
 <option>Merivobox</option>
@@ -60,16 +56,9 @@ th{background:#f0f0f0;}
 </select>
 
 <label>Ilość szuflad</label>
-<input type="number" id="qty" value="3" min="1" onchange="updateDrawerSelectors()">
+<input type="number" id="qty" value="3" min="1" max="8" onchange="updateDrawerSelectors()">
 
 <div id="drawerSelectors"></div>
-
-<div id="runnerBlock">
-<label>Prowadnica</label>
-<select id="runner"></select>
-</div>
-
-</div>
 
 <label>Wysokość (mm)</label>
 <input type="number" id="height" value="720">
@@ -78,9 +67,17 @@ th{background:#f0f0f0;}
 <input type="number" id="width" value="600">
 
 <label>Głębokość (mm)</label>
-<input type="number" id="depth" value="560" onchange="filterRunner()">
+<input type="number" id="depth" value="560">
 
-<button id="calcBtn" onclick="calculate()">Oblicz</button>
+<label>Prowadnica</label>
+<select id="runner">
+<option>450</option>
+<option selected>500</option>
+<option>550</option>
+</select>
+
+<button class="primary" onclick="calculate()">Oblicz</button>
+<button class="secondary" onclick="clearResult()">← Cofnij wynik</button>
 
 <div id="result"></div>
 
@@ -88,164 +85,90 @@ th{background:#f0f0f0;}
 
 <script>
 
-const systemData={
-Antaro:{types:{N:68,M:84,C:148,D:196},minFront:{N:80,M:100,C:160,D:200},offset:38},
-Tandembox:{types:{N:68,M:84,C:148,D:196},minFront:{N:80,M:100,C:160,D:200},offset:38},
-Merivobox:{types:{E:90,M:130,K:180,H:250},minFront:{E:110,M:150,K:200,H:270},offset:42},
-Legrabox:{types:{N:66,M:90,C:177,F:241},minFront:{N:90,M:120,C:190,F:260},offset:38}
+const systemData = {
+Antaro:{ types:{N:68,M:84,C:148,D:196}, offset:38 },
+Tandembox:{ types:{N:68,M:84,C:148,D:196}, offset:38 },
+Merivobox:{ types:{E:90,M:130,K:180,H:250}, offset:42 },
+Legrabox:{ types:{N:66,M:90,C:177,F:241}, offset:38 }
 };
 
-function el(id){return document.getElementById(id);}
-
-/* ===== SYSTEM CHANGE ===== */
-
-function systemChanged(){
-updateDrawerSelectors();
-filterRunner();
-}
-
-/* ===== AUTO MODE ===== */
-
 function autoLogic(){
-let t=el("type").value;
+let t=type.value;
 
-if(t==="Wisząca"||t==="Pod zmywarkę"||t==="Pod lodówkę"){
-el("config").value="Drzwi";
-el("config").disabled=true;
-}else el("config").disabled=false;
-
-if(t==="Wisząca"){el("height").value=720;el("depth").value=320;}
-if(t==="Pod zmywarkę"){el("height").value=720;el("depth").value=560;}
-if(t==="Pod lodówkę"){el("height").value=2130;el("depth").value=600;}
-
-updateUI();
-}
-
-/* ===== UI ===== */
-
-function updateUI(){
-
-let drawerMode=el("config").value==="Szuflady";
-
-el("drawerBlock").classList.toggle("hidden",!drawerMode);
-el("doorBlock").classList.toggle("hidden",drawerMode);
-
-if(drawerMode){
-if(parseInt(el("qty").value)<1) el("qty").value=1;
-el("qty").disabled=false;
+if(t==="Wisząca" || t==="Pod zmywarkę" || t==="Pod lodówkę"){
+config.value="Drzwi";
+config.disabled=true;
 }else{
-el("qty").disabled=true;
+config.disabled=false;
 }
 
+if(t==="Wisząca"){ height.value=720; depth.value=320; }
+if(t==="Pod zmywarkę"){ height.value=720; depth.value=560; }
+if(t==="Pod lodówkę"){ height.value=2130; depth.value=600; }
+
+updateState();
 updateDrawerSelectors();
-filterRunner();
 }
 
-/* ===== DRAWERS ===== */
+function updateState(){
+qty.disabled=(config.value==="Drzwi");
+frontCount.disabled=(config.value!=="Drzwi");
+if(config.value==="Drzwi") qty.value=1;
+}
 
 function updateDrawerSelectors(){
+drawerSelectors.innerHTML="";
+if(config.value!=="Szuflady") return;
 
-el("drawerSelectors").innerHTML="";
+let sys=system.value;
+let q=parseInt(qty.value);
 
-if(el("config").value!=="Szuflady") return;
-
-let sys=el("system").value;
-let q=Math.max(1,parseInt(el("qty").value));
+if(q>8){ qty.value=8; q=8; }
 
 for(let i=1;i<=q;i++){
 let div=document.createElement("div");
 div.className="drawerBlock";
 div.innerHTML="<strong>Szuflada "+i+"</strong><br>";
-
-let sel=document.createElement("select");
-sel.id="drawerType_"+i;
+let select=document.createElement("select");
+select.id="drawerType_"+i;
 
 for(let t in systemData[sys].types){
-let o=document.createElement("option");
-o.value=t;
-o.text=t+" ("+systemData[sys].types[t]+" mm)";
-sel.appendChild(o);
+let opt=document.createElement("option");
+opt.value=t;
+opt.text=t+" ("+systemData[sys].types[t]+" mm)";
+select.appendChild(opt);
 }
 
-div.appendChild(sel);
-el("drawerSelectors").appendChild(div);
-}
-}
-
-/* ===== SMART RUNNER ===== */
-
-function filterRunner(){
-
-if(el("config").value!=="Szuflady"){
-el("runnerBlock").classList.add("hidden");
-el("runner").innerHTML="";
-el("runner").disabled=true;
-el("calcBtn").disabled=false;
-return;
-}
-
-el("runnerBlock").classList.remove("hidden");
-
-let depth=parseInt(el("depth").value);
-let max=depth-20;
-let options=[450,500,550];
-
-let runner=el("runner");
-runner.innerHTML="";
-let allowed=[];
-
-for(let r of options){
-if(r<=max){
-let o=document.createElement("option");
-o.value=r;
-o.text=r;
-runner.appendChild(o);
-allowed.push(r);
+div.appendChild(select);
+drawerSelectors.appendChild(div);
 }
 }
 
-if(allowed.length===0){
-let o=document.createElement("option");
-o.text="Brak możliwej";
-runner.appendChild(o);
-runner.disabled=true;
-el("qty").disabled=true;
-el("calcBtn").disabled=true;
-}else{
-runner.disabled=false;
-el("qty").disabled=false;
-el("calcBtn").disabled=false;
-runner.value=Math.max(...allowed);
+function clearResult(){
+result.innerHTML="";
 }
-}
-
-/* ===== CALCULATE ===== */
 
 function calculate(){
 
-let h=parseInt(el("height").value);
-let w=parseInt(el("width").value);
-let d=parseInt(el("depth").value);
-let q=parseInt(el("qty").value);
-let config=el("config").value;
-let gola=(el("type").value==="Dolna GOLA")?50:0;
+let h=parseInt(height.value);
+let w=parseInt(width.value);
+let d=parseInt(depth.value);
+let r=parseInt(runner.value);
+let q=parseInt(qty.value);
+let sys=system.value;
+let c=config.value;
+let typeValue=type.value;
 
-if(w<300||w>1200){el("result").innerHTML="<span class='warning'>Szerokość 300–1200 mm</span>";return;}
-if(h<300){el("result").innerHTML="<span class='warning'>Min wysokość 300 mm</span>";return;}
+result.innerHTML="";
 
 let light=w-36;
 
-/* DRZWI */
+if(w<300||w>1200){ result.innerHTML="<div class='warning'>Szerokość 300–1200 mm</div>"; return; }
+if(h<300){ result.innerHTML="<div class='warning'>Minimalna wysokość 300 mm</div>"; return; }
 
-if(config==="Drzwi"){
-
-let frontH=h-4-gola;
-
-if(el("frontCount").value==="1"){
-if(w-4>600){el("result").innerHTML="<span class='warning'>Front >600 mm</span>";return;}
-}else{
-let single=Math.floor((w-6)/2);
-if(single>600){el("result").innerHTML="<span class='warning'>Każdy front max 600 mm</span>";return;}
+if(c==="Szuflady"){
+if(d<r+10){ result.innerHTML="<div class='warning'>Za mała głębokość pod prowadnicę</div>"; return; }
+if(q>8){ result.innerHTML="<div class='warning'>Max 8 szuflad</div>"; return; }
 }
 
 let out="<h2>Wynik</h2><table>";
@@ -255,68 +178,44 @@ out+="<tr><td>Dno</td><td>"+light+" x "+d+" x 18</td></tr>";
 out+="<tr><td>Wieniec</td><td>"+light+" x "+d+" x 18</td></tr>";
 out+="<tr><td>Plecy</td><td>"+(w-2)+" x "+(h-2)+" x 3</td></tr>";
 
-if(el("frontCount").value==="1"){
-out+="<tr><td>Front</td><td>"+(w-4)+" x "+frontH+" x 18</td></tr>";
+if(c==="Drzwi"){
+let fh=h-4;
+if(frontCount.value==="2"){
+let half=(fh/2)-2;
+out+="<tr><td>Front L</td><td>"+(w-4)+" x "+half+" x 18</td></tr>";
+out+="<tr><td>Front P</td><td>"+(w-4)+" x "+half+" x 18</td></tr>";
 }else{
-let single=Math.floor((w-6)/2);
-out+="<tr><td>Front L</td><td>"+single+" x "+frontH+" x 18</td></tr>";
-out+="<tr><td>Front P</td><td>"+single+" x "+frontH+" x 18</td></tr>";
+out+="<tr><td>Front</td><td>"+(w-4)+" x "+fh+" x 18</td></tr>";
+}
 }
 
-out+="</table>";
-el("result").innerHTML=out;
-return;
-}
-
-/* SZUFLADY */
-
-let r=parseInt(el("runner").value);
-if(isNaN(r)||el("runner").disabled){
-el("result").innerHTML="<span class='warning'>Brak możliwej prowadnicy</span>";
-return;
-}
-
-if(d<r+20){el("result").innerHTML="<span class='warning'>Za mała głębokość</span>";return;}
-if(w<350){el("result").innerHTML="<span class='warning'>Min szerokość 350 mm</span>";return;}
-
-let frontH=Math.floor((h-gola-((q+1)*3))/q)-4;
-if(frontH<=0){el("result").innerHTML="<span class='warning'>Za dużo szuflad</span>";return;}
-
-let out="<h2>Wynik</h2><table>";
-out+="<tr><th>Element</th><th>Wymiar</th></tr>";
-out+="<tr><td>Bok</td><td>"+h+" x "+d+" x 18</td></tr>";
-out+="<tr><td>Dno</td><td>"+light+" x "+d+" x 18</td></tr>";
-out+="<tr><td>Wieniec</td><td>"+light+" x "+d+" x 18</td></tr>";
-out+="<tr><td>Plecy</td><td>"+(w-2)+" x "+(h-2)+" x 3</td></tr>";
+if(c==="Szuflady"){
+let availableHeight=h-((q+1)*3);
+let frontH=Math.floor(availableHeight/q)-4;
 
 for(let i=1;i<=q;i++){
-let typeB=el("drawerType_"+i).value;
-let backH=systemData[el("system").value].types[typeB];
-let minFront=systemData[el("system").value].minFront[typeB];
-
-if(frontH<minFront){
-el("result").innerHTML="<span class='warning'>Szuflada "+i+" wymaga min "+minFront+" mm</span>";
-return;
-}
-
+let typeB=document.getElementById("drawerType_"+i).value;
+let backH=systemData[sys].types[typeB];
+let dnoW=light-systemData[sys].offset;
 let internal=frontH-backH-20;
+
 if(internal<30){
-el("result").innerHTML="<span class='warning'>Za mała wysokość wewnętrzna</span>";
+result.innerHTML="<div class='warning'>Za mała wysokość wewnętrzna w szufladzie "+i+"</div>";
 return;
 }
-
-let dnoW=light-systemData[el("system").value].offset;
 
 out+="<tr><td>Front "+i+"</td><td>"+(w-4)+" x "+frontH+" x 18</td></tr>";
 out+="<tr><td>Tył "+i+"</td><td>"+dnoW+" x "+backH+" x 16</td></tr>";
 out+="<tr><td>Dno "+i+"</td><td>"+dnoW+" x "+r+" x 16</td></tr>";
 out+="<tr><td>Wysokość wewn.</td><td>"+internal+" mm</td></tr>";
 }
-
-out+="</table>";
-el("result").innerHTML=out;
 }
 
+out+="</table>";
+result.innerHTML=out;
+}
+
+updateDrawerSelectors();
 autoLogic();
 
 </script>
