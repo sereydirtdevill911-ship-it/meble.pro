@@ -3,28 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Konfigurator PRO – CORE STABLE R1</title>
+<title>Konfigurator PRO – R2.3.1 SAFE PATCH</title>
 
 <style>
 body{font-family:Arial;background:#eef1f5;margin:0;padding:20px;}
-.container{max-width:1100px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
+.container{max-width:1200px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
 h1{background:#1f2d3d;color:white;padding:15px;border-radius:8px;text-align:center;}
 label{font-weight:bold;}
 select,input{width:100%;padding:8px;margin:6px 0 14px;border-radius:6px;border:1px solid #ccc;}
 button{width:100%;padding:10px;margin-top:8px;border:none;border-radius:6px;font-weight:bold;color:white;cursor:pointer;}
 .primary{background:#2f5bd3;}
 .secondary{background:#666;}
+.danger{background:#c0392b;}
 table{width:100%;border-collapse:collapse;margin-top:15px;}
 th,td{border:1px solid #ddd;padding:6px;text-align:left;font-size:14px;}
 th{background:#f0f0f0;}
-.warning{color:red;font-weight:bold;margin-top:10px;}
+.warning{color:red;font-weight:bold;}
 .drawerBlock{background:#f7f7f7;padding:8px;margin-bottom:8px;border-radius:6px;}
 </style>
 </head>
 <body>
 
 <div class="container">
-<h1>Konfigurator PRO – CORE STABLE R1</h1>
+<h1>Konfigurator PRO – R2.3.1 SAFE PATCH</h1>
 
 <label>Typ korpusu</label>
 <select id="type" onchange="autoLogic()">
@@ -36,7 +37,7 @@ th{background:#f0f0f0;}
 </select>
 
 <label>Konstrukcja</label>
-<select id="config" onchange="updateState(); updateDrawerSelectors();">
+<select id="config" onchange="updateDrawerSelectors()">
 <option>Drzwi</option>
 <option>Szuflady</option>
 </select>
@@ -77,43 +78,38 @@ th{background:#f0f0f0;}
 </select>
 
 <button class="primary" onclick="calculate()">Oblicz</button>
-<button class="secondary" onclick="clearResult()">← Cofnij wynik</button>
+<button class="secondary" onclick="addModule()">➕ Dodaj moduł</button>
+<button class="secondary" onclick="showProject()">📊 Pokaż projekt</button>
+<button class="danger" onclick="clearProject()">🗑 Wyczyść projekt</button>
 
 <div id="result"></div>
-
+<div id="projectView"></div>
 </div>
 
 <script>
 
-const systemData = {
-Antaro:{ types:{N:68,M:84,C:148,D:196}, offset:38 },
-Tandembox:{ types:{N:68,M:84,C:148,D:196}, offset:38 },
-Merivobox:{ types:{E:90,M:130,K:180,H:250}, offset:42 },
-Legrabox:{ types:{N:66,M:90,C:177,F:241}, offset:38 }
+const systemData={
+Antaro:{types:{N:68,M:84,C:148,D:196},offset:38,minWidth:300},
+Tandembox:{types:{N:68,M:84,C:148,D:196},offset:38,minWidth:300},
+Merivobox:{types:{E:90,M:130,K:180,H:250},offset:42,minWidth:350},
+Legrabox:{types:{N:66,M:90,C:177,F:241},offset:38,minWidth:300}
 };
+
+let project=[];
 
 function autoLogic(){
 let t=type.value;
 
-if(t==="Wisząca" || t==="Pod zmywarkę" || t==="Pod lodówkę"){
+if(t==="Wisząca"||t==="Pod zmywarkę"||t==="Pod lodówkę"){
 config.value="Drzwi";
 config.disabled=true;
-}else{
-config.disabled=false;
-}
+}else config.disabled=false;
 
-if(t==="Wisząca"){ height.value=720; depth.value=320; }
-if(t==="Pod zmywarkę"){ height.value=720; depth.value=560; }
-if(t==="Pod lodówkę"){ height.value=2130; depth.value=600; }
+if(t==="Wisząca"){height.value=720;depth.value=320;}
+if(t==="Pod zmywarkę"){height.value=720;depth.value=560;}
+if(t==="Pod lodówkę"){height.value=2130;depth.value=600;}
 
-updateState();
 updateDrawerSelectors();
-}
-
-function updateState(){
-qty.disabled=(config.value==="Drzwi");
-frontCount.disabled=(config.value!=="Drzwi");
-if(config.value==="Drzwi") qty.value=1;
 }
 
 function updateDrawerSelectors(){
@@ -121,103 +117,231 @@ drawerSelectors.innerHTML="";
 if(config.value!=="Szuflady") return;
 
 let sys=system.value;
-let q=parseInt(qty.value);
-
-if(q>8){ qty.value=8; q=8; }
-
-for(let i=1;i<=q;i++){
+for(let i=1;i<=qty.value;i++){
 let div=document.createElement("div");
 div.className="drawerBlock";
 div.innerHTML="<strong>Szuflada "+i+"</strong><br>";
 let select=document.createElement("select");
 select.id="drawerType_"+i;
-
 for(let t in systemData[sys].types){
 let opt=document.createElement("option");
 opt.value=t;
 opt.text=t+" ("+systemData[sys].types[t]+" mm)";
 select.appendChild(opt);
 }
-
 div.appendChild(select);
 drawerSelectors.appendChild(div);
 }
 }
 
-function clearResult(){
-result.innerHTML="";
+/* ===== SAFE FIXED CORE ===== */
+
+function generateModuleData(cfg){
+
+let parts=[];
+let runners=[];
+let light=cfg.width-36;
+let golaOffset=(cfg.type==="Dolna GOLA")?50:0;
+
+/* GLOBAL SAFETY */
+
+if(cfg.width < 300 || cfg.width > 1200)
+throw "Szerokość 300–1200 mm";
+
+if(cfg.height < 300 || cfg.height > 2400)
+throw "Wysokość 300–2400 mm";
+
+if(light <= 0)
+throw "Za mała szerokość światła";
+
+if(cfg.config==="Szuflady"){
+if(cfg.qty < 1 || cfg.qty > 8)
+throw "Ilość szuflad 1–8";
 }
 
-function calculate(){
+/* корпус */
 
-let h=parseInt(height.value);
-let w=parseInt(width.value);
-let d=parseInt(depth.value);
-let r=parseInt(runner.value);
-let q=parseInt(qty.value);
-let sys=system.value;
-let c=config.value;
-let typeValue=type.value;
+parts.push({name:"Bok",w:cfg.height,h:cfg.depth,t:18});
+parts.push({name:"Bok",w:cfg.height,h:cfg.depth,t:18});
 
-result.innerHTML="";
-
-let light=w-36;
-
-if(w<300||w>1200){ result.innerHTML="<div class='warning'>Szerokość 300–1200 mm</div>"; return; }
-if(h<300){ result.innerHTML="<div class='warning'>Minimalna wysokość 300 mm</div>"; return; }
-
-if(c==="Szuflady"){
-if(d<r+10){ result.innerHTML="<div class='warning'>Za mała głębokość pod prowadnicę</div>"; return; }
-if(q>8){ result.innerHTML="<div class='warning'>Max 8 szuflad</div>"; return; }
+if(cfg.type!=="Pod zmywarkę"){
+parts.push({name:"Dno",w:light,h:cfg.depth,t:18});
 }
 
-let out="<h2>Wynik</h2><table>";
-out+="<tr><th>Element</th><th>Wymiar</th></tr>";
-out+="<tr><td>Bok</td><td>"+h+" x "+d+" x 18</td></tr>";
-out+="<tr><td>Dno</td><td>"+light+" x "+d+" x 18</td></tr>";
-out+="<tr><td>Wieniec</td><td>"+light+" x "+d+" x 18</td></tr>";
-out+="<tr><td>Plecy</td><td>"+(w-2)+" x "+(h-2)+" x 3</td></tr>";
-
-if(c==="Drzwi"){
-let fh=h-4;
-if(frontCount.value==="2"){
-let half=(fh/2)-2;
-out+="<tr><td>Front L</td><td>"+(w-4)+" x "+half+" x 18</td></tr>";
-out+="<tr><td>Front P</td><td>"+(w-4)+" x "+half+" x 18</td></tr>";
+if(cfg.type==="Pod lodówkę"){
+let wneka=cfg.height-(2*18)-4;
+parts.push({name:"Wnęka",w:light,h:wneka,t:0});
 }else{
-out+="<tr><td>Front</td><td>"+(w-4)+" x "+fh+" x 18</td></tr>";
+parts.push({name:"Wieniec",w:light,h:cfg.depth,t:18});
+}
+
+parts.push({name:"Plecy",w:cfg.width-2,h:cfg.height-2,t:3});
+
+/* DRZWI */
+
+if(cfg.config==="Drzwi"){
+
+let fh=cfg.height-4-golaOffset;
+
+if(cfg.frontCount==2){
+
+let luz=2;
+let fw=Math.floor((cfg.width-4-luz)/2);
+let second=(cfg.width-4-luz)-fw;
+
+parts.push({name:"Front",w:fw,h:fh,t:18});
+parts.push({name:"Front",w:second,h:fh,t:18});
+
+}else{
+parts.push({name:"Front",w:cfg.width-4,h:fh,t:18});
 }
 }
 
-if(c==="Szuflady"){
-let availableHeight=h-((q+1)*3);
-let frontH=Math.floor(availableHeight/q)-4;
+/* SZUFLADY */
 
-for(let i=1;i<=q;i++){
-let typeB=document.getElementById("drawerType_"+i).value;
-let backH=systemData[sys].types[typeB];
-let dnoW=light-systemData[sys].offset;
+if(cfg.config==="Szuflady"){
+
+if(cfg.width < systemData[cfg.system].minWidth)
+throw "Szerokość za mała dla wybranego systemu";
+
+if(cfg.depth < cfg.runner + 10)
+throw "Za mała głębokość pod prowadnicę";
+
+if(cfg.height > 1500 && cfg.qty > 5)
+throw "Max 5 szuflad dla wysokiego korpusu";
+
+let availableHeight=cfg.height-golaOffset-((cfg.qty+1)*3);
+let frontH=Math.floor(availableHeight/cfg.qty)-4;
+
+if(frontH>400)
+throw "Front za wysoki (max 400 mm)";
+
+for(let i=0;i<cfg.qty;i++){
+
+let backH=systemData[cfg.system].types[cfg.drawerTypes[i]];
+
+if(frontH < backH+20)
+throw "Front za niski dla typu szuflady";
+
 let internal=frontH-backH-20;
 
-if(internal<30){
-result.innerHTML="<div class='warning'>Za mała wysokość wewnętrzna w szufladzie "+i+"</div>";
+if(internal<30)
+throw "Za mała wysokość wewnętrzna";
+
+let dnoW=light-systemData[cfg.system].offset;
+
+parts.push({name:"Front",w:cfg.width-4,h:frontH,t:18});
+parts.push({name:"Tył szuflady",w:dnoW,h:backH,t:16});
+parts.push({name:"Dno szuflady",w:dnoW,h:cfg.runner,t:16});
+runners.push({length:cfg.runner});
+}
+}
+
+return {parts,runners};
+}
+
+/* CONFIG */
+
+function collectConfig(){
+let drawerTypes=[];
+if(config.value==="Szuflady"){
+for(let i=1;i<=qty.value;i++){
+drawerTypes.push(document.getElementById("drawerType_"+i).value);
+}
+}
+return{
+type:type.value,
+config:config.value,
+frontCount:parseInt(frontCount.value),
+system:system.value,
+qty:parseInt(qty.value),
+width:parseInt(width.value),
+height:parseInt(height.value),
+depth:parseInt(depth.value),
+runner:parseInt(runner.value),
+drawerTypes:drawerTypes
+};
+}
+
+/* CALCULATE */
+
+function calculate(){
+try{
+let cfg=collectConfig();
+let data=generateModuleData(cfg);
+let out="<h2>Wynik</h2><table><tr><th>Element</th><th>Wymiar</th></tr>";
+data.parts.forEach(p=>{
+out+="<tr><td>"+p.name+"</td><td>"+p.w+" x "+p.h+" x "+p.t+"</td></tr>";
+});
+out+="</table>";
+result.innerHTML=out;
+}catch(e){
+result.innerHTML="<div class='warning'>"+e+"</div>";
+}
+}
+
+/* MULTI */
+
+function addModule(){
+try{
+let cfg=collectConfig();
+generateModuleData(cfg);
+project.push(cfg);
+alert("Moduł dodany");
+}catch(e){
+alert("Błąd: "+e);
+}
+}
+
+function showProject(){
+if(project.length===0){
+projectView.innerHTML="<div class='warning'>Brak modułów</div>";
 return;
 }
 
-out+="<tr><td>Front "+i+"</td><td>"+(w-4)+" x "+frontH+" x 18</td></tr>";
-out+="<tr><td>Tył "+i+"</td><td>"+dnoW+" x "+backH+" x 16</td></tr>";
-out+="<tr><td>Dno "+i+"</td><td>"+dnoW+" x "+r+" x 16</td></tr>";
-out+="<tr><td>Wysokość wewn.</td><td>"+internal+" mm</td></tr>";
-}
-}
+let allParts=[];
+let allRunners=[];
+
+project.forEach(cfg=>{
+let data=generateModuleData(cfg);
+allParts=allParts.concat(data.parts);
+allRunners=allRunners.concat(data.runners);
+});
+
+let grouped={};
+allParts.forEach(p=>{
+let key=p.name+"_"+p.w+"_"+p.h+"_"+p.t;
+if(!grouped[key]) grouped[key]={...p,qty:0};
+grouped[key].qty++;
+});
+
+let runnerGrouped={};
+allRunners.forEach(r=>{
+if(!runnerGrouped[r.length]) runnerGrouped[r.length]=0;
+runnerGrouped[r.length]++;
+});
+
+let out="<h2>BOM – Grupowany</h2><table><tr><th>Element</th><th>Wymiar</th><th>Ilość</th></tr>";
+
+Object.values(grouped).forEach(p=>{
+out+="<tr><td>"+p.name+"</td><td>"+p.w+" x "+p.h+" x "+p.t+"</td><td>"+p.qty+"</td></tr>";
+});
+
+Object.keys(runnerGrouped).forEach(len=>{
+out+="<tr><td>Prowadnica "+len+" mm</td><td>-</td><td>"+runnerGrouped[len]+"</td></tr>";
+});
 
 out+="</table>";
-result.innerHTML=out;
+projectView.innerHTML=out;
 }
 
-updateDrawerSelectors();
-autoLogic();
+function clearProject(){
+project=[];
+projectView.innerHTML="";
+alert("Projekt wyczyszczony");
+}
 
+autoLogic();
 </script>
 </body>
-</html>
+  </html>
