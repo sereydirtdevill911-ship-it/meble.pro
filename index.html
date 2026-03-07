@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Konfigurator PRO â€“ R2.4.2</title>
+<title>Konfigurator PRO – R2.4.2</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700&display=swap');
 
@@ -67,8 +67,12 @@ h1 span.badge{
   gap:16px;
   margin-bottom:16px;
 }
-
-@media(max-width:640px){.grid{grid-template-columns:1fr;}}
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+@media(max-width:640px){.grid{grid-template-columns:1fr;}.grid2{grid-template-columns:1fr;}}
 
 .card{
   background:var(--surface);
@@ -207,7 +211,7 @@ tr:hover td{background:var(--surface2);}
   margin-top:12px;
 }
 
-.warn::before{content:"âš  ";}
+.warn::before{content:"⚠ ";}
 
 .info-row td:first-child{color:var(--accent2);}
 
@@ -237,7 +241,14 @@ tr:hover td{background:var(--surface2);}
 
 <h1>Konfigurator PRO <span class="badge">R2.5.0 + 2D</span></h1>
 
-<div class="grid">
+<!-- G&#322;&#243;wne zak&#322;adki -->
+<div style="display:flex;gap:8px;margin-bottom:16px;">
+  <button id="mainTabKonfig" onclick="switchMainTab('konfig')" style="flex:1;padding:10px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;border:2px solid var(--accent);background:var(--accent);color:#fff;">⚙ Konfigurator</button>
+  <button id="mainTabRozm" onclick="switchMainTab('rozm')" style="flex:1;padding:10px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;border:2px solid var(--border);background:var(--surface2);color:var(--text);">📐 Rozmiarka</button>
+</div>
+
+<!-- SEKCJA KONFIGURATOR -->
+<div id="sectionKonfig">
 
   <!-- Lewa kolumna -->
   <div class="card">
@@ -247,9 +258,9 @@ tr:hover td{background:var(--surface2);}
     <select id="type" onchange="autoLogic()">
       <option>Dolna</option>
       <option>Dolna GOLA</option>
-      <option>WiszÄ…ca</option>
-      <option>Pod zmywarkÄ™</option>
-      <option>Pod lodÃ³wkÄ™</option>
+      <option>Wisz&#261;ca</option>
+      <option>Pod zmywark&#281;</option>
+      <option>Pod lod&#243;wk&#281;</option>
     </select>
 
     <label>Konstrukcja</label>
@@ -258,7 +269,7 @@ tr:hover td{background:var(--surface2);}
       <option>Szuflady</option>
     </select>
 
-    <label>IloÅ›Ä‡ frontÃ³w (tylko dla Drzwi)</label>
+    <label>Ilo&#347;&#263; front&#243;w (tylko dla Drzwi)</label>
     <select id="frontCount">
       <option value="1">1</option>
       <option value="2">2</option>
@@ -269,13 +280,13 @@ tr:hover td{background:var(--surface2);}
   <div class="card">
     <h3>Wymiary (mm)</h3>
 
-    <label>WysokoÅ›Ä‡</label>
+    <label>Wysoko&#347;&#263;</label>
     <input type="number" id="height" value="720" min="300" max="2400" oninput="updateDrawerSelectors()">
 
-    <label>SzerokoÅ›Ä‡</label>
+    <label>Szeroko&#347;&#263;</label>
     <input type="number" id="width" value="600" min="300" max="1200">
 
-    <label>GÅ‚Ä™bokoÅ›Ä‡</label>
+    <label>G&#322;&#281;boko&#347;&#263;</label>
     <input type="number" id="depth" value="560" min="200" max="800">
   </div>
 
@@ -305,10 +316,10 @@ tr:hover td{background:var(--surface2);}
     </div>
   </div>
 
-  <!-- Ukryte pole qty â€” sterowane przez przyciski -->
+  <!-- Ukryte pole qty — sterowane przez przyciski -->
   <input type="hidden" id="qty" value="3">
 
-  <label style="margin-top:12px;">UkÅ‚ad szuflad</label>
+  <label style="margin-top:12px;">Uk&#322;ad szuflad</label>
   <div id="layoutBtns" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
 
   <div id="frontHSum" style="margin-top:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:.78rem;font-family:'JetBrains Mono',monospace;border:1px solid var(--border);display:none;"></div>
@@ -316,28 +327,28 @@ tr:hover td{background:var(--surface2);}
   <div id="drawerSelectors" style="margin-top:12px;"></div>
 </div>
 
-<!-- WiszÄ…ca shelves -->
+<!-- Wisz&#261;ca shelves -->
 <div class="card" id="shelvesCard" style="margin-bottom:16px;display:none;">
-  <h3>PÃ³Å‚ki (WiszÄ…ca)</h3>
-  <label>IloÅ›Ä‡ pÃ³Å‚ek wewnÄ™trznych</label>
+  <h3>P&#243;&#322;ki (Wisz&#261;ca)</h3>
+  <label>Ilo&#347;&#263; p&#243;&#322;ek wewn&#281;trznych</label>
   <input type="number" id="shelfCount" value="1" min="0" max="6">
 </div>
 
 <div class="buttons">
-  <button class="btn-primary" onclick="calculate()">ðŸ”§ Oblicz</button>
-  <button class="btn-success" onclick="addModule()">âž• Dodaj moduÅ‚</button>
-  <button class="btn-secondary" onclick="showProject()">ðŸ“Š PokaÅ¼ projekt</button>
-  <button class="btn-danger" onclick="clearProject()">ðŸ—‘ WyczyÅ›Ä‡ projekt</button>
+  <button class="btn-primary" onclick="calculate()">🔧 Oblicz</button>
+  <button class="btn-success" onclick="addModule()">➕ Dodaj modu&#322;</button>
+  <button class="btn-secondary" onclick="showProject()">📊 Poka&#380; projekt</button>
+  <button class="btn-danger" onclick="clearProject()">🗑 Wyczy&#347;&#263; projekt</button>
 </div>
 
 <div id="result"></div>
 
 <div id="canvasWrap" class="result-card" style="display:none;margin-top:16px;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-    <h2 style="margin:0;">2D â€“ Widok</h2>
+    <h2 style="margin:0;">2D – Widok</h2>
     <div style="display:flex;gap:8px;">
-      <button class="btn-tab active" id="tabFront" onclick="switchView('front')">â¬œ PrzÃ³d</button>
-      <button class="btn-tab" id="tabSide"  onclick="switchView('side')">â—» Bok</button>
+      <button class="btn-tab active" id="tabFront" onclick="switchView('front')">⬜ Prz&#243;d</button>
+      <button class="btn-tab" id="tabSide"  onclick="switchView('side')">◻ Bok</button>
     </div>
   </div>
   <canvas id="corpusCanvas" style="width:100%;border-radius:6px;background:#0a0d14;display:block;"></canvas>
@@ -345,6 +356,44 @@ tr:hover td{background:var(--surface2);}
 </div>
 
 <div id="projectView"></div>
+
+</div><!-- /sectionKonfig -->
+
+<!-- SEKCJA ROZMIARKA -->
+<div id="sectionRozm" style="display:none;">
+
+  <div class="card">
+    <h3>📏 Rozmiarka boku</h3>
+    <p style="font-size:.75rem;color:var(--muted);margin-bottom:12px;">R&#1091;&#1083;&#1077;&#1090;&#1082;&#1072; od wie&#324;ca dolnego (0mm) do g&#243;rnego. Wpisz wymiary → dostaniesz list&#281; metek.</p>
+
+    <label>Wysoko&#347;&#263; formatki (boku)</label>
+    <input type="number" id="rm_height" value="760" min="300" max="2400" oninput="calcRozm()">
+
+    <label style="margin-top:14px;">Szuflady — wysoko&#347;ci front&#243;w (od do&#322;u, przez spacj&#281; lub przecinek)</label>
+    <input type="text" id="rm_drawers" placeholder="np. 304 304 141" oninput="calcRozm()"
+      style="width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.9rem;outline:none;">
+    <div id="rm_drawer_preview" style="font-size:.72rem;color:var(--muted);margin-top:4px;"></div>
+
+    <label style="margin-top:14px;">P&#243;&#322;ki — pozycje od wie&#324;ca dolnego (przez spacj&#281; lub przecinek)</label>
+    <input type="text" id="rm_shelves" placeholder="np. 200 400" oninput="calcRozm()"
+      style="width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.9rem;outline:none;">
+
+    <div class="grid2" style="margin-top:12px;gap:10px;">
+      <div>
+        <label>Zazor mi&#281;dzy frontami</label>
+        <input type="number" id="rm_gap_front" value="3" min="0" max="10" oninput="calcRozm()">
+      </div>
+      <div>
+        <label>Luz techniczny</label>
+        <input type="number" id="rm_gap_tech" value="9" min="0" max="20" oninput="calcRozm()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Wynik -->
+  <div id="rm_result"></div>
+
+</div><!-- /sectionRozm -->
 
 </div><!-- /container -->
 
@@ -367,35 +416,35 @@ function autoLogic(){
   const shelvesCard=document.getElementById("shelvesCard");
 
   // Typy bez szuflad
-  if(t==="WiszÄ…ca"||t==="Pod zmywarkÄ™"||t==="Pod lodÃ³wkÄ™"){
+  if(t==="Wisz&#261;ca"||t==="Pod zmywark&#281;"||t==="Pod lod&#243;wk&#281;"){
     cfgEl.value="Drzwi";
     cfgEl.disabled=true;
   } else {
     cfgEl.disabled=false;
   }
 
-  // Presets wymiarÃ³w
-  if(t==="WiszÄ…ca")     {heightEl.value=720;  depthEl.value=320;}
-  if(t==="Pod zmywarkÄ™"){heightEl.value=720;  depthEl.value=560;}
-  if(t==="Pod lodÃ³wkÄ™") {heightEl.value=2130; depthEl.value=600;}
+  // Presets wymiar&#243;w
+  if(t==="Wisz&#261;ca")     {heightEl.value=720;  depthEl.value=320;}
+  if(t==="Pod zmywark&#281;"){heightEl.value=720;  depthEl.value=560;}
+  if(t==="Pod lod&#243;wk&#281;") {heightEl.value=2130; depthEl.value=600;}
   if(t==="Dolna"||t==="Dolna GOLA"){heightEl.value=720;depthEl.value=560;}
 
-  // FIX: pokazuj sekcjÄ™ pÃ³Å‚ek tylko dla WiszÄ…ca
-  shelvesCard.style.display=(t==="WiszÄ…ca")?"block":"none";
+  // FIX: pokazuj sekcj&#281; p&#243;&#322;ek tylko dla Wisz&#261;ca
+  shelvesCard.style.display=(t==="Wisz&#261;ca")?"block":"none";
 
   updateDrawerSelectors();
 }
 
-/* ===== LAYOUT ÐŸÐ Ð•Ð¡Ð•Ð¢Ð˜ (ÐºÑ–Ð»ÑŒÐºÑ–ÑÑ‚ÑŒ + Ñ€Ð¾Ð·Ð¿Ð¾Ð´Ñ–Ð») ===== */
+/* ===== LAYOUT  ( + ) ===== */
 const LAYOUTS=[
   {id:"1",    label:"1",     qty:1, dist:"equal",  desc:"Jedna szuflada"},
-  {id:"2eq",  label:"2",     qty:2, dist:"equal",  desc:"2 rÃ³wne"},
-  {id:"3eq",  label:"3",     qty:3, dist:"equal",  desc:"3 rÃ³wne"},
-  {id:"2+1",  label:"2+1",   qty:3, dist:"2big1sm", desc:"2 duÅ¼e na dole + 1 maÅ‚a na gÃ³rze"},
-  {id:"1+2",  label:"1+2",   qty:3, dist:"1sm2big", desc:"1 maÅ‚a na gÃ³rze + 2 duÅ¼e na dole"},
-  {id:"4eq",  label:"4",     qty:4, dist:"equal",   desc:"4 rÃ³wne"},
-  {id:"2+2",  label:"2+2",   qty:4, dist:"2big2sm",  desc:"2 duÅ¼e + 2 maÅ‚e (maÅ‚e na dole)"},
-  {id:"3+1",  label:"3+1",   qty:4, dist:"3big1sm",  desc:"3 duÅ¼e + 1 maÅ‚a (maÅ‚a na dole)"},
+  {id:"2eq",  label:"2",     qty:2, dist:"equal",  desc:"2 r&#243;wne"},
+  {id:"3eq",  label:"3",     qty:3, dist:"equal",  desc:"3 r&#243;wne"},
+  {id:"2+1",  label:"2+1",   qty:3, dist:"2big1sm", desc:"2 du&#380;e na dole + 1 ma&#322;a na g&#243;rze"},
+  {id:"1+2",  label:"1+2",   qty:3, dist:"1sm2big", desc:"1 ma&#322;a na g&#243;rze + 2 du&#380;e na dole"},
+  {id:"4eq",  label:"4",     qty:4, dist:"equal",   desc:"4 r&#243;wne"},
+  {id:"2+2",  label:"2+2",   qty:4, dist:"2big2sm",  desc:"2 du&#380;e + 2 ma&#322;e (ma&#322;e na dole)"},
+  {id:"3+1",  label:"3+1",   qty:4, dist:"3big1sm",  desc:"3 du&#380;e + 1 ma&#322;a (ma&#322;a na dole)"},
 ];
 
 let activeLayout="3eq";
@@ -415,7 +464,7 @@ function renderLayoutButtons(){
       document.getElementById("qty").value=l.qty;
       renderLayoutButtons();
       updateDrawerSelectors();
-      // ÐÐ²Ñ‚Ð¾Ð¼Ð°Ñ‚Ð¸Ñ‡Ð½Ð¾ Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ¹ Ð²Ñ–Ð´Ð¿Ð¾Ð²Ñ–Ð´Ð½Ð¸Ð¹ dist-Ð¿Ñ€ÐµÑÐµÑ‚ Ð¿Ñ–ÑÐ»Ñ Ñ€ÐµÐ½Ð´ÐµÑ€Ñƒ
+      //    dist-  
       applyLayoutDist(l);
     };
     wrap.appendChild(btn);
@@ -433,22 +482,22 @@ function applyLayoutDist(layout){
     const eq=Math.floor(available/qty);
     heights=Array(qty-1).fill(eq).concat([available-(qty-1)*eq]);
   } else if(layout.dist==="2big1sm"){
-    // 2+1: Ð´Ð²Ñ– Ð²ÐµÐ»Ð¸ÐºÑ– Ð·Ð²ÐµÑ€Ñ…Ñƒ, Ð¼Ð°Ð»Ð° Ð·Ð½Ð¸Ð·Ñƒ
+    // 2+1:   ,  
     const sm=Math.max(100, Math.floor(available*0.16));
     const big=Math.floor((available-sm)/2);
-    heights=[big, big, sm]; // [Ð²ÐµÐ»Ð¸ÐºÐ°, Ð²ÐµÐ»Ð¸ÐºÐ°, Ð¼Ð°Ð»Ð° Ð·Ð½Ð¸Ð·Ñƒ]
+    heights=[big, big, sm]; // [, ,  ]
   } else if(layout.dist==="1sm2big"){
-    // 1+2: Ð¼Ð°Ð»Ð° Ð·Ð²ÐµÑ€Ñ…Ñƒ, Ð´Ð²Ñ– Ð²ÐµÐ»Ð¸ÐºÑ– Ð·Ð½Ð¸Ð·Ñƒ
+    // 1+2:  ,   
     const sm=Math.max(100, Math.floor(available*0.16));
     const big=Math.floor((available-sm)/2);
-    heights=[sm, big, available-sm-big]; // [Ð¼Ð°Ð»Ð°, Ð²ÐµÐ»Ð¸ÐºÐ°, Ð²ÐµÐ»Ð¸ÐºÐ°]
+    heights=[sm, big, available-sm-big]; // [, , ]
   } else if(layout.dist==="2big2sm"){
-    // 2+2: Ð²ÐµÐ»Ð¸ÐºÐ°+Ð²ÐµÐ»Ð¸ÐºÐ°+Ð¼Ð°Ð»Ð°+Ð¼Ð°Ð»Ð° (Ð¼Ð°Ð»Ñ– Ð·Ð½Ð¸Ð·Ñƒ)
+    // 2+2: +++ ( )
     const sm=Math.max(100, Math.floor(available*0.13));
     const big=Math.floor((available-sm*2)/2);
     heights=[big, big, sm, available-big*2-sm];
   } else if(layout.dist==="3big1sm"){
-    // 3+1: Ð²ÐµÐ»Ð¸ÐºÐ°+Ð²ÐµÐ»Ð¸ÐºÐ°+Ð²ÐµÐ»Ð¸ÐºÐ°+Ð¼Ð°Ð»Ð° (Ð¼Ð°Ð»Ð° Ð·Ð½Ð¸Ð·Ñƒ)
+    // 3+1: +++ ( )
     const sm=Math.max(100, Math.floor(available*0.13));
     const big=Math.floor((available-sm)/3);
     heights=[big, big, big, available-big*3];
@@ -461,7 +510,7 @@ function applyLayoutDist(layout){
   updateHeightSum();
 }
 
-/* ===== PÐ Ð•Ð¡Ð•Ð¢Ð˜ Ð ÐžÐ—ÐŸÐžÐ”Ð†Ð›Ð£ ===== */
+/* ===== P  ===== */
 function getPresets(qty, available){
   const a=available;
   const presets=[];
@@ -472,35 +521,35 @@ function getPresets(qty, available){
 
   if(qty===2){
     const eq=Math.floor(a/2);
-    presets.push({label:"2 rÃ³wne", heights:[eq, a-eq]});
+    presets.push({label:"2 r&#243;wne", heights:[eq, a-eq]});
     const big=Math.floor(a*0.67), small=a-big;
-    if(small>=100) presets.push({label:"DuÅ¼a + maÅ‚a", heights:[big, small]});
+    if(small>=100) presets.push({label:"Du&#380;a + ma&#322;a", heights:[big, small]});
   }
 
   if(qty===3){
     const eq=Math.floor(a/3);
-    presets.push({label:"3 rÃ³wne", heights:[eq, eq, a-eq*2]});
-    // 2 duÅ¼e + 1 maÅ‚a (maÅ‚a na gÃ³rze = szuflada 1)
+    presets.push({label:"3 r&#243;wne", heights:[eq, eq, a-eq*2]});
+    // 2 du&#380;e + 1 ma&#322;a (ma&#322;a na g&#243;rze = szuflada 1)
     const big=Math.floor(a*0.42), small=a-big*2;
-    if(small>=100 && big>=100) presets.push({label:"2 duÅ¼e + maÅ‚a", heights:[big, big, small]});
-    // 1 maÅ‚a + 2 duÅ¼e (maÅ‚a na dole = szuflada 1)
+    if(small>=100 && big>=100) presets.push({label:"2 du&#380;e + ma&#322;a", heights:[big, big, small]});
+    // 1 ma&#322;a + 2 du&#380;e (ma&#322;a na dole = szuflada 1)
     const big2=Math.floor((a-small)/2);
-    if(small>=100 && big2>=100) presets.push({label:"MaÅ‚a + 2 duÅ¼e", heights:[small, big2, a-small-big2]});
+    if(small>=100 && big2>=100) presets.push({label:"Ma&#322;a + 2 du&#380;e", heights:[small, big2, a-small-big2]});
   }
 
   if(qty===4){
     const eq=Math.floor(a/4);
-    presets.push({label:"4 rÃ³wne", heights:[eq,eq,eq,a-eq*3]});
+    presets.push({label:"4 r&#243;wne", heights:[eq,eq,eq,a-eq*3]});
     const big=Math.floor(a*0.3), small=Math.floor((a-big*2)/2);
-    if(small>=100&&big>=100) presets.push({label:"2Ã—duÅ¼e + 2Ã—maÅ‚e", heights:[small,small,big,a-small*2-big]});
+    if(small>=100&&big>=100) presets.push({label:"2×du&#380;e + 2×ma&#322;e", heights:[small,small,big,a-small*2-big]});
   }
 
   if(qty>=5){
     const eq=Math.floor(a/qty);
-    presets.push({label:`${qty} rÃ³wnych`, heights:Array(qty-1).fill(eq).concat([a-(qty-1)*eq])});
+    presets.push({label:`${qty} r&#243;wnych`, heights:Array(qty-1).fill(eq).concat([a-(qty-1)*eq])});
   }
 
-  // Zawsze dodaj "WÅ‚asny" jako reset do auto
+  // Zawsze dodaj "W&#322;asny" jako reset do auto
   return presets;
 }
 
@@ -534,29 +583,29 @@ function updateDrawerSelectors(){
   const available=H-golaOffset-4-((qty-1)*3);
   const autoFrontH=Math.max(100, Math.floor(available/qty));
 
-  // === ÐŸÐ Ð•Ð¡Ð•Ð¢Ð˜ Ð¢Ð˜ÐŸÐ†Ð’ (D-D-M Ñ– Ñ‚.Ð´.) ===
+  // ===   (D-D-M  ..) ===
   const typeKeys=Object.keys(systemData[system].types);
   const typePresets=[];
 
-  // Ð“ÐµÐ½ÐµÑ€ÑƒÑ”Ð¼Ð¾ ÐºÐ¾Ð¼Ð±Ñ–Ð½Ð°Ñ†Ñ–Ñ—: Ð²ÑÑ– Ð¾Ð´Ð½Ð°ÐºÐ¾Ð²Ñ– + Ð·Ð¼Ñ–ÑˆÐ°Ð½Ñ–
+  //  :   + 
   if(qty===1){
     typeKeys.forEach(t=>typePresets.push({label:t, types:[t]}));
   } else if(qty===2){
     typeKeys.forEach(t=>typePresets.push({label:`${t}-${t}`, types:[t,t]}));
-    // Ð Ñ–Ð·Ð½Ñ–: Ð¿ÐµÑ€ÑˆÐ¸Ð¹ Ð±Ñ–Ð»ÑŒÑˆÐ¸Ð¹ + Ð´Ñ€ÑƒÐ³Ð¸Ð¹ Ð¼ÐµÐ½ÑˆÐ¸Ð¹
+    // :   +  
     for(let a=0;a<typeKeys.length;a++)
       for(let b=a+1;b<typeKeys.length;b++)
         typePresets.push({label:`${typeKeys[a]}-${typeKeys[b]}`, types:[typeKeys[a],typeKeys[b]]});
   } else if(qty===3){
     typeKeys.forEach(t=>typePresets.push({label:`${t}-${t}-${t}`, types:[t,t,t]}));
-    // 2 Ð²ÐµÐ»Ð¸ÐºÐ¸Ñ… + 1 Ð¼Ð°Ð»Ð¸Ð¹ (Ð¼Ð°Ð»Ð¸Ð¹ Ð·Ð²ÐµÑ€Ñ…Ñƒ = szuflada 1)
+    // 2  + 1  (  = szuflada 1)
     for(let big=typeKeys.length-1;big>0;big--)
       for(let sm=0;sm<big;sm++)
         typePresets.push({label:`${typeKeys[big]}-${typeKeys[big]}-${typeKeys[sm]}`, types:[typeKeys[big],typeKeys[big],typeKeys[sm]]});
   } else if(qty===4){
-    typeKeys.forEach(t=>typePresets.push({label:`${t}Ã—4`, types:[t,t,t,t]}));
+    typeKeys.forEach(t=>typePresets.push({label:`${t}×4`, types:[t,t,t,t]}));
     for(let big=typeKeys.length-1;big>0;big--)
-      typePresets.push({label:`${typeKeys[big]}Ã—3+${typeKeys[0]}`, types:[typeKeys[big],typeKeys[big],typeKeys[big],typeKeys[0]]});
+      typePresets.push({label:`${typeKeys[big]}×3+${typeKeys[0]}`, types:[typeKeys[big],typeKeys[big],typeKeys[big],typeKeys[0]]});
   }
 
   if(typePresets.length>0){
@@ -574,54 +623,4 @@ function updateDrawerSelectors(){
       btn.className="type-preset-btn";
       btn.textContent=p.label;
       const isFirst=idx===0;
-      btn.style.cssText=`padding:5px 11px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-weight:600;font-size:.75rem;cursor:pointer;transition:all .15s;border:1px solid ${isFirst?"var(--accent2)":"var(--border)"};background:${isFirst?"rgba(247,193,79,.15)":"var(--surface2)"};color:${isFirst?"var(--accent2)":"var(--muted)"};`;
-      btn.onclick=()=>{
-        document.querySelectorAll('.type-preset-btn').forEach(b=>{
-          b.style.background='var(--surface2)';
-          b.style.color='var(--muted)';
-          b.style.borderColor='var(--border)';
-        });
-        btn.style.background='rgba(247,193,79,.15)';
-        btn.style.color='var(--accent2)';
-        btn.style.borderColor='var(--accent2)';
-        p.types.forEach((t,i)=>{
-          const sel=document.getElementById("drawerType_"+(i+1));
-          if(sel) sel.value=t;
-        });
-      };
-      tpRow.appendChild(btn);
-    });
-    container.appendChild(tpRow);
-  }
-
-  // === POLA SZUFLAD ===
-  for(let i=1;i<=qty;i++){
-    const numOd=qty-i+1;
-    const div=document.createElement("div");
-    div.className="drawer-block";
-    div.innerHTML=`<strong>Szuflada ${i} <span style="color:var(--muted);font-weight:400;font-size:.72rem;">(od do\u0142u: ${numOd})</span></strong>`;
-
-    const row=document.createElement("div");
-    row.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;align-items:center;";
-
-    const sel=document.createElement("select");
-    sel.id="drawerType_"+i;
-    sel.style.cssText="padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Syne',sans-serif;font-size:.82rem;";
-    for(const t in systemData[system].types){
-      const opt=document.createElement("option");
-      opt.value=t;
-      opt.text=`${t} (${systemData[system].types[t]}mm)`;
-      sel.appendChild(opt);
-    }
-    row.appendChild(sel);
-
-    const inp=document.createElement("input");
-    inp.type="number";
-    inp.id="drawerFrontH_"+i;
-    inp.min=100; inp.max=400;
-    inp.value=autoFrontH;
-    inp.placeholder=`${autoFrontH} mm`;
-    inp.style.cssText="padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.82rem;";
-    inp.title="Wysoko\u015b\u0107 frontu (mm)";
-    inp.oninput=updateHeightSum;
-    row.appendChild(inp);
+      btn.style.cssText=`padding:5px 11
