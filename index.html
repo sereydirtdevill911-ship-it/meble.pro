@@ -3,345 +3,625 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Konfigurator PRO – R2.3.1 SAFE PATCH</title>
-
+<title>Konfigurator PRO â€“ R2.4.2</title>
 <style>
-body{font-family:Arial;background:#eef1f5;margin:0;padding:20px;}
-.container{max-width:1200px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
-h1{background:#1f2d3d;color:white;padding:15px;border-radius:8px;text-align:center;}
-label{font-weight:bold;}
-select,input{width:100%;padding:8px;margin:6px 0 14px;border-radius:6px;border:1px solid #ccc;}
-button{width:100%;padding:10px;margin-top:8px;border:none;border-radius:6px;font-weight:bold;color:white;cursor:pointer;}
-.primary{background:#2f5bd3;}
-.secondary{background:#666;}
-.danger{background:#c0392b;}
-table{width:100%;border-collapse:collapse;margin-top:15px;}
-th,td{border:1px solid #ddd;padding:6px;text-align:left;font-size:14px;}
-th{background:#f0f0f0;}
-.warning{color:red;font-weight:bold;}
-.drawerBlock{background:#f7f7f7;padding:8px;margin-bottom:8px;border-radius:6px;}
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700&display=swap');
+
+:root{
+  --bg:#0f1117;
+  --surface:#1a1d27;
+  --surface2:#22263a;
+  --border:#2e3350;
+  --accent:#4f8ef7;
+  --accent2:#f7c14f;
+  --danger:#f74f4f;
+  --success:#4ff7a0;
+  --text:#e8ecf5;
+  --muted:#7a829e;
+  --radius:8px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  font-family:'Syne',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  padding:24px 16px;
+}
+
+.container{
+  max-width:960px;
+  margin:auto;
+}
+
+h1{
+  font-size:1.4rem;
+  font-weight:700;
+  letter-spacing:.04em;
+  color:var(--text);
+  padding:18px 22px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  margin-bottom:20px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+h1 span.badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem;
+  background:var(--accent);
+  color:#fff;
+  padding:3px 8px;
+  border-radius:4px;
+  letter-spacing:.06em;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:16px;
+}
+
+@media(max-width:640px){.grid{grid-template-columns:1fr;}}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px 18px;
+}
+
+.card h3{
+  font-size:.75rem;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--muted);
+  margin-bottom:14px;
+}
+
+label{
+  display:block;
+  font-size:.78rem;
+  color:var(--muted);
+  margin-bottom:5px;
+  margin-top:12px;
+  letter-spacing:.04em;
+}
+
+label:first-of-type{margin-top:0;}
+
+select,input[type=number]{
+  width:100%;
+  padding:9px 12px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  color:var(--text);
+  font-family:'Syne',sans-serif;
+  font-size:.85rem;
+  outline:none;
+  transition:border-color .2s;
+}
+
+select:focus,input:focus{border-color:var(--accent);}
+
+.buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+  margin-top:16px;
+}
+
+button{
+  padding:11px 14px;
+  border:none;
+  border-radius:6px;
+  font-family:'Syne',sans-serif;
+  font-weight:600;
+  font-size:.82rem;
+  cursor:pointer;
+  transition:opacity .2s,transform .1s;
+  letter-spacing:.03em;
+}
+
+button:hover{opacity:.88;}
+button:active{transform:scale(.98);}
+
+.btn-primary{background:var(--accent);color:#fff;grid-column:1/-1;}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-success{background:var(--success);color:#0f1117;}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-view-active{background:var(--accent2)!important;color:#0f1117!important;}
+
+.drawer-block{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:10px 12px;
+  margin-bottom:8px;
+}
+
+.drawer-block strong{
+  font-size:.78rem;
+  color:var(--accent2);
+}
+
+/* Result */
+.result-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  margin-top:16px;
+}
+
+.result-card h2{
+  font-size:.9rem;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--muted);
+  margin-bottom:14px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;
+}
+
+th{
+  background:var(--surface2);
+  color:var(--muted);
+  padding:8px 10px;
+  text-align:left;
+  font-size:.72rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  border-bottom:1px solid var(--border);
+}
+
+td{
+  padding:7px 10px;
+  border-bottom:1px solid var(--border);
+  color:var(--text);
+}
+
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+
+.warn{
+  background:rgba(247,79,79,.12);
+  border:1px solid var(--danger);
+  border-radius:6px;
+  padding:12px 14px;
+  color:var(--danger);
+  font-size:.85rem;
+  font-weight:600;
+  margin-top:12px;
+}
+
+.warn::before{content:"âš  ";}
+
+.info-row td:first-child{color:var(--accent2);}
+
+#drawerSection{display:none;}
+
+.btn-tab{
+  padding:6px 14px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  color:var(--muted);
+  font-family:'Syne',sans-serif;
+  font-size:.75rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .2s;
+}
+.btn-tab.active{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fff;
+}
 </style>
 </head>
 <body>
-
 <div class="container">
-<h1>Konfigurator PRO – R2.3.1 SAFE PATCH</h1>
 
-<label>Typ korpusu</label>
-<select id="type" onchange="autoLogic()">
-<option>Dolna</option>
-<option>Dolna GOLA</option>
-<option>Wisząca</option>
-<option>Pod zmywarkę</option>
-<option>Pod lodówkę</option>
-</select>
+<h1>Konfigurator PRO <span class="badge">R2.5.0 + 2D</span></h1>
 
-<label>Konstrukcja</label>
-<select id="config" onchange="updateDrawerSelectors()">
-<option>Drzwi</option>
-<option>Szuflady</option>
-</select>
+<div class="grid">
 
-<label>Ilość frontów (Drzwi)</label>
-<select id="frontCount">
-<option value="1">1</option>
-<option value="2">2</option>
-</select>
+  <!-- Lewa kolumna -->
+  <div class="card">
+    <h3>Typ szafy</h3>
 
-<label>System szuflad</label>
-<select id="system" onchange="updateDrawerSelectors()">
-<option>Antaro</option>
-<option>Tandembox</option>
-<option>Merivobox</option>
-<option>Legrabox</option>
-</select>
+    <label>Typ korpusu</label>
+    <select id="type" onchange="autoLogic()">
+      <option>Dolna</option>
+      <option>Dolna GOLA</option>
+      <option>WiszÄ…ca</option>
+      <option>Pod zmywarkÄ™</option>
+      <option>Pod lodÃ³wkÄ™</option>
+    </select>
 
-<label>Ilość szuflad</label>
-<input type="number" id="qty" value="3" min="1" max="8" onchange="updateDrawerSelectors()">
+    <label>Konstrukcja</label>
+    <select id="config" onchange="updateDrawerSelectors()">
+      <option>Drzwi</option>
+      <option>Szuflady</option>
+    </select>
 
-<div id="drawerSelectors"></div>
+    <label>IloÅ›Ä‡ frontÃ³w (tylko dla Drzwi)</label>
+    <select id="frontCount">
+      <option value="1">1</option>
+      <option value="2">2</option>
+    </select>
+  </div>
 
-<label>Wysokość (mm)</label>
-<input type="number" id="height" value="720">
+  <!-- Prawa kolumna -->
+  <div class="card">
+    <h3>Wymiary (mm)</h3>
 
-<label>Szerokość (mm)</label>
-<input type="number" id="width" value="600">
+    <label>WysokoÅ›Ä‡</label>
+    <input type="number" id="height" value="720" min="300" max="2400" oninput="updateDrawerSelectors()">
 
-<label>Głębokość (mm)</label>
-<input type="number" id="depth" value="560">
+    <label>SzerokoÅ›Ä‡</label>
+    <input type="number" id="width" value="600" min="300" max="1200">
 
-<label>Prowadnica</label>
-<select id="runner">
-<option>450</option>
-<option selected>500</option>
-<option>550</option>
-</select>
+    <label>GÅ‚Ä™bokoÅ›Ä‡</label>
+    <input type="number" id="depth" value="560" min="200" max="800">
+  </div>
 
-<button class="primary" onclick="calculate()">Oblicz</button>
-<button class="secondary" onclick="addModule()">➕ Dodaj moduł</button>
-<button class="secondary" onclick="showProject()">📊 Pokaż projekt</button>
-<button class="danger" onclick="clearProject()">🗑 Wyczyść projekt</button>
-
-<div id="result"></div>
-<div id="projectView"></div>
 </div>
 
-<script>
+<!-- Szuflady section -->
+<div class="card" id="drawerSection" style="margin-bottom:16px;">
+  <h3>Szuflady</h3>
 
+  <div class="grid">
+    <div>
+      <label>System szuflad</label>
+      <select id="system" onchange="updateDrawerSelectors()">
+        <option>Antaro</option>
+        <option>Tandembox</option>
+        <option>Merivobox</option>
+        <option>Legrabox</option>
+      </select>
+    </div>
+    <div>
+      <label>Prowadnica (mm)</label>
+      <select id="runner">
+        <option>450</option>
+        <option selected>500</option>
+        <option>550</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Ukryte pole qty â€” sterowane przez przyciski -->
+  <input type="hidden" id="qty" value="3">
+
+  <label style="margin-top:12px;">UkÅ‚ad szuflad</label>
+  <div id="layoutBtns" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+
+  <div id="frontHSum" style="margin-top:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:.78rem;font-family:'JetBrains Mono',monospace;border:1px solid var(--border);display:none;"></div>
+
+  <div id="drawerSelectors" style="margin-top:12px;"></div>
+</div>
+
+<!-- WiszÄ…ca shelves -->
+<div class="card" id="shelvesCard" style="margin-bottom:16px;display:none;">
+  <h3>PÃ³Å‚ki (WiszÄ…ca)</h3>
+  <label>IloÅ›Ä‡ pÃ³Å‚ek wewnÄ™trznych</label>
+  <input type="number" id="shelfCount" value="1" min="0" max="6">
+</div>
+
+<div class="buttons">
+  <button class="btn-primary" onclick="calculate()">ðŸ”§ Oblicz</button>
+  <button class="btn-success" onclick="addModule()">âž• Dodaj moduÅ‚</button>
+  <button class="btn-secondary" onclick="showProject()">ðŸ“Š PokaÅ¼ projekt</button>
+  <button class="btn-danger" onclick="clearProject()">ðŸ—‘ WyczyÅ›Ä‡ projekt</button>
+</div>
+
+<div id="result"></div>
+
+<div id="canvasWrap" class="result-card" style="display:none;margin-top:16px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <h2 style="margin:0;">2D â€“ Widok</h2>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-tab active" id="tabFront" onclick="switchView('front')">â¬œ PrzÃ³d</button>
+      <button class="btn-tab" id="tabSide"  onclick="switchView('side')">â—» Bok</button>
+    </div>
+  </div>
+  <canvas id="corpusCanvas" style="width:100%;border-radius:6px;background:#0a0d14;display:block;"></canvas>
+  <div id="canvasLegend" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--muted);"></div>
+</div>
+
+<div id="projectView"></div>
+
+</div><!-- /container -->
+
+<script>
 const systemData={
-Antaro:{types:{N:68,M:84,C:148,D:196},offset:38,minWidth:300},
-Tandembox:{types:{N:68,M:84,C:148,D:196},offset:38,minWidth:300},
-Merivobox:{types:{E:90,M:130,K:180,H:250},offset:42,minWidth:350},
-Legrabox:{types:{N:66,M:90,C:177,F:241},offset:38,minWidth:300}
+  Antaro:   {types:{N:68,M:84,C:148,D:196}, offset:38, minWidth:300},
+  Tandembox:{types:{N:68,M:84,C:148,D:196}, offset:38, minWidth:300},
+  Merivobox:{types:{E:90,M:130,K:180,H:250},offset:42, minWidth:350},
+  Legrabox: {types:{N:66,M:90,C:177,F:241}, offset:38, minWidth:300}
 };
 
 let project=[];
 
+/* ===== AUTO LOGIC ===== */
 function autoLogic(){
-let t=type.value;
+  const t=document.getElementById("type").value;
+  const cfgEl=document.getElementById("config");
+  const heightEl=document.getElementById("height");
+  const depthEl=document.getElementById("depth");
+  const shelvesCard=document.getElementById("shelvesCard");
 
-if(t==="Wisząca"||t==="Pod zmywarkę"||t==="Pod lodówkę"){
-config.value="Drzwi";
-config.disabled=true;
-}else config.disabled=false;
+  // Typy bez szuflad
+  if(t==="WiszÄ…ca"||t==="Pod zmywarkÄ™"||t==="Pod lodÃ³wkÄ™"){
+    cfgEl.value="Drzwi";
+    cfgEl.disabled=true;
+  } else {
+    cfgEl.disabled=false;
+  }
 
-if(t==="Wisząca"){height.value=720;depth.value=320;}
-if(t==="Pod zmywarkę"){height.value=720;depth.value=560;}
-if(t==="Pod lodówkę"){height.value=2130;depth.value=600;}
+  // Presets wymiarÃ³w
+  if(t==="WiszÄ…ca")     {heightEl.value=720;  depthEl.value=320;}
+  if(t==="Pod zmywarkÄ™"){heightEl.value=720;  depthEl.value=560;}
+  if(t==="Pod lodÃ³wkÄ™") {heightEl.value=2130; depthEl.value=600;}
+  if(t==="Dolna"||t==="Dolna GOLA"){heightEl.value=720;depthEl.value=560;}
 
-updateDrawerSelectors();
+  // FIX: pokazuj sekcjÄ™ pÃ³Å‚ek tylko dla WiszÄ…ca
+  shelvesCard.style.display=(t==="WiszÄ…ca")?"block":"none";
+
+  updateDrawerSelectors();
 }
 
+/* ===== LAYOUT ÐŸÐ Ð•Ð¡Ð•Ð¢Ð˜ (ÐºÑ–Ð»ÑŒÐºÑ–ÑÑ‚ÑŒ + Ñ€Ð¾Ð·Ð¿Ð¾Ð´Ñ–Ð») ===== */
+const LAYOUTS=[
+  {id:"1",    label:"1",     qty:1, dist:"equal",  desc:"Jedna szuflada"},
+  {id:"2eq",  label:"2",     qty:2, dist:"equal",  desc:"2 rÃ³wne"},
+  {id:"3eq",  label:"3",     qty:3, dist:"equal",  desc:"3 rÃ³wne"},
+  {id:"2+1",  label:"2+1",   qty:3, dist:"2big1sm", desc:"2 duÅ¼e na dole + 1 maÅ‚a na gÃ³rze"},
+  {id:"1+2",  label:"1+2",   qty:3, dist:"1sm2big", desc:"1 maÅ‚a na gÃ³rze + 2 duÅ¼e na dole"},
+  {id:"4eq",  label:"4",     qty:4, dist:"equal",   desc:"4 rÃ³wne"},
+  {id:"2+2",  label:"2+2",   qty:4, dist:"2big2sm",  desc:"2 duÅ¼e + 2 maÅ‚e (maÅ‚e na dole)"},
+  {id:"3+1",  label:"3+1",   qty:4, dist:"3big1sm",  desc:"3 duÅ¼e + 1 maÅ‚a (maÅ‚a na dole)"},
+];
+
+let activeLayout="3eq";
+
+function renderLayoutButtons(){
+  const wrap=document.getElementById("layoutBtns");
+  if(!wrap) return;
+  wrap.innerHTML="";
+  LAYOUTS.forEach(l=>{
+    const btn=document.createElement("button");
+    btn.textContent=l.label;
+    btn.title=l.desc;
+    const isActive=l.id===activeLayout;
+    btn.style.cssText=`padding:8px 16px;border-radius:6px;font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .15s;border:2px solid ${isActive?"var(--accent)":"var(--border)"};background:${isActive?"var(--accent)":"var(--surface2)"};color:${isActive?"#fff":"var(--text)"};`;
+    btn.onclick=()=>{
+      activeLayout=l.id;
+      document.getElementById("qty").value=l.qty;
+      renderLayoutButtons();
+      updateDrawerSelectors();
+      // ÐÐ²Ñ‚Ð¾Ð¼Ð°Ñ‚Ð¸Ñ‡Ð½Ð¾ Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ¹ Ð²Ñ–Ð´Ð¿Ð¾Ð²Ñ–Ð´Ð½Ð¸Ð¹ dist-Ð¿Ñ€ÐµÑÐµÑ‚ Ð¿Ñ–ÑÐ»Ñ Ñ€ÐµÐ½Ð´ÐµÑ€Ñƒ
+      applyLayoutDist(l);
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function applyLayoutDist(layout){
+  const H=parseInt(document.getElementById("height").value)||720;
+  const golaOffset=(document.getElementById("type").value==="Dolna GOLA")?50:0;
+  const qty=layout.qty;
+  const available=H-golaOffset-4-((qty-1)*3);
+
+  let heights=[];
+  if(layout.dist==="equal"){
+    const eq=Math.floor(available/qty);
+    heights=Array(qty-1).fill(eq).concat([available-(qty-1)*eq]);
+  } else if(layout.dist==="2big1sm"){
+    // 2+1: Ð´Ð²Ñ– Ð²ÐµÐ»Ð¸ÐºÑ– Ð·Ð²ÐµÑ€Ñ…Ñƒ, Ð¼Ð°Ð»Ð° Ð·Ð½Ð¸Ð·Ñƒ
+    const sm=Math.max(100, Math.floor(available*0.16));
+    const big=Math.floor((available-sm)/2);
+    heights=[big, big, sm]; // [Ð²ÐµÐ»Ð¸ÐºÐ°, Ð²ÐµÐ»Ð¸ÐºÐ°, Ð¼Ð°Ð»Ð° Ð·Ð½Ð¸Ð·Ñƒ]
+  } else if(layout.dist==="1sm2big"){
+    // 1+2: Ð¼Ð°Ð»Ð° Ð·Ð²ÐµÑ€Ñ…Ñƒ, Ð´Ð²Ñ– Ð²ÐµÐ»Ð¸ÐºÑ– Ð·Ð½Ð¸Ð·Ñƒ
+    const sm=Math.max(100, Math.floor(available*0.16));
+    const big=Math.floor((available-sm)/2);
+    heights=[sm, big, available-sm-big]; // [Ð¼Ð°Ð»Ð°, Ð²ÐµÐ»Ð¸ÐºÐ°, Ð²ÐµÐ»Ð¸ÐºÐ°]
+  } else if(layout.dist==="2big2sm"){
+    // 2+2: Ð²ÐµÐ»Ð¸ÐºÐ°+Ð²ÐµÐ»Ð¸ÐºÐ°+Ð¼Ð°Ð»Ð°+Ð¼Ð°Ð»Ð° (Ð¼Ð°Ð»Ñ– Ð·Ð½Ð¸Ð·Ñƒ)
+    const sm=Math.max(100, Math.floor(available*0.13));
+    const big=Math.floor((available-sm*2)/2);
+    heights=[big, big, sm, available-big*2-sm];
+  } else if(layout.dist==="3big1sm"){
+    // 3+1: Ð²ÐµÐ»Ð¸ÐºÐ°+Ð²ÐµÐ»Ð¸ÐºÐ°+Ð²ÐµÐ»Ð¸ÐºÐ°+Ð¼Ð°Ð»Ð° (Ð¼Ð°Ð»Ð° Ð·Ð½Ð¸Ð·Ñƒ)
+    const sm=Math.max(100, Math.floor(available*0.13));
+    const big=Math.floor((available-sm)/3);
+    heights=[big, big, big, available-big*3];
+  }
+
+  heights.forEach((h,i)=>{
+    const el=document.getElementById("drawerFrontH_"+(i+1));
+    if(el) el.value=Math.max(100,h);
+  });
+  updateHeightSum();
+}
+
+/* ===== PÐ Ð•Ð¡Ð•Ð¢Ð˜ Ð ÐžÐ—ÐŸÐžÐ”Ð†Ð›Ð£ ===== */
+function getPresets(qty, available){
+  const a=available;
+  const presets=[];
+
+  if(qty===1){
+    presets.push({label:"1 szuflada", heights:[a]});
+  }
+
+  if(qty===2){
+    const eq=Math.floor(a/2);
+    presets.push({label:"2 rÃ³wne", heights:[eq, a-eq]});
+    const big=Math.floor(a*0.67), small=a-big;
+    if(small>=100) presets.push({label:"DuÅ¼a + maÅ‚a", heights:[big, small]});
+  }
+
+  if(qty===3){
+    const eq=Math.floor(a/3);
+    presets.push({label:"3 rÃ³wne", heights:[eq, eq, a-eq*2]});
+    // 2 duÅ¼e + 1 maÅ‚a (maÅ‚a na gÃ³rze = szuflada 1)
+    const big=Math.floor(a*0.42), small=a-big*2;
+    if(small>=100 && big>=100) presets.push({label:"2 duÅ¼e + maÅ‚a", heights:[big, big, small]});
+    // 1 maÅ‚a + 2 duÅ¼e (maÅ‚a na dole = szuflada 1)
+    const big2=Math.floor((a-small)/2);
+    if(small>=100 && big2>=100) presets.push({label:"MaÅ‚a + 2 duÅ¼e", heights:[small, big2, a-small-big2]});
+  }
+
+  if(qty===4){
+    const eq=Math.floor(a/4);
+    presets.push({label:"4 rÃ³wne", heights:[eq,eq,eq,a-eq*3]});
+    const big=Math.floor(a*0.3), small=Math.floor((a-big*2)/2);
+    if(small>=100&&big>=100) presets.push({label:"2Ã—duÅ¼e + 2Ã—maÅ‚e", heights:[small,small,big,a-small*2-big]});
+  }
+
+  if(qty>=5){
+    const eq=Math.floor(a/qty);
+    presets.push({label:`${qty} rÃ³wnych`, heights:Array(qty-1).fill(eq).concat([a-(qty-1)*eq])});
+  }
+
+  // Zawsze dodaj "WÅ‚asny" jako reset do auto
+  return presets;
+}
+
+function applyPreset(heights){
+  heights.forEach((h,i)=>{
+    const el=document.getElementById("drawerFrontH_"+(i+1));
+    if(el) el.value=h;
+  });
+  // Highlight active preset
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('preset-active'));
+  event.target.classList.add('preset-active');
+  updateHeightSum();
+}
+
+/* ===== SZUFLADY SELECTORS ===== */
 function updateDrawerSelectors(){
-drawerSelectors.innerHTML="";
-if(config.value!=="Szuflady") return;
+  const config=document.getElementById("config").value;
+  const drawerSection=document.getElementById("drawerSection");
+  const qty=parseInt(document.getElementById("qty").value)||3;
+  const system=document.getElementById("system").value;
+  const container=document.getElementById("drawerSelectors");
 
-let sys=system.value;
-for(let i=1;i<=qty.value;i++){
-let div=document.createElement("div");
-div.className="drawerBlock";
-div.innerHTML="<strong>Szuflada "+i+"</strong><br>";
-let select=document.createElement("select");
-select.id="drawerType_"+i;
-for(let t in systemData[sys].types){
-let opt=document.createElement("option");
-opt.value=t;
-opt.text=t+" ("+systemData[sys].types[t]+" mm)";
-select.appendChild(opt);
-}
-div.appendChild(select);
-drawerSelectors.appendChild(div);
-}
-}
+  drawerSection.style.display=(config==="Szuflady")?"block":"none";
+  container.innerHTML="";
+  if(config!=="Szuflady") return;
 
-/* ===== SAFE FIXED CORE ===== */
+  renderLayoutButtons();
 
-function generateModuleData(cfg){
+  const H=parseInt(document.getElementById("height").value)||720;
+  const golaOffset=(document.getElementById("type").value==="Dolna GOLA")?50:0;
+  const available=H-golaOffset-4-((qty-1)*3);
+  const autoFrontH=Math.max(100, Math.floor(available/qty));
 
-let parts=[];
-let runners=[];
-let light=cfg.width-36;
-let golaOffset=(cfg.type==="Dolna GOLA")?50:0;
+  // === ÐŸÐ Ð•Ð¡Ð•Ð¢Ð˜ Ð¢Ð˜ÐŸÐ†Ð’ (D-D-M Ñ– Ñ‚.Ð´.) ===
+  const typeKeys=Object.keys(systemData[system].types);
+  const typePresets=[];
 
-/* GLOBAL SAFETY */
+  // Ð“ÐµÐ½ÐµÑ€ÑƒÑ”Ð¼Ð¾ ÐºÐ¾Ð¼Ð±Ñ–Ð½Ð°Ñ†Ñ–Ñ—: Ð²ÑÑ– Ð¾Ð´Ð½Ð°ÐºÐ¾Ð²Ñ– + Ð·Ð¼Ñ–ÑˆÐ°Ð½Ñ–
+  if(qty===1){
+    typeKeys.forEach(t=>typePresets.push({label:t, types:[t]}));
+  } else if(qty===2){
+    typeKeys.forEach(t=>typePresets.push({label:`${t}-${t}`, types:[t,t]}));
+    // Ð Ñ–Ð·Ð½Ñ–: Ð¿ÐµÑ€ÑˆÐ¸Ð¹ Ð±Ñ–Ð»ÑŒÑˆÐ¸Ð¹ + Ð´Ñ€ÑƒÐ³Ð¸Ð¹ Ð¼ÐµÐ½ÑˆÐ¸Ð¹
+    for(let a=0;a<typeKeys.length;a++)
+      for(let b=a+1;b<typeKeys.length;b++)
+        typePresets.push({label:`${typeKeys[a]}-${typeKeys[b]}`, types:[typeKeys[a],typeKeys[b]]});
+  } else if(qty===3){
+    typeKeys.forEach(t=>typePresets.push({label:`${t}-${t}-${t}`, types:[t,t,t]}));
+    // 2 Ð²ÐµÐ»Ð¸ÐºÐ¸Ñ… + 1 Ð¼Ð°Ð»Ð¸Ð¹ (Ð¼Ð°Ð»Ð¸Ð¹ Ð·Ð²ÐµÑ€Ñ…Ñƒ = szuflada 1)
+    for(let big=typeKeys.length-1;big>0;big--)
+      for(let sm=0;sm<big;sm++)
+        typePresets.push({label:`${typeKeys[big]}-${typeKeys[big]}-${typeKeys[sm]}`, types:[typeKeys[big],typeKeys[big],typeKeys[sm]]});
+  } else if(qty===4){
+    typeKeys.forEach(t=>typePresets.push({label:`${t}Ã—4`, types:[t,t,t,t]}));
+    for(let big=typeKeys.length-1;big>0;big--)
+      typePresets.push({label:`${typeKeys[big]}Ã—3+${typeKeys[0]}`, types:[typeKeys[big],typeKeys[big],typeKeys[big],typeKeys[0]]});
+  }
 
-if(cfg.width < 300 || cfg.width > 1200)
-throw "Szerokość 300–1200 mm";
+  if(typePresets.length>0){
+    const tpLabel=document.createElement("div");
+    tpLabel.style.cssText="font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;margin-top:12px;";
+    tpLabel.textContent="Typ korpusu szuflady";
+    container.appendChild(tpLabel);
 
-if(cfg.height < 300 || cfg.height > 2400)
-throw "Wysokość 300–2400 mm";
+    const tpRow=document.createElement("div");
+    tpRow.id="typePrevRow";
+    tpRow.style.cssText="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;";
 
-if(light <= 0)
-throw "Za mała szerokość światła";
+    typePresets.forEach((p,idx)=>{
+      const btn=document.createElement("button");
+      btn.className="type-preset-btn";
+      btn.textContent=p.label;
+      const isFirst=idx===0;
+      btn.style.cssText=`padding:5px 11px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-weight:600;font-size:.75rem;cursor:pointer;transition:all .15s;border:1px solid ${isFirst?"var(--accent2)":"var(--border)"};background:${isFirst?"rgba(247,193,79,.15)":"var(--surface2)"};color:${isFirst?"var(--accent2)":"var(--muted)"};`;
+      btn.onclick=()=>{
+        document.querySelectorAll('.type-preset-btn').forEach(b=>{
+          b.style.background='var(--surface2)';
+          b.style.color='var(--muted)';
+          b.style.borderColor='var(--border)';
+        });
+        btn.style.background='rgba(247,193,79,.15)';
+        btn.style.color='var(--accent2)';
+        btn.style.borderColor='var(--accent2)';
+        p.types.forEach((t,i)=>{
+          const sel=document.getElementById("drawerType_"+(i+1));
+          if(sel) sel.value=t;
+        });
+      };
+      tpRow.appendChild(btn);
+    });
+    container.appendChild(tpRow);
+  }
 
-if(cfg.config==="Szuflady"){
-if(cfg.qty < 1 || cfg.qty > 8)
-throw "Ilość szuflad 1–8";
-}
+  // === POLA SZUFLAD ===
+  for(let i=1;i<=qty;i++){
+    const numOd=qty-i+1;
+    const div=document.createElement("div");
+    div.className="drawer-block";
+    div.innerHTML=`<strong>Szuflada ${i} <span style="color:var(--muted);font-weight:400;font-size:.72rem;">(od do\u0142u: ${numOd})</span></strong>`;
 
-/* корпус */
+    const row=document.createElement("div");
+    row.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;align-items:center;";
 
-parts.push({name:"Bok",w:cfg.height,h:cfg.depth,t:18});
-parts.push({name:"Bok",w:cfg.height,h:cfg.depth,t:18});
+    const sel=document.createElement("select");
+    sel.id="drawerType_"+i;
+    sel.style.cssText="padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Syne',sans-serif;font-size:.82rem;";
+    for(const t in systemData[system].types){
+      const opt=document.createElement("option");
+      opt.value=t;
+      opt.text=`${t} (${systemData[system].types[t]}mm)`;
+      sel.appendChild(opt);
+    }
+    row.appendChild(sel);
 
-if(cfg.type!=="Pod zmywarkę"){
-parts.push({name:"Dno",w:light,h:cfg.depth,t:18});
-}
-
-if(cfg.type==="Pod lodówkę"){
-let wneka=cfg.height-(2*18)-4;
-parts.push({name:"Wnęka",w:light,h:wneka,t:0});
-}else{
-parts.push({name:"Wieniec",w:light,h:cfg.depth,t:18});
-}
-
-parts.push({name:"Plecy",w:cfg.width-2,h:cfg.height-2,t:3});
-
-/* DRZWI */
-
-if(cfg.config==="Drzwi"){
-
-let fh=cfg.height-4-golaOffset;
-
-if(cfg.frontCount==2){
-
-let luz=2;
-let fw=Math.floor((cfg.width-4-luz)/2);
-let second=(cfg.width-4-luz)-fw;
-
-parts.push({name:"Front",w:fw,h:fh,t:18});
-parts.push({name:"Front",w:second,h:fh,t:18});
-
-}else{
-parts.push({name:"Front",w:cfg.width-4,h:fh,t:18});
-}
-}
-
-/* SZUFLADY */
-
-if(cfg.config==="Szuflady"){
-
-if(cfg.width < systemData[cfg.system].minWidth)
-throw "Szerokość za mała dla wybranego systemu";
-
-if(cfg.depth < cfg.runner + 10)
-throw "Za mała głębokość pod prowadnicę";
-
-if(cfg.height > 1500 && cfg.qty > 5)
-throw "Max 5 szuflad dla wysokiego korpusu";
-
-let availableHeight=cfg.height-golaOffset-((cfg.qty+1)*3);
-let frontH=Math.floor(availableHeight/cfg.qty)-4;
-
-if(frontH>400)
-throw "Front za wysoki (max 400 mm)";
-
-for(let i=0;i<cfg.qty;i++){
-
-let backH=systemData[cfg.system].types[cfg.drawerTypes[i]];
-
-if(frontH < backH+20)
-throw "Front za niski dla typu szuflady";
-
-let internal=frontH-backH-20;
-
-if(internal<30)
-throw "Za mała wysokość wewnętrzna";
-
-let dnoW=light-systemData[cfg.system].offset;
-
-parts.push({name:"Front",w:cfg.width-4,h:frontH,t:18});
-parts.push({name:"Tył szuflady",w:dnoW,h:backH,t:16});
-parts.push({name:"Dno szuflady",w:dnoW,h:cfg.runner,t:16});
-runners.push({length:cfg.runner});
-}
-}
-
-return {parts,runners};
-}
-
-/* CONFIG */
-
-function collectConfig(){
-let drawerTypes=[];
-if(config.value==="Szuflady"){
-for(let i=1;i<=qty.value;i++){
-drawerTypes.push(document.getElementById("drawerType_"+i).value);
-}
-}
-return{
-type:type.value,
-config:config.value,
-frontCount:parseInt(frontCount.value),
-system:system.value,
-qty:parseInt(qty.value),
-width:parseInt(width.value),
-height:parseInt(height.value),
-depth:parseInt(depth.value),
-runner:parseInt(runner.value),
-drawerTypes:drawerTypes
-};
-}
-
-/* CALCULATE */
-
-function calculate(){
-try{
-let cfg=collectConfig();
-let data=generateModuleData(cfg);
-let out="<h2>Wynik</h2><table><tr><th>Element</th><th>Wymiar</th></tr>";
-data.parts.forEach(p=>{
-out+="<tr><td>"+p.name+"</td><td>"+p.w+" x "+p.h+" x "+p.t+"</td></tr>";
-});
-out+="</table>";
-result.innerHTML=out;
-}catch(e){
-result.innerHTML="<div class='warning'>"+e+"</div>";
-}
-}
-
-/* MULTI */
-
-function addModule(){
-try{
-let cfg=collectConfig();
-generateModuleData(cfg);
-project.push(cfg);
-alert("Moduł dodany");
-}catch(e){
-alert("Błąd: "+e);
-}
-}
-
-function showProject(){
-if(project.length===0){
-projectView.innerHTML="<div class='warning'>Brak modułów</div>";
-return;
-}
-
-let allParts=[];
-let allRunners=[];
-
-project.forEach(cfg=>{
-let data=generateModuleData(cfg);
-allParts=allParts.concat(data.parts);
-allRunners=allRunners.concat(data.runners);
-});
-
-let grouped={};
-allParts.forEach(p=>{
-let key=p.name+"_"+p.w+"_"+p.h+"_"+p.t;
-if(!grouped[key]) grouped[key]={...p,qty:0};
-grouped[key].qty++;
-});
-
-let runnerGrouped={};
-allRunners.forEach(r=>{
-if(!runnerGrouped[r.length]) runnerGrouped[r.length]=0;
-runnerGrouped[r.length]++;
-});
-
-let out="<h2>BOM – Grupowany</h2><table><tr><th>Element</th><th>Wymiar</th><th>Ilość</th></tr>";
-
-Object.values(grouped).forEach(p=>{
-out+="<tr><td>"+p.name+"</td><td>"+p.w+" x "+p.h+" x "+p.t+"</td><td>"+p.qty+"</td></tr>";
-});
-
-Object.keys(runnerGrouped).forEach(len=>{
-out+="<tr><td>Prowadnica "+len+" mm</td><td>-</td><td>"+runnerGrouped[len]+"</td></tr>";
-});
-
-out+="</table>";
-projectView.innerHTML=out;
-}
-
-function clearProject(){
-project=[];
-projectView.innerHTML="";
-alert("Projekt wyczyszczony");
-}
-
-autoLogic();
-</script>
-</body>
-  </html>
+    const inp=document.createElement("input");
+    inp.type="number";
+    inp.id="drawerFrontH_"+i;
+    inp.min=100; inp.max=400;
+    inp.value=autoFrontH;
+    inp.placeholder=`${autoFrontH} mm`;
+    inp.style.cssText="padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.82rem;";
+    inp.title="Wysoko\u015b\u0107 frontu (mm)";
+    inp.oninput=updateHeightSum;
+    row.appendChild(inp);
