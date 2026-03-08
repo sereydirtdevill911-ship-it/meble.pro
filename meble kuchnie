@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konfigurator PRO – R3.2.0</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --bg:#111318;
+  --surface:#181c24;
+  --surface2:#1f2530;
+  --surface3:#252d3a;
+  --border:#2c3545;
+  --border2:#374255;
+  --accent:#e8a020;
+  --accent2:#f7c14f;
+  --accent3:#1a9e6e;
+  --danger:#e03e3e;
+  --success:#1fba7c;
+  --info:#3d9be8;
+  --text:#dde3ee;
+  --text2:#a8b4cc;
+  --muted:#5a6a82;
+  --radius:6px;
+  --radius2:10px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  font-family:'Barlow Condensed',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  padding:16px 12px 40px;
+  background-image:
+    radial-gradient(ellipse 80% 40% at 50% -10%, rgba(232,160,32,.07) 0%, transparent 70%);
+}
+
+.container{ max-width:860px; margin:auto; }
+
+/* ── HEADER ── */
+h1{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.7rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--text);
+  padding:16px 20px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-top:3px solid var(--accent);
+  border-radius:var(--radius2);
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  position:relative;
+  overflow:hidden;
+}
+h1::after{
+  content:'';
+  position:absolute;
+  right:-20px; top:-20px;
+  width:120px; height:120px;
+  background:radial-gradient(circle, rgba(232,160,32,.12) 0%, transparent 70%);
+  pointer-events:none;
+}
+
+h1 span.badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.62rem;
+  background:var(--accent);
+  color:#111;
+  padding:3px 8px;
+  border-radius:3px;
+  letter-spacing:.1em;
+  font-weight:700;
+}
+
+/* ── MAIN TABS ── */
+.main-tabs{
+  display:flex;
+  gap:4px;
+  margin-bottom:14px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  padding:5px;
+}
+.main-tab-btn{
+  flex:1;
+  padding:10px 8px;
+  border-radius:var(--radius);
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;
+  font-size:.9rem;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  cursor:pointer;
+  border:none;
+  background:transparent;
+  color:var(--muted);
+  transition:all .2s;
+}
+.main-tab-btn.active{
+  background:var(--accent);
+  color:#111;
+  box-shadow:0 2px 12px rgba(232,160,32,.3);
+}
+
+/* ── GRID ── */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:12px;
+}
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+@media(max-width:600px){
+  .grid,.grid2{grid-template-columns:1fr;}
+}
+
+/* ── CARD ── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  padding:14px 16px;
+  position:relative;
+}
+.card::before{
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:2px;
+  background:linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+  border-radius:var(--radius2) var(--radius2) 0 0;
+  opacity:.5;
+}
+
+.card h3{
+  font-size:.72rem;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  color:var(--muted);
+  margin-bottom:12px;
+  font-family:'JetBrains Mono',monospace;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.card h3::before{
+  content:'';
+  display:inline-block;
+  width:12px; height:2px;
+  background:var(--accent);
+  border-radius:2px;
+}
+
+/* ── LABELS ── */
+label{
+  display:block;
+  font-size:.72rem;
+  color:var(--muted);
+  margin-bottom:4px;
+  margin-top:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  font-family:'JetBrains Mono',monospace;
+}
+label:first-of-type{margin-top:0;}
+
+/* ── INPUTS ── */
+select,input[type=number]{
+  width:100%;
+  padding:9px 12px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.85rem;
+  outline:none;
+  transition:border-color .18s, background .18s;
+  -webkit-appearance:none;
+}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235a6a82'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  padding-right:28px;
+  cursor:pointer;
+}
+select:focus,input[type=number]:focus{
+  border-color:var(--accent);
+  background:var(--surface3);
+}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{opacity:.4;}
+
+/* ── BUTTONS ── */
+.buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+  margin-top:14px;
+}
+
+button{
+  padding:10px 12px;
+  border:none;
+  border-radius:var(--radius);
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;
+  font-size:.88rem;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:filter .15s, transform .1s, box-shadow .15s;
+}
+button:hover{filter:brightness(1.12);}
+button:active{transform:scale(.97);}
+
+.btn-primary{
+  background:var(--accent);
+  color:#111;
+  grid-column:1/-1;
+  font-size:1rem;
+  padding:13px;
+  letter-spacing:.1em;
+  box-shadow:0 4px 20px rgba(232,160,32,.2);
+}
+.btn-primary:hover{box-shadow:0 6px 28px rgba(232,160,32,.35);}
+.btn-secondary{
+  background:var(--surface2);
+  color:var(--text2);
+  border:1px solid var(--border2);
+}
+.btn-success{
+  background:var(--success);
+  color:#0d1a14;
+}
+.btn-danger{
+  background:var(--danger);
+  color:#fff;
+}
+.btn-view-active{
+  background:var(--accent)!important;
+  color:#111!important;
+}
+
+/* ── DRAWER BLOCK ── */
+.drawer-block{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-left:3px solid var(--accent2);
+  border-radius:var(--radius);
+  padding:10px 12px;
+  margin-bottom:8px;
+  transition:border-color .2s;
+}
+.drawer-block:hover{ border-left-color:var(--accent); }
+.drawer-block strong{
+  font-size:.75rem;
+  color:var(--accent2);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+
+/* ── RESULT CARD ── */
+.result-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  padding:16px 18px;
+  margin-top:14px;
+  border-top:2px solid var(--accent3);
+}
+.result-card h2{
+  font-size:.82rem;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:var(--muted);
+  margin-bottom:14px;
+  font-family:'JetBrains Mono',monospace;
+  display:flex; align-items:center; gap:8px;
+}
+.result-card h2::before{
+  content:'';
+  display:inline-block;
+  width:16px; height:2px;
+  background:var(--accent3);
+}
+
+/* ── TABLE ── */
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.76rem;
+}
+th{
+  background:var(--surface3);
+  color:var(--muted);
+  padding:7px 10px;
+  text-align:left;
+  font-size:.66rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  border-bottom:1px solid var(--border2);
+}
+td{
+  padding:7px 10px;
+  border-bottom:1px solid var(--border);
+  color:var(--text);
+}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+
+/* ── WARN ── */
+.warn{
+  background:rgba(224,62,62,.1);
+  border:1px solid rgba(224,62,62,.4);
+  border-left:3px solid var(--danger);
+  border-radius:var(--radius);
+  padding:11px 14px;
+  color:#f08080;
+  font-size:.85rem;
+  font-weight:600;
+  margin-top:12px;
+  font-family:'JetBrains Mono',monospace;
+}
+.warn::before{content:"// ERR: ";}
+
+/* ── MISC ── */
+.info-row td:first-child{color:var(--accent2);}
+#drawerSection{display:none;}
+
+/* ── CANVAS TAB BUTTONS ── */
+.btn-tab{
+  padding:6px 14px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  color:var(--muted);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:.8rem;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all .2s;
+}
+.btn-tab.active{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#111;
+}
+
+/* ── LAYOUT BUTTONS ── */
+.layout-btn{
+  padding:7px 4px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  color:var(--text2);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .18s;
+  text-align:center;
+}
+.layout-btn:hover{border-color:var(--accent2); color:var(--accent2);}
+.layout-btn.active{
+  background:rgba(247,193,79,.15);
+  border-color:var(--accent2);
+  color:var(--accent2);
+  box-shadow:0 0 10px rgba(247,193,79,.15);
+}
+
+/* ── TYPE PRESET BUTTONS ── */
+.type-preset-btn{
+  padding:6px 4px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  color:var(--text2);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.72rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .18s;
+}
+.type-preset-btn:hover{border-color:var(--accent2);}
+.type-preset-btn.active{
+  background:rgba(247,193,79,.18);
+  border-color:var(--accent2);
+  color:var(--accent2);
+}
+
+/* ── HEIGHT SUM BAR ── */
+#heightSum{
+  padding:8px 12px;
+  border-radius:var(--radius);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;
+  font-weight:600;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  margin-top:6px;
+  letter-spacing:.03em;
+}
+
+/* ── SCROLL ── */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeSlideIn{
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.result-card,.card{animation:fadeSlideIn .25s ease both;}
+
+/* ── H2/H3 inside result ── */
+.result-card h3{
+  font-size:.75rem;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--accent);
+  margin:16px 0 8px;
+  font-family:'JetBrains Mono',monospace;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>&#9881; MEBLE<span style="color:var(--accent);">.</span>PRO <span class="badge">v3.2</span></h1>
+
+<!-- G&#322;&#243;wne zak&#322;adki -->
+<div class="main-tabs">
+  <button id="mainTabKonfig" class="main-tab-btn active" onclick="switchMainTab('konfig')">&#9881; Konfig</button>
+  <button id="mainTabRozm" class="main-tab-btn" onclick="switchMainTab('rozm')">&#128208; Rozmiarka</button>
+  <button id="mainTabRozkroj" class="main-tab-btn" onclick="switchMainTab('rozkroj')">&#9986; Rozkr&#243;j</button>
+</div>
+
+<!-- SEKCJA KONFIGURATOR -->
+<div id="sectionKonfig">
+
+  <!-- Lewa kolumna -->
+  <div class="card">
+    <h3>Typ szafy</h3>
+
+    <label>Typ korpusu</label>
+    <select id="type" onchange="autoLogic()">
+      <optgroup label="Dolne">
+        <option>Dolna</option>
+        <option>Dolna GOLA</option>
+        <option>Pod zmywark&#281;</option>
+      </optgroup>
+      <optgroup label="Wisz&#261;ce">
+        <option>Wisz&#261;ca</option>
+        <option>Wisz&#261;ca z klap&#261;</option>
+        <option>Pod okap</option>
+      </optgroup>
+      <optgroup label="S&#322;upki / Kolumny">
+        <option>S&#322;upek pod piekarnik</option>
+        <option>S&#322;upek pod zmywark&#281;</option>
+        <option>S&#322;upek pod lod&#243;wk&#281;</option>
+        <option>S&#322;upek pe&#322;ny (z p&#243;&#322;kami)</option>
+        <option>S&#322;upek MIX (szuflady+drzwi)</option>
+        <option>Cargo / Spacetower</option>
+      </optgroup>
+      <optgroup label="Naro&#380;ne">
+        <option>Naro&#380;na dolna &#346;lepa</option>
+        <option>Naro&#380;na dolna L</option>
+        <option>Naro&#380;na g&#243;rna</option>
+      </optgroup>
+    </select>
+
+    <label>Konstrukcja</label>
+    <select id="config" onchange="updateDrawerSelectors()">
+      <option>Drzwi</option>
+      <option>Szuflady</option>
+    </select>
+
+    <label>Ilo&#347;&#263; front&#243;w (tylko dla Drzwi)</label>
+    <select id="frontCount">
+      <option value="1">1</option>
+      <option value="2">2</option>
+    </select>
+  </div>
+
+  <!-- Prawa kolumna -->
+  <div class="card">
+    <h3>Wymiary (mm)</h3>
+
+    <label>Wysoko&#347;&#263;</label>
+    <input type="number" id="height" value="720" min="300" max="2400" oninput="updateDrawerSelectors()">
+
+    <label>Szeroko&#347;&#263;</label>
+    <input type="number" id="width" value="600" min="300" max="1200">
+
+    <label>G&#322;&#281;boko&#347;&#263;</label>
+    <input type="number" id="depth" value="560" min="200" max="800">
+  </div>
+
+</div>
+
+<!-- Szuflady section -->
+<div class="card" id="drawerSection" style="margin-bottom:16px;">
+  <h3>Szuflady</h3>
+
+  <div class="grid">
+    <div>
+      <label>System szuflad</label>
+      <select id="system" onchange="updateDrawerSelectors()">
+        <optgroup label="Blum">
+          <option>Antaro</option>
+          <option>Tandembox</option>
+          <option>Merivobox</option>
+          <option>Legrabox</option>
+        </optgroup>
+        <optgroup label="Hettich">
+          <option>InnoTech Atira</option>
+          <option>ArciTech</option>
+        </optgroup>
+        <optgroup label="Grass">
+          <option>Vionaro</option>
+          <option>Nova Pro Scala</option>
+          <option>Dynapro</option>
+        </optgroup>
+        <optgroup label="GTV">
+          <option>GTV Axis Pro</option>
+          <option>GTV Vertico</option>
+        </optgroup>
+        <optgroup label="DTC">
+          <option>DTC Mova</option>
+          <option>DTC Slimbox</option>
+        </optgroup>
+      </select>
+    </div>
+    <div>
+      <label>Prowadnica (mm)</label>
+      <select id="runner">
+        <option>450</option>
+        <option selected>500</option>
+        <option>550</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Ukryte pole qty — sterowane przez przyciski -->
+  <input type="hidden" id="qty" value="3">
+
+  <label style="margin-top:12px;">Uk&#322;ad szuflad</label>
+  <div id="layoutBtns" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+
+  <div id="frontHSum" style="margin-top:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:.78rem;font-family:'JetBrains Mono',monospace;border:1px solid var(--border);display:none;"></div>
+
+  <div id="drawerSelectors" style="margin-top:12px;"></div>
+</div>
+
+<!-- Polki dla wszystkich typow -->
+<div class="card" id="shelvesCard" style="margin-bottom:16px;display:none;">
+  <h3>P&#243;&#322;ki wewn&#281;trzne</h3>
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <button onclick="setShelfMode(false)" id="btnNoShelf"
+      style="flex:1;padding:8px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border:2px solid var(--accent);background:var(--accent);color:#111;">
+      Bez p&#243;&#322;ek
+    </button>
+    <button onclick="setShelfMode(true)" id="btnWithShelf"
+      style="flex:1;padding:8px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border:2px solid var(--border);background:var(--surface2);color:var(--text2);">
+      Z p&#243;&#322;kami
+    </button>
+  </div>
+  <div id="shelfCountWrap" style="display:none;">
+    <label>Ilo&#347;&#263; p&#243;&#322;ek wewn&#281;trznych</label>
+    <input type="number" id="shelfCount" value="1" min="1" max="8">
+    <div style="font-size:.7rem;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace;">
+      Pozycje p&#243;&#322;ek wyliczane r&#243;wnomiernie automatycznie
+    </div>
+  </div>
+</div>
+
+<!-- === AKCESORIA === -->
+<div class="card" id="akcCard" style="margin-bottom:16px;">
+  <h3>Akcesoria</h3>
+  <div class="grid">
+    <div>
+      <label>N&#243;&#380;ki</label>
+      <select id="legType">
+        <option value="none">Bez n&#243;&#380;ek</option>
+        <option value="uni_h100" selected>Uniwersalna H100</option>
+        <option value="uni_h150">Uniwersalna H150</option>
+        <option value="axilo_h100">Axilo H100 (rozst.64mm)</option>
+        <option value="axilo_h150">Axilo H150 (rozst.64mm)</option>
+        <option value="multileg_h100">Multileg H100 (rozst.64mm)</option>
+      </select>
+    </div>
+    <div>
+      <label>Ilo&#347;&#263; n&#243;&#380;ek</label>
+      <select id="legQty">
+        <option value="4" selected>4 szt</option>
+        <option value="6">6 szt (szer.&gt;800)</option>
+        <option value="8">8 szt (szer.&gt;1200)</option>
+        <option value="0">—</option>
+      </select>
+    </div>
+  </div>
+  <div class="grid" id="zawRow" style="margin-top:10px;">
+    <div>
+      <label>Zawiasy</label>
+      <select id="hingeType">
+        <option value="none">Bez zawias&#243;w</option>
+        <option value="blum110" selected>Blum 110° Clip Top</option>
+        <option value="blum110d">Blum 110° Clip Top Blumotion</option>
+        <option value="blum155">Blum 155° Inserta</option>
+        <option value="hettich">Hettich Sensys 8631i</option>
+        <option value="grass">Grass Tiomos 110°</option>
+      </select>
+    </div>
+    <div>
+      <label>Ilo&#347;&#263; zawias&#243;w</label>
+      <select id="hingeQty">
+        <option value="auto" selected>Auto (wg wys.)</option>
+        <option value="2">2 szt</option>
+        <option value="3">3 szt</option>
+        <option value="4">4 szt</option>
+      </select>
+    </div>
+  </div>
+  <div id="klapaRow" style="margin-top:10px;display:none;">
+    <label>Mechanizm klapy</label>
+    <select id="klapaType">
+      <option value="none">Bez mechanizmu</option>
+      <option value="aventos_hf">Blum Aventos HF (pe&#322;na)</option>
+      <option value="aventos_hl">Blum Aventos HL (uchylna g&#243;ra)</option>
+      <option value="aventos_hk">Blum Aventos HK-S (ma&#322;a)</option>
+    </select>
+  </div>
+</div>
+
+<!-- === PROJEKT INFO === -->
+<div class="card" style="margin-bottom:16px;" id="projektCard">
+  <h3>Projekt</h3>
+  <div class="grid">
+    <div>
+      <label>Klient</label>
+      <input type="text" id="clientName" placeholder="Nazwisko klienta"
+        style="padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.85rem;width:100%;outline:none;">
+    </div>
+    <div>
+      <label>Nr projektu</label>
+      <input type="text" id="projectName" placeholder="np. KCH-2026-01"
+        style="padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.85rem;width:100%;outline:none;">
+    </div>
+  </div>
+  <div style="margin-top:8px;">
+    <label>Uwagi</label>
+    <input type="text" id="moduleNote" placeholder="np. szafka zlewozmywakowa, strona lewa"
+      style="padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.85rem;width:100%;outline:none;">
+  </div>
+</div>
+
+<div class="buttons">
+  <button class="btn-primary" onclick="calculate()">🔧 Oblicz</button>
+  <button class="btn-success" onclick="addModule()">+ Dodaj modul</button>
+  <button class="btn-secondary" onclick="showProject()">📊 Poka&#380; projekt</button>
+  <button class="btn-danger" onclick="clearProjectLS()">🗑 Wyczy&#347;&#263;</button>
+</div>
+<div class="buttons" style="margin-top:8px;">
+  <button id="btnSaveProject" onclick="saveProject()"
+    style="flex:1;padding:9px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.05em;cursor:pointer;text-transform:uppercase;">
+    💾 Zapisz projekt
+  </button>
+  <button id="btnLoadProject" onclick="loadProject()"
+    style="flex:1;padding:9px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;letter-spacin
