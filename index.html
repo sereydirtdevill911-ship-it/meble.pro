@@ -846,6 +846,78 @@ input[type=text]::placeholder{ color:var(--muted); }
   border:1px solid var(--border)!important;
 }
 
+
+/* === ADD MODULE SCREEN === */
+#appAddModule {
+  display:none;
+  padding:14px 14px 80px;
+  min-height:100vh;
+  box-sizing:border-box;
+  animation:appFadeIn .18s ease;
+}
+#appAddModule.visible {
+  display:block !important;
+}
+.add-room-tabs {
+  display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;
+  scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px;
+}
+.add-room-tabs::-webkit-scrollbar{display:none}
+.add-room-tab {
+  flex-shrink:0;padding:6px 12px;border-radius:20px;
+  border:1px solid var(--border);background:rgba(255,255,255,.04);
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:.75rem;letter-spacing:.06em;color:var(--text2);
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.add-room-tab.active {
+  background:rgba(200,152,64,.15);border-color:rgba(200,152,64,.4);
+  color:var(--accent2);
+}
+.module-cards-grid {
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+}
+.module-card {
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;cursor:pointer;
+  transition:all .15s;-webkit-tap-highlight-color:transparent;
+  display:flex;flex-direction:column;
+}
+.module-card:active{transform:scale(.97);border-color:rgba(200,152,64,.5);}
+.module-card-preview {
+  width:100%;aspect-ratio:16/9;overflow:hidden;
+  background:var(--bg);display:flex;align-items:center;justify-content:center;
+}
+.module-card-preview svg{width:100%;height:100%;}
+.module-card-info {
+  padding:10px 10px 8px;flex:1;
+}
+.module-card-name {
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:.88rem;letter-spacing:.04em;color:var(--text);
+  display:block;margin-bottom:2px;
+}
+.module-card-dim {
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;
+  color:var(--muted);display:block;margin-bottom:6px;
+}
+.module-card-add {
+  display:flex;align-items:center;justify-content:center;
+  gap:5px;padding:6px 10px;margin:0 8px 8px;
+  background:rgba(200,152,64,.1);border:1px solid rgba(200,152,64,.3);
+  border-radius:7px;color:var(--accent2);
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:.75rem;letter-spacing:.06em;cursor:pointer;
+  transition:all .15s;
+}
+.module-card-add:active{background:rgba(200,152,64,.2);}
+/* Wide card (full row) */
+.module-card.wide{grid-column:1/-1;flex-direction:row;}
+.module-card.wide .module-card-preview{
+  width:120px;flex-shrink:0;aspect-ratio:auto;height:auto;min-height:80px;
+}
+.module-card.wide .module-card-info{padding:10px 12px;}
+
 </style>
 
   <link rel="manifest" href="./manifest.json">
@@ -1225,6 +1297,27 @@ body{padding-bottom:72px!important;}
 
     <label>G&#322;&#281;boko&#347;&#263;</label>
     <input type="number" id="depth" value="560" min="200" max="800">
+  </div>
+
+  <!-- Zaślepka boczna — tylko dla Narożna dolna Ślepa -->
+  <div id="blindPanelSection" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+    <label class="micro-label" style="color:var(--accent2);">📐 ZAŚLEPKA BOCZNA</label>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+      <input type="number" id="blindPanelW" value="0" min="0" max="800"
+        style="flex:1;padding:9px 12px;background:rgba(255,255,255,.06);
+        border:1px solid var(--border);border-radius:7px;color:#fff;
+        font-family:'JetBrains Mono',monospace;font-size:.85rem;"
+        placeholder="0 = auto (głębokość-18)">
+      <button onclick="alAutoBlindPanel()"
+        style="padding:8px 10px;background:rgba(200,152,64,.1);
+        border:1px solid rgba(200,152,64,.3);border-radius:7px;color:var(--accent2);
+        font-family:'Barlow Condensed',sans-serif;font-weight:700;
+        font-size:.72rem;cursor:pointer;white-space:nowrap;">AUTO</button>
+    </div>
+    <div id="al_zaslepka_hint" style="font-size:.65rem;font-family:'JetBrains Mono',monospace;
+      margin-top:4px;padding:4px 8px;border-radius:4px;
+      background:rgba(200,152,64,.07);border-left:2px solid var(--accent2);
+      color:var(--accent2);display:none;"></div>
   </div>
 
 </div>
@@ -2279,6 +2372,9 @@ function alCheckWidth(){
   }
 }
 
+// -- 1b. Zaślepka — pokazuj/chowaj
+  try{ alAutoBlindPanel(); }catch(e){}
+
 // -- 2. Auto-wysokość frontu ────────────────────────────────────────
 function alAutoFrontHeight(){
   var hEl  = document.getElementById('height');
@@ -2796,9 +2892,56 @@ function alProjectMontageTime(){
     (rate>0?'<br>➤ <b>ROBOCIZNA:</b> ~'+kostPracy+' zł ('+rate+' zł/h)':'');
 }
 
+
+// -- 18. Auto-zaślepka dla narożnej ślepej ──────────────────────
+function alAutoBlindPanel(){
+  var tEl = document.getElementById('type');
+  var dEl = document.getElementById('depth');
+  var bEl = document.getElementById('blindPanelW');
+  var hEl = document.getElementById('hint');
+  var secEl = document.getElementById('blindPanelSection');
+  var hintEl = document.getElementById('al_zaslepka_hint');
+
+  var t = tEl ? tEl.value : '';
+  var isSlepa = t === 'Narożna dolna \u015alepa';
+
+  // Pokazuj/chowaj sekcję
+  if(secEl) secEl.style.display = isSlepa ? 'block' : 'none';
+  if(!isSlepa) return;
+
+  var D = parseInt(dEl ? dEl.value : '560') || 560;
+  var autoW = D - 18; // głębokość minus grubość boku
+
+  if(bEl){
+    bEl.value = autoW;
+    bEl.dispatchEvent(new Event('input'));
+  }
+
+  if(hintEl){
+    hintEl.style.display = 'block';
+    hintEl.innerHTML =
+      '\u27a4 Zaślepka: <b>' + autoW + 'mm</b> (G=' + D + 'mm \u2212 18mm bok)<br>' +
+      '<span style="color:var(--muted);font-size:.6rem;">' +
+      'H zaślepki = ' + (parseInt(document.getElementById('height') ?
+        document.getElementById('height').value : '720') - 36) + 'mm (wys. wewn.)' +
+      '</span>';
+  }
+}
+
+// Integracja z autoLogic — wywołujemy przy każdej zmianie typu
+(function(){
+  var origAL = window.autoLogic;
+  window.autoLogic = function(){
+    if(origAL) origAL.apply(this, arguments);
+    try{ alAutoBlindPanel(); }catch(e){}
+  };
+})();
+
+
 function runAllAutoLogics(){
   try { alCheckWidth();        } catch(e){}
   try { alAutoFrontHeight();   } catch(e){}
+  try { alAutoBlindPanel();    } catch(e){}
   try { alAutoRunner();        } catch(e){}
   try { alAutoHinges();        } catch(e){}
   try { alCheckCollisions();   } catch(e){}
@@ -3402,8 +3545,12 @@ function generateModuleData(cfg){
     parts.push({name:"Plecy B", w:widthB-36, h:cfg.height-36, t:3});
 
     if(cfg.type==="Naro\u017cna dolna \u015alepa"){
-      // \u015alepa naro\u017cna: jedno ramie z drzwiami, drugie \u015blepe (zas\u0142epka boczna 18mm)
-      parts.push({name:"Za\u015blepka boczna (ramie \u015blepe)", w:widthA-4, h:cfg.height-4, t:18});
+      // Slepa narozna: ramie A z frontem, ramie B zaslepione
+      // Zaslpeka = glebokosc - 1 bok (18mm), wys = H - dno - wieniec (36mm)
+      var zaslW = cfg.depth - 18;
+      var zaslH = cfg.height - 36;
+      var blindW = cfg.blindPanelW > 0 ? cfg.blindPanelW : zaslW;
+      parts.push({name:"Za\u015blepka boczna (ramie \u015blepe)", w:blindW, h:zaslH, t:18});
       parts.push({name:"Front (ramie A)", w:widthA-4, h:cfg.height-4, t:18});
 
     } else if(cfg.type==="Naro\u017cna dolna L"){
@@ -10990,23 +11137,29 @@ var APP = {
  * ================================================================ */
 function appNav(screen){
   // / 
+  appEnsureAddScreen();
   var screens = {
-    home:     document.getElementById('appHome'),
-    konfig:   document.getElementById('sectionKonfig'),
-    projects: document.getElementById('appProjects'),
-    settings: document.getElementById('appSettings'),
-    rozm:     document.getElementById('sectionRozm'),
-    rozkroj:  document.getElementById('sectionRozkroj'),
+    home:      document.getElementById('appHome'),
+    konfig:    document.getElementById('sectionKonfig'),
+    projects:  document.getElementById('appProjects'),
+    settings:  document.getElementById('appSettings'),
+    addModule: document.getElementById('appAddModule'),
+    rozm:      document.getElementById('sectionRozm'),
+    rozkroj:   document.getElementById('sectionRozkroj'),
   };
 
   //  
+  // Hide all screens explicitly
   Object.values(screens).forEach(function(el){
-    if(el) el.style.display='none';
+    if(el){ el.style.display='none'; el.style.minHeight=''; }
   });
 
-  //  
+  // Show target screen
   var target = screens[screen];
-  if(target) target.style.display='';
+  if(target){
+    target.style.display='block';
+    target.style.minHeight='100vh';
+  }
 
   //  konfig —  tab tabs 
   if(screen==='konfig'){
@@ -11024,14 +11177,16 @@ function appNav(screen){
   var activeId = 'bnav-'+
     (screen==='konfig'||screen==='rozm'||screen==='rozkroj' ? 'konfig' :
      screen==='projects' ? 'projects' :
-     screen==='settings' ? 'settings' : 'home');
+     screen==='settings' ? 'settings' :
+     screen==='addModule' ? 'new' : 'home');
   var activeBtn=document.getElementById(activeId);
   if(activeBtn) activeBtn.classList.add('active');
 
   //    
-  if(screen==='home')     appRenderHome();
-  if(screen==='projects') appRenderProjects();
-  if(screen==='settings') appRenderSettings();
+  if(screen==='home')      appRenderHome();
+  if(screen==='projects')  appRenderProjects();
+  if(screen==='settings')  appRenderSettings();
+  if(screen==='addModule') appRenderAddModule();
 
   // Scroll 
   window.scrollTo({top:0,behavior:'instant'});
@@ -11114,6 +11269,13 @@ function appRenderHome(){
     '</button>'+
 
     // Nowy projekt
+    '<button class="quick-btn" onclick="appShowAddModule()" style="position:relative;">'+
+    '<span class="qi">🗄</span>'+
+    '<span>Dodaj szafkę</span>'+
+    '<span style="position:absolute;top:6px;right:8px;font-size:.5rem;'+
+    'background:rgba(200,152,64,.3);border-radius:3px;padding:1px 4px;'+
+    'font-family:\'JetBrains Mono\',monospace;color:var(--accent2);">6 typów</span>'+
+    '</button>'+
     '<button class="quick-btn" onclick="appNewProject()">'+
     '<span class="qi">✨</span>'+
     '<span>Nowy projekt</span>'+
@@ -11370,7 +11532,7 @@ function appRebuildNav(){
     '<button class="bnav-btn" id="bnav-projects" onclick="appNav(\'projects\')">'+
     '<span class="bnav-icon">📁</span>Projekty</button>'+
 
-    '<button class="bnav-btn" id="bnav-new" onclick="appNewProject()">'+
+    '<button class="bnav-btn" id="bnav-new" onclick="appShowAddModule()" title="Dodaj szafkę">'+
     '<span class="bnav-icon">＋</span></button>'+
 
     '<button class="bnav-btn active" id="bnav-konfig" onclick="appNav(\'konfig\')">'+
@@ -11385,65 +11547,421 @@ function appRebuildNav(){
  * ================================================================ */
 function appCreateScreens(){
   var body=document.body;
+  //      body ( nav)
+  //    header  head
+  var nav=document.getElementById('bottomNav');
+  var ref=nav || null;
 
-  // Home screen div
-  if(!document.getElementById('appHome')){
-    var home=document.createElement('div');
-    home.id='appHome';
-    home.style.display='none';
-    body.insertBefore(home, body.firstChild);
+  function ensureScreen(id){
+    if(document.getElementById(id)) return;
+    var d=document.createElement('div');
+    d.id=id;
+    d.style.display='none';
+    if(ref) body.insertBefore(d,ref);
+    else body.appendChild(d);
   }
-
-  // Projects screen div
-  if(!document.getElementById('appProjects')){
-    var proj=document.createElement('div');
-    proj.id='appProjects';
-    proj.style.display='none';
-    body.insertBefore(proj, body.firstChild);
-  }
-
-  // Settings screen div
-  if(!document.getElementById('appSettings')){
-    var sett=document.createElement('div');
-    sett.id='appSettings';
-    sett.style.display='none';
-    body.insertBefore(sett, body.firstChild);
-  }
+  ensureScreen('appHome');
+  ensureScreen('appProjects');
+  ensureScreen('appSettings');
 }
 
 /* ================================================================
  * INIT —   window.load
  * ================================================================ */
+
+/* ================================================================
+ * ADD MODULE SCREEN
+ * ================================================================ */
+
+/* Full module database per room with SVG previews */
+var APP_MODULE_DB = {
+
+  kuchnia: [
+    { type:'Dolna', name:'Dolna', sub:'standardowa', dim:'H720 D560',
+      cfg:'Drzwi', tag:'dolne', h:720, d:560, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="30" width="90" height="26" rx="2" fill="#252a3d" stroke="#c89840" stroke-width=".8"/><rect x="5" y="30" width="90" height="1.5" rx="1" fill="rgba(255,255,255,.2)"/><line x1="50" y1="30" x2="50" y2="56" stroke="#3a3f55" stroke-width=".5"/><rect x="20" y="41" width="12" height="1.5" rx=".75" fill="#c89840" opacity=".7"/><rect x="68" y="41" width="12" height="1.5" rx=".75" fill="#c89840" opacity=".7"/>'},
+    { type:'Dolna GOLA', name:'Dolna GOLA', sub:'otwarta/na buty', dim:'H720 D560',
+      cfg:'Drzwi', tag:'dolne', h:720, d:560, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="30" width="90" height="26" rx="2" fill="#252a3d" stroke="#3a3f55" stroke-width=".8"/><rect x="8" y="33" width="84" height="20" rx="1" fill="#1a1e2b"/><rect x="8" y="38" width="84" height=".5" fill="rgba(200,152,64,.3)"/><rect x="8" y="43" width="84" height=".5" fill="rgba(200,152,64,.3)"/><rect x="8" y="48" width="84" height=".5" fill="rgba(200,152,64,.3)"/>'},
+    { type:'Pod zmywarkę', name:'Pod zlew', sub:'szafka pod zlew', dim:'H720 D560',
+      cfg:'Drzwi', tag:'dolne', h:720, d:560, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="30" width="90" height="26" rx="2" fill="#252a3d" stroke="#3a3f55" stroke-width=".8"/><ellipse cx="50" cy="22" rx="22" ry="8" fill="#1a2a3a" stroke="#3a6f9f" stroke-width=".8"/><line x1="50" y1="14" x2="50" y2="30" stroke="#4a9fea" stroke-width="1.2"/><rect x="28" y="22" width="44" height="34" rx="1" fill="#1a1e2b" stroke="#3a3f55" stroke-width=".5"/>'},
+    { type:'Dolna', name:'Szuflady', sub:'3 szuflady Blum', dim:'H720 D560',
+      cfg:'Szuflady', tag:'dolne', h:720, d:560, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="30" width="90" height="7" rx="1" fill="#252a3d" stroke="#c89840" stroke-width=".7"/><rect x="5" y="39" width="90" height="7" rx="1" fill="#252a3d" stroke="#3a3f55" stroke-width=".7"/><rect x="5" y="48" width="90" height="8" rx="1" fill="#252a3d" stroke="#3a3f55" stroke-width=".7"/><rect x="38" y="33" width="24" height="1.5" rx=".75" fill="#c89840" opacity=".8"/><rect x="38" y="42" width="24" height="1.5" rx=".75" fill="#c89840" opacity=".5"/><rect x="38" y="51" width="24" height="1.5" rx=".75" fill="#c89840" opacity=".5"/>'},
+    { type:'AGD pod piekarnik + szuflada', name:'Pod piekarnik', sub:'z szufladą', dim:'H820 D560',
+      cfg:'Drzwi', tag:'agd', h:820, d:560, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="8" width="90" height="38" rx="2" fill="#1a2030" stroke="#c89840" stroke-width=".8"/><rect x="10" y="12" width="80" height="30" rx="1" fill="#13161f" stroke="#3a3f55" stroke-width=".5"/><line x1="15" y1="20" x2="85" y2="20" stroke="#3a3f55" stroke-width=".5"/><line x1="15" y1="27" x2="85" y2="27" stroke="#3a3f55" stroke-width=".5"/><line x1="15" y1="34" x2="85" y2="34" stroke="#3a3f55" stroke-width=".5"/><rect x="35" y="38" width="30" height="2" rx="1" fill="#c89840" opacity=".6"/><rect x="5" y="49" width="90" height="9" rx="2" fill="#252a3d" stroke="#3a3f55" stroke-width=".7"/><rect x="33" y="52" width="34" height="1.5" rx=".75" fill="#c89840" opacity=".5"/>'},
+    { type:'Wisząca', name:'Wisząca', sub:'standardowa', dim:'H610 D320',
+      cfg:'Drzwi', tag:'wiszace', h:610, d:320, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="5" width="90" height="35" rx="2" fill="#252a3d" stroke="#c89840" stroke-width=".8"/><rect x="5" y="5" width="90" height="1.5" rx="1" fill="rgba(255,255,255,.2)"/><line x1="50" y1="5" x2="50" y2="40" stroke="#3a3f55" stroke-width=".5"/><rect x="20" y="21" width="12" height="1.5" rx=".75" fill="#c89840" opacity=".7"/><rect x="68" y="21" width="12" height="1.5" rx=".75" fill="#c89840" opacity=".7"/>'},
+    { type:'Wisząca z klapą', name:'Z klapą', sub:'uchylna klapa', dim:'H400 D350',
+      cfg:'Drzwi', tag:'wiszace', h:400, d:350, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="8" width="90" height="28" rx="2" fill="#252a3d" stroke="#3a3f55" stroke-width=".8"/><rect x="5" y="8" width="90" height="15" rx="2" fill="#1e2235" stroke="#c89840" stroke-width=".8"/><rect x="25" y="14" width="50" height="1.5" rx=".75" fill="#c89840" opacity=".6"/><line x1="5" y1="23" x2="95" y2="23" stroke="#3a3f55" stroke-width=".5"/>'},
+    { type:'Pod okap', name:'Pod okap', sub:'na okap', dim:'H400 D350',
+      cfg:'Drzwi', tag:'wiszace', h:400, d:350, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="8" width="90" height="22" rx="2" fill="#252a3d" stroke="#3a3f55" stroke-width=".8"/><rect x="20" y="35" width="60" height="20" rx="2" fill="#1a2030" stroke="#4a9fea" stroke-width=".8"/><line x1="30" y1="40" x2="70" y2="40" stroke="#4a9fea" stroke-width=".5" opacity=".5"/><line x1="50" y1="35" x2="50" y2="55" stroke="#4a9fea" stroke-width=".5" opacity=".5"/>'},
+    { type:'Narożna dolna L', name:'Narożna L', sub:'z karuzelą', dim:'H720 D560 W900',
+      cfg:'Drzwi', tag:'dolne', h:720, d:560, w:900,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="28" width="52" height="28" rx="2" fill="#252a3d" stroke="#c89840" stroke-width=".8"/><rect x="55" y="28" width="40" height="28" rx="2" fill="#1e2235" stroke="#c89840" stroke-width=".8"/><circle cx="57" cy="44" r="10" fill="none" stroke="#c89840" stroke-width=".6" stroke-dasharray="3,2"/><circle cx="57" cy="44" r="4" fill="#c89840" opacity=".3"/>'},
+    { type:'Słupek pod piekarnik', name:'Słupek AGD', sub:'piekarnik w kolumnie', dim:'H2130 D560',
+      cfg:'Drzwi', tag:'slupki', h:2130, d:560, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="30" y="3" width="40" height="54" rx="2" fill="#1a2030" stroke="#c89840" stroke-width=".8"/><rect x="34" y="7" width="32" height="20" rx="1" fill="#13161f" stroke="#3a3f55" stroke-width=".5"/><line x1="36" y1="13" x2="64" y2="13" stroke="#3a3f55" stroke-width=".5"/><line x1="36" y1="18" x2="64" y2="18" stroke="#3a3f55" stroke-width=".5"/><rect x="34" y="30" width="32" height="8" rx="1" fill="#252a3d" stroke="#3a3f55" stroke-width=".5"/><rect x="34" y="40" width="32" height="8" rx="1" fill="#252a3d" stroke="#3a3f55" stroke-width=".5"/>'},
+    { type:'Słupek pełny (z półkami)', name:'Słupek', sub:'z półkami', dim:'H2130 D560',
+      cfg:'Drzwi', tag:'slupki', h:2130, d:560, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="30" y="3" width="40" height="54" rx="2" fill="#252a3d" stroke="#3a3f55" stroke-width=".8"/><line x1="32" y1="18" x2="68" y2="18" stroke="#3a3f55" stroke-width=".7"/><line x1="32" y1="33" x2="68" y2="33" stroke="#3a3f55" stroke-width=".7"/><line x1="32" y1="48" x2="68" y2="48" stroke="#3a3f55" stroke-width=".7"/><rect x="45" y="28" width="10" height="1.5" rx=".75" fill="#c89840" opacity=".6"/>'},
+    { type:'Cargo / Spacetower', name:'Cargo', sub:'szuflady+drzwi', dim:'H2130 D560',
+      cfg:'Szuflady', tag:'slupki', h:2130, d:560, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="30" y="3" width="40" height="54" rx="2" fill="#252a3d" stroke="#3a3f55" stroke-width=".8"/><rect x="32" y="5" width="36" height="8" rx="1" fill="#1e2235" stroke="#c89840" stroke-width=".6"/><rect x="32" y="15" width="36" height="7" rx="1" fill="#1e2235" stroke="#3a3f55" stroke-width=".5"/><rect x="32" y="24" width="36" height="7" rx="1" fill="#1e2235" stroke="#3a3f55" stroke-width=".5"/><rect x="32" y="33" width="36" height="22" rx="1" fill="#252a3d" stroke="#3a3f55" stroke-width=".5"/><rect x="42" y="9" width="16" height="1.2" rx=".6" fill="#c89840" opacity=".6"/>'},
+  ],
+
+  lazienka: [
+    { type:'Dolna', name:'Pod umywalkę', sub:'szafka dolna', dim:'H600 D450',
+      cfg:'Drzwi', tag:'dolne', h:600, d:450, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="25" width="90" height="30" rx="2" fill="#252a3d" stroke="#4a9fea" stroke-width=".8"/><rect x="22" y="10" width="56" height="18" rx="12" fill="#1a2a3a" stroke="#4a9fea" stroke-width=".8"/><line x1="50" y1="3" x2="50" y2="12" stroke="#4a9fea" stroke-width="1.2"/>'},
+    { type:'Dolna', name:'Szuflady', sub:'szafka z szufladami', dim:'H600 D450',
+      cfg:'Szuflady', tag:'dolne', h:600, d:450, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="25" width="90" height="9" rx="1" fill="#252a3d" stroke="#4a9fea" stroke-width=".7"/><rect x="5" y="36" width="90" height="9" rx="1" fill="#252a3d" stroke="#3a3f55" stroke-width=".7"/><rect x="5" y="47" width="90" height="9" rx="1" fill="#252a3d" stroke="#3a3f55" stroke-width=".7"/><rect x="38" y="28" width="24" height="1.5" rx=".75" fill="#4a9fea" opacity=".7"/>'},
+    { type:'Wisząca', name:'Lustro/szafka', sub:'wisząca z lustrem', dim:'H600 D200',
+      cfg:'Drzwi', tag:'wiszace', h:600, d:200, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="5" width="90" height="38" rx="2" fill="#1a2a3a" stroke="#4a9fea" stroke-width=".8"/><rect x="8" y="8" width="84" height="32" rx="1" fill="#0d1520" opacity=".9"/><line x1="20" y1="15" x2="35" y2="30" stroke="rgba(74,159,234,.3)" stroke-width="1.5"/><line x1="20" y1="25" x2="40" y2="10" stroke="rgba(74,159,234,.2)" stroke-width="1.2"/>'},
+    { type:'Słupek pełny (z półkami)', name:'Słupek', sub:'kolumna lazienkowa', dim:'H1800 D350',
+      cfg:'Drzwi', tag:'slupki', h:1800, d:350, w:400,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="35" y="2" width="30" height="56" rx="2" fill="#252a3d" stroke="#4a9fea" stroke-width=".8"/><line x1="37" y1="16" x2="63" y2="16" stroke="#3a3f55" stroke-width=".7"/><line x1="37" y1="30" x2="63" y2="30" stroke="#3a3f55" stroke-width=".7"/><line x1="37" y1="44" x2="63" y2="44" stroke="#3a3f55" stroke-width=".7"/>'},
+    { type:'Pod zmywarkę', name:'Wneka pralka', sub:'na pralkę 60cm', dim:'H850 D600',
+      cfg:'Drzwi', tag:'dolne', h:850, d:600, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="10" y="10" width="80" height="46" rx="2" fill="#1a2030" stroke="#4a9fea" stroke-width=".8"/><circle cx="50" cy="35" r="18" fill="none" stroke="#4a9fea" stroke-width=".8"/><circle cx="50" cy="35" r="10" fill="#0d1520" stroke="#4a9fea" stroke-width=".5"/><rect x="25" y="13" width="30" height="8" rx="4" fill="#1a2030" stroke="#4a9fea" stroke-width=".5"/>'},
+  ],
+
+  garderoba: [
+    { type:'Słupek pełny (z półkami)', name:'Szafa', sub:'moduł szafy', dim:'H2200 D600',
+      cfg:'Drzwi', tag:'slupki', h:2200, d:600, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="10" y="3" width="80" height="54" rx="2" fill="#252a3d" stroke="#9b59b6" stroke-width=".8"/><line x1="50" y1="3" x2="50" y2="57" stroke="#3a3f55" stroke-width=".5"/><rect x="22" y="28" width="8" height="1.5" rx=".75" fill="#9b59b6" opacity=".7"/><rect x="70" y="28" width="8" height="1.5" rx=".75" fill="#9b59b6" opacity=".7"/>'},
+    { type:'Cargo / Spacetower', name:'Szuflady', sub:'moduł szuflad', dim:'H2200 D600',
+      cfg:'Szuflady', tag:'slupki', h:2200, d:600, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="10" y="3" width="80" height="54" rx="2" fill="#252a3d" stroke="#3a3f55" stroke-width=".8"/><rect x="12" y="5" width="76" height="9" rx="1" fill="#1e2235" stroke="#9b59b6" stroke-width=".6"/><rect x="12" y="16" width="76" height="9" rx="1" fill="#1e2235" stroke="#3a3f55" stroke-width=".5"/><rect x="12" y="27" width="76" height="9" rx="1" fill="#1e2235" stroke="#3a3f55" stroke-width=".5"/><rect x="12" y="38" width="76" height="9" rx="1" fill="#1e2235" stroke="#3a3f55" stroke-width=".5"/><rect x="12" y="49" width="76" height="8" rx="1" fill="#1e2235" stroke="#3a3f55" stroke-width=".5"/><rect x="42" y="9" width="16" height="1.2" rx=".6" fill="#9b59b6" opacity=".6"/>'},
+    { type:'Dolna', name:'Szafka dolna', sub:'na buty / dolna', dim:'H500 D550',
+      cfg:'Drzwi', tag:'dolne', h:500, d:550, w:800,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="35" width="90" height="22" rx="2" fill="#252a3d" stroke="#9b59b6" stroke-width=".8"/><line x1="50" y1="35" x2="50" y2="57" stroke="#3a3f55" stroke-width=".5"/><rect x="20" y="44" width="12" height="1.5" rx=".75" fill="#9b59b6" opacity=".6"/><rect x="68" y="44" width="12" height="1.5" rx=".75" fill="#9b59b6" opacity=".6"/>'},
+    { type:'Wisząca', name:'Polka', sub:'polka wisząca', dim:'H300 D350',
+      cfg:'Drzwi', tag:'wiszace', h:300, d:350, w:800,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="18" width="90" height="10" rx="2" fill="#252a3d" stroke="#9b59b6" stroke-width=".8"/><line x1="20" y1="28" x2="20" y2="55" stroke="#3a3f55" stroke-width=".7"/><line x1="80" y1="28" x2="80" y2="55" stroke="#3a3f55" stroke-width=".7"/>'},
+  ],
+
+  salon: [
+    { type:'Dolna', name:'Szafka RTV', sub:'pod telewizor', dim:'H400 D450',
+      cfg:'Drzwi', tag:'dolne', h:400, d:450, w:1200,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="35" width="90" height="22" rx="2" fill="#252a3d" stroke="#2ecc71" stroke-width=".8"/><rect x="15" y="5" width="70" height="32" rx="2" fill="#1a1e2b" stroke="#3a3f55" stroke-width=".7"/><rect x="17" y="7" width="66" height="28" rx="1" fill="#0a0c12"/>'},
+    { type:'Dolna GOLA', name:'RTV otwarty', sub:'otwarty blok', dim:'H400 D450',
+      cfg:'Drzwi', tag:'dolne', h:400, d:450, w:1000,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="28" width="90" height="28" rx="2" fill="#1a1e2b" stroke="#2ecc71" stroke-width=".8"/><rect x="8" y="31" width="84" height="22" rx="1" fill="#0e1017"/><line x1="35" y1="31" x2="35" y2="53" stroke="#3a3f55" stroke-width=".5"/><line x1="65" y1="31" x2="65" y2="53" stroke="#3a3f55" stroke-width=".5"/>'},
+    { type:'Słupek pełny (z półkami)', name:'Regal', sub:'na książki', dim:'H2200 D350',
+      cfg:'Drzwi', tag:'slupki', h:2200, d:350, w:400,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="30" y="3" width="40" height="54" rx="2" fill="#252a3d" stroke="#2ecc71" stroke-width=".8"/><line x1="32" y1="15" x2="68" y2="15" stroke="#3a3f55" stroke-width=".7"/><line x1="32" y1="27" x2="68" y2="27" stroke="#3a3f55" stroke-width=".7"/><line x1="32" y1="39" x2="68" y2="39" stroke="#3a3f55" stroke-width=".7"/><line x1="32" y1="51" x2="68" y2="51" stroke="#3a3f55" stroke-width=".7"/>'},
+    { type:'Dolna', name:'Komoda', sub:'z szufladami', dim:'H800 D450',
+      cfg:'Szuflady', tag:'dolne', h:800, d:450, w:1000,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="20" width="90" height="36" rx="2" fill="#252a3d" stroke="#2ecc71" stroke-width=".8"/><rect x="7" y="22" width="86" height="8" rx="1" fill="#1e2235" stroke="#2ecc71" stroke-width=".5"/><rect x="7" y="32" width="86" height="8" rx="1" fill="#1e2235" stroke="#3a3f55" stroke-width=".5"/><rect x="7" y="42" width="86" height="12" rx="1" fill="#1e2235" stroke="#3a3f55" stroke-width=".5"/><rect x="41" y="25" width="18" height="1.2" rx=".6" fill="#2ecc71" opacity=".7"/>'},
+  ],
+
+  sypialnia: [
+    { type:'Słupek pełny (z półkami)', name:'Szafa', sub:'modułowa', dim:'H2200 D600',
+      cfg:'Drzwi', tag:'slupki', h:2200, d:600, w:600,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="10" y="3" width="80" height="54" rx="2" fill="#252a3d" stroke="#f1c40f" stroke-width=".8"/><line x1="50" y1="3" x2="50" y2="57" stroke="#3a3f55" stroke-width=".5"/><rect x="22" y="28" width="8" height="1.5" rx=".75" fill="#f1c40f" opacity=".7"/><rect x="70" y="28" width="8" height="1.5" rx=".75" fill="#f1c40f" opacity=".7"/>'},
+    { type:'Wisząca', name:'Szafka nocna', sub:'nad łóżkiem', dim:'H400 D350',
+      cfg:'Drzwi', tag:'wiszace', h:400, d:350, w:400,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="25" y="8" width="50" height="35" rx="2" fill="#252a3d" stroke="#f1c40f" stroke-width=".8"/><rect x="35" y="20" width="30" height="1.5" rx=".75" fill="#f1c40f" opacity=".7"/>'},
+    { type:'Cargo / Spacetower', name:'Komoda', sub:'szuflady', dim:'H1200 D550',
+      cfg:'Szuflady', tag:'slupki', h:1200, d:550, w:800,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="10" y="10" width="80" height="46" rx="2" fill="#252a3d" stroke="#3a3f55" stroke-width=".8"/><rect x="12" y="12" width="76" height="9" rx="1" fill="#1e2235" stroke="#f1c40f" stroke-width=".6"/><rect x="12" y="23" width="76" height="9" rx="1" fill="#1e2235" stroke="#3a3f55" stroke-width=".5"/><rect x="12" y="34" width="76" height="9" rx="1" fill="#1e2235" stroke="#3a3f55" stroke-width=".5"/><rect x="12" y="45" width="76" height="9" rx="1" fill="#1e2235" stroke="#3a3f55" stroke-width=".5"/><rect x="42" y="16" width="16" height="1.2" rx=".6" fill="#f1c40f" opacity=".6"/>'},
+  ],
+
+  przedpokoj: [
+    { type:'Słupek pełny (z półkami)', name:'Szafa wejsciowa', sub:'z półkami', dim:'H2200 D600',
+      cfg:'Drzwi', tag:'slupki', h:2200, d:600, w:800,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="10" y="3" width="80" height="54" rx="2" fill="#252a3d" stroke="#2eaaa8" stroke-width=".8"/><line x1="50" y1="3" x2="50" y2="57" stroke="#3a3f55" stroke-width=".5"/><rect x="22" y="28" width="8" height="1.5" rx=".75" fill="#2eaaa8" opacity=".7"/><rect x="70" y="28" width="8" height="1.5" rx=".75" fill="#2eaaa8" opacity=".7"/>'},
+    { type:'Dolna', name:'Szafka na buty', sub:'dolna na buty', dim:'H500 D350',
+      cfg:'Drzwi', tag:'dolne', h:500, d:350, w:800,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="35" width="90" height="22" rx="2" fill="#252a3d" stroke="#2eaaa8" stroke-width=".8"/><line x1="50" y1="35" x2="50" y2="57" stroke="#3a3f55" stroke-width=".5"/><rect x="20" y="44" width="12" height="1.5" rx=".75" fill="#2eaaa8" opacity=".6"/><rect x="68" y="44" width="12" height="1.5" rx=".75" fill="#2eaaa8" opacity=".6"/>'},
+    { type:'Dolna GOLA', name:'Lawka', sub:'ławka z schowkiem', dim:'H450 D400',
+      cfg:'Drzwi', tag:'dolne', h:450, d:400, w:1000,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="38" width="90" height="18" rx="2" fill="#252a3d" stroke="#2eaaa8" stroke-width=".8"/><rect x="5" y="34" width="90" height="5" rx="2" fill="#1e2235" stroke="#2eaaa8" stroke-width=".6"/><rect x="5" y="50" width="10" height="6" fill="#3a3f55"/><rect x="85" y="50" width="10" height="6" fill="#3a3f55"/>'},
+    { type:'Wisząca', name:'Lustro / polka', sub:'wisząca', dim:'H300 D200',
+      cfg:'Drzwi', tag:'wiszace', h:300, d:200, w:800,
+      svg:'<rect width="100" height="60" fill="#0e1017"/><rect x="5" y="8" width="90" height="30" rx="2" fill="#1a2a3a" stroke="#2eaaa8" stroke-width=".8"/><rect x="8" y="11" width="84" height="24" rx="1" fill="#0d1520"/><line x1="18" y1="18" x2="30" y2="30" stroke="rgba(46,170,168,.3)" stroke-width="1.5"/><line x1="18" y1="26" x2="35" y2="14" stroke="rgba(46,170,168,.2)" stroke-width="1.2"/>'},
+  ],
+};
+
+/* Current active room in Add Module */
+var _addModRoom = 'kuchnia';
+
+/* Create #appAddModule div if missing */
+function appEnsureAddScreen(){
+  if(document.getElementById('appAddModule')) return;
+  var d=document.createElement('div');
+  d.id='appAddModule';
+  d.style.cssText='display:none;padding:14px 14px 80px;min-height:100vh;box-sizing:border-box;';
+  // Insert before bottomNav or append to body
+  var nav=document.getElementById('bottomNav');
+  if(nav) document.body.insertBefore(d, nav);
+  else document.body.appendChild(d);
+}
+
+/* Open module selection screen */
+function appShowAddModule(roomHint){
+  appEnsureAddScreen();
+  _addModRoom = roomHint || 'kuchnia';
+  appNav('addModule');
+}
+
+/* Render Add Module screen */
+function appRenderAddModule(){
+  var el=document.getElementById('appAddModule');
+  if(!el){ appEnsureAddScreen(); el=document.getElementById('appAddModule'); }
+  if(!el) return;
+  el.style.display='block';
+  el.style.animation='appFadeIn .2s ease';
+
+  var rooms=[
+    {k:'kuchnia',    l:'🍳 Kuchnia'},
+    {k:'lazienka',   l:'🚿 Łazienka'},
+    {k:'garderoba',  l:'👔 Garderoba'},
+    {k:'salon',      l:'🛋 Salon'},
+    {k:'sypialnia',  l:'🛏 Sypialnia'},
+    {k:'przedpokoj', l:'🚪 Przedpokój'},
+  ];
+
+  var modules = APP_MODULE_DB[_addModRoom] || APP_MODULE_DB.kuchnia;
+
+  el.innerHTML =
+    // Header z powrotem
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">'+
+    '<button onclick="appNav(\'konfig\')" style="width:32px;height:32px;background:var(--surface2);'+
+    'border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;'+
+    'font-size:1rem;display:flex;align-items:center;justify-content:center;">←</button>'+
+    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-weight:800;font-size:1.1rem;'+
+    'letter-spacing:.1em;text-transform:uppercase;color:var(--text);">Wybierz szafkę</div>'+
+    '</div>'+
+
+    // Taby pokoi
+    '<div class="add-room-tabs">'+
+    rooms.map(function(r){
+      return '<div class="add-room-tab '+(r.k===_addModRoom?'active':'')+'" '+
+        'onclick="appSwitchModRoom(\''+r.k+'\')">'+r.l+'</div>';
+    }).join('')+
+    '</div>'+
+
+    // Karty modułów
+    '<div class="module-cards-grid" id="addModGrid">'+
+    appModuleCardsHtml(modules)+
+    '</div>';
+}
+
+/* ================================================================
+ * appConfigureModule — fill konfig form + run autoLogics
+ * Opens konfig screen with all fields pre-filled from module def
+ * ================================================================ */
+function appConfigureModule(modIdx, roomKey){
+  var modules = APP_MODULE_DB[roomKey||_addModRoom] || APP_MODULE_DB.kuchnia;
+  var m = modules[modIdx];
+  if(!m) return;
+
+  //   
+  appNav('konfig');
+
+  //    DOM 
+  setTimeout(function(){
+    // 1.  
+    var typeEl = document.getElementById('type');
+    if(typeEl){
+      for(var i=0;i<typeEl.options.length;i++){
+        if(typeEl.options[i].value===m.type){
+          typeEl.selectedIndex=i; break;
+        }
+      }
+      typeEl.dispatchEvent(new Event('change'));
+    }
+
+    // 2.  (Drzwi/Szuflady)
+    var cfgEl = document.getElementById('config');
+    if(cfgEl){
+      for(var i=0;i<cfgEl.options.length;i++){
+        if(cfgEl.options[i].value===m.cfg){
+          cfgEl.selectedIndex=i; break;
+        }
+      }
+      cfgEl.dispatchEvent(new Event('change'));
+    }
+
+    // 3. Wymiary
+    var wEl=document.getElementById('width');
+    var hEl=document.getElementById('height');
+    var dEl=document.getElementById('depth');
+    if(wEl){ wEl.value=m.w||600; wEl.dispatchEvent(new Event('input')); }
+    if(hEl){ hEl.value=m.h||(m.tag==='wiszace'?610:m.tag==='slupki'?2130:720); hEl.dispatchEvent(new Event('input')); }
+    if(dEl){ dEl.value=m.d||(m.tag==='wiszace'?320:560); dEl.dispatchEvent(new Event('input')); }
+
+    // 4. Aktualizuj kategorie wizualne
+    if(typeof selectType==='function') selectType(m.type, null);
+
+    // 5. Updateselektory szuflad
+    if(typeof updateDrawerSelectors==='function') updateDrawerSelectors();
+
+    // 6. Uruchom wszystkie auto-logiki
+    if(typeof runAllAutoLogics==='function') runAllAutoLogics();
+
+    // 7. Scroll do góry formularza
+    var konfig=document.getElementById('sectionKonfig');
+    if(konfig) konfig.scrollIntoView({behavior:'smooth',block:'start'});
+
+    // Podpowiedź
+    showToast('⚙ '+m.name+' — skonfiguruj i kliknij + OBLICZ & DODAJ','#4a9fea','#0d1f2e');
+  }, 150);
+}
+
+
+function appModuleCardsHtml(modules){
+  return modules.map(function(m,i){
+    var accentColor = m.tag==='wiszace'?'var(--info)':m.tag==='slupki'?'var(--success)':'var(--accent2)';
+    return '<div class="module-card">'+
+      // SVG preview —   
+      '<div class="module-card-preview" onclick="appConfigureModule('+i+',\''+_addModRoom+'\')" '+
+      'style="cursor:pointer;position:relative;">'+
+      '<svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">'+m.svg+'</svg>'+
+      // Overlay "Konfiguruj"
+      '<div style="position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;'+
+      'justify-content:center;opacity:0;transition:opacity .2s;font-family:\'Barlow Condensed\',sans-serif;'+
+      'font-size:.7rem;font-weight:800;color:#fff;letter-spacing:.08em;text-transform:uppercase;" '+
+      'onmouseover="this.style.opacity=1;this.style.background=\'rgba(0,0,0,.5)\'" '+
+      'onmouseout="this.style.opacity=0;this.style.background=\'rgba(0,0,0,0)\'">'+
+      '⚙ Konfiguruj</div>'+
+      '</div>'+
+      '<div class="module-card-info">'+
+      '<span class="module-card-name">'+m.name+'</span>'+
+      '<span class="module-card-dim" style="color:'+accentColor+';">'+
+      m.dim+(m.cfg==='Szuflady'?' · 🗄 Szuflady':'')+'</span>'+
+      (m.sub?'<span style="font-family:\'JetBrains Mono\',monospace;font-size:.55rem;color:var(--muted);display:block;">'+m.sub+'</span>':'')+
+      '</div>'+
+      // Dwie akcje
+      '<div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border);">'+
+      '<button onclick="appConfigureModule('+i+',\''+_addModRoom+'\')" '+
+      'style="padding:8px 4px;background:transparent;border:none;border-right:1px solid var(--border);'+
+      'color:var(--info);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;'+
+      'font-size:.7rem;cursor:pointer;letter-spacing:.04em;">'+
+      '⚙ Konfiguruj</button>'+
+      '<button onclick="appQuickAdd('+i+',\''+_addModRoom+'\')" '+
+      'style="padding:8px 4px;background:transparent;border:none;'+
+      'color:'+accentColor+';font-family:\'Barlow Condensed\',sans-serif;font-weight:700;'+
+      'font-size:.7rem;cursor:pointer;letter-spacing:.04em;">'+
+      '＋ Dodaj</button>'+
+      '</div>'+
+      '</div>';
+  }).join('');
+}
+
+function appSwitchModRoom(roomKey){
+  _addModRoom = roomKey;
+  // Taby
+  document.querySelectorAll('.add-room-tab').forEach(function(t,i){
+    t.classList.toggle('active', t.textContent.trim().includes(
+      (typeof SC_ROOMS!=='undefined'&&SC_ROOMS[roomKey])?SC_ROOMS[roomKey].label:''));
+  });
+  // Prosta aktualizacja przez klasę
+  var tabs=document.querySelectorAll('.add-room-tab');
+  var rooms=['kuchnia','lazienka','garderoba','salon','sypialnia','przedpokoj'];
+  tabs.forEach(function(t,i){ t.classList.toggle('active', rooms[i]===roomKey); });
+  // Grid
+  var grid=document.getElementById('addModGrid');
+  if(grid) grid.innerHTML=appModuleCardsHtml(APP_MODULE_DB[roomKey]||APP_MODULE_DB.kuchnia);
+}
+
+/* Szybkie dodanie modułu do projektu */
+function appQuickAdd(modIdx, roomKey){
+  var modules = APP_MODULE_DB[roomKey||_addModRoom] || APP_MODULE_DB.kuchnia;
+  var m = modules[modIdx];
+  if(!m){ showToast('Błąd','#e05050','#3a1010'); return; }
+
+  if(typeof _historyPush==='function') _historyPush();
+
+  var isWiszList=['Wisząca','Wisząca z klapą','Pod okap','Narożna górna'];
+  var isWisz = isWiszList.indexOf(m.type)>=0;
+  var isSlupek = (m.type||'').indexOf('upek')>=0||(m.type||'').indexOf('Cargo')>=0;
+
+  var newMod = {
+    type:    m.type,
+    width:   m.w || 600,
+    height:  m.h || (isWisz?610:isSlupek?2130:720),
+    depth:   m.d || (isWisz?320:isSlupek?560:560),
+    config:  m.cfg || 'Drzwi',
+    tag:     isWisz?'wiszace':isSlupek?'slupki':'dolne',
+    system:  'Antaro', runner:500,
+    qty:     m.cfg==='Szuflady'?3:0,
+    drawers: m.cfg==='Szuflady'?3:0,
+    frontHeights:[], drawerTypes:[],
+    legType:  isWisz?'none':(isSlupek?'uni_h150':'uni_h100'),
+    legQty:   isWisz?0:4,
+    hingeType:'blum110', hingeQty:2,
+    frontCount:1, shelfCount:0, shelves:0,
+    tipOn:false, led:false, cokol:false,
+    cokolH:100, cokolMat:'hdf',
+    blindPanelW:0, blendaH:0, matCorpus:'', matFront:'none',
+    note: m.sub||''
+  };
+
+  if(typeof project==='undefined') window.project=[];
+  project.push(newMod);
+  if(typeof updateCounter==='function') updateCounter();
+
+  showToast('✅ '+m.name+' dodano do projektu ('+project.length+' mod.)','#2ecc71','#1a4a2e');
+}
+
 function appShellInit(){
+  if(window._appShellReady) return; // guard —   
+  window._appShellReady = true;
+
   appCreateScreens();
   appRebuildNav();
 
-  //   bnav  
+  //  bnav
   window.bnav=function(tab){
     var map={konfig:'konfig',rozm:'rozm',rozkroj:'rozkroj',projekt:'konfig'};
     appNav(map[tab]||tab);
   };
 
-  // Patch switchMainTab     
+  // Patch switchMainTab
   var origSMT=window.switchMainTab;
   window.switchMainTab=function(tab){
     if(origSMT) origSMT.call(this,tab);
-    // Sync nav
     if(APP.screen!=='konfig'&&APP.screen!=='rozm'&&APP.screen!=='rozkroj') return;
     document.querySelectorAll('.bnav-btn').forEach(function(b){b.classList.remove('active');});
     var btn=document.getElementById('bnav-konfig');
     if(btn) btn.classList.add('active');
   };
 
-  //   Home
+  //    konfig/rozm/rozkroj —    appNav
+  ['sectionKonfig','sectionRozm','sectionRozkroj'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.style.display='none';
+  });
+
+  //  header  tab bar —   Home/Projects/Settings
+  // (   konfig)
+  var oldHeader=document.getElementById('mainTabBar');
+  if(oldHeader) oldHeader.style.display='none';
+
+  //  Home
   appNav('home');
 }
 
 /* ================================================================
  * 
  * ================================================================ */
+// App Shell  —     engine
+document.addEventListener('DOMContentLoaded',function(){
+  setTimeout(appShellInit, 200);
+});
+//    load
 window.addEventListener('load',function(){
-  setTimeout(appShellInit, 400); //  splash
+  if(!window._appShellReady) setTimeout(appShellInit, 100);
 });
 
 </script>
