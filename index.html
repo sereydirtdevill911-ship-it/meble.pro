@@ -6298,15 +6298,16 @@ function closeViewModal(){
  */
 
 var SC = {
-  img:        null,   // HTMLImageElement
+  img:        null,
   canvas:     null,
   ctx:        null,
-  points:     [],     // [{x,y,label}] — kliknięte punkty
-  mode:       'idle', // idle | photo | points | measure | result
+  points:     [],
+  mode:       'idle',
   realWidth:  0,
-  scale:      0,      // mm/px
-  segments:   [],     // [{x1,x2,widthMm,label}]
-  imgData:    null,   // base64
+  scale:      0,
+  segments:   [],
+  imgData:    null,
+  room:       'kuchnia',  // kuchnia|lazienka|garderoba|salon|sypialnia|przedpokoj
 };
 
 // ── OPEN MODAL ───────────────────────────────────────────────────
@@ -6315,7 +6316,7 @@ function showScanCabinet(){
   if(tp) tp.style.display='none';
 
   SC = {img:null,canvas:null,ctx:null,points:[],mode:'photo',
-        realWidth:0,scale:0,segments:[],imgData:null};
+        realWidth:0,scale:0,segments:[],imgData:null,room:SC.room||'kuchnia'};
 
   var modal=document.createElement('div');
   modal.id='scModal';
@@ -6344,10 +6345,11 @@ function showScanCabinet(){
 
     // Step indicator
     '<div id="scSteps" style="display:flex;gap:0;flex-shrink:0;border-bottom:1px solid var(--border);">'+
-    scStepHTML(1,'📷','Zdjęcie',true)+
-    scStepHTML(2,'📍','Punkty',false)+
-    scStepHTML(3,'📐','Skala',false)+
-    scStepHTML(4,'📦','Moduły',false)+
+    scStepHTML(1,'🏠','Pokój',true)+
+    scStepHTML(2,'📷','Zdjęcie',false)+
+    scStepHTML(3,'📍','Punkty',false)+
+    scStepHTML(4,'📐','Skala',false)+
+    scStepHTML(5,'✅','Projekt',false)+
     '</div>'+
 
     // Body
@@ -6356,6 +6358,7 @@ function showScanCabinet(){
 
   document.body.appendChild(modal);
   scRenderStep1();
+
 }
 
 function scStepHTML(n,icon,label,active){
@@ -6370,7 +6373,7 @@ function scStepHTML(n,icon,label,active){
 }
 
 function scSetStep(n){
-  for(var i=1;i<=4;i++){
+  for(var i=1;i<=5;i++){
     var el=document.getElementById('scStep'+i);
     if(!el) continue;
     var active=(i===n);
@@ -6388,45 +6391,121 @@ function scClose(){
 }
 
 // ── STEP 1: Wczytaj zdjęcie ──────────────────────────────────────
+/* -- STEP 1: Wybór pokoju -- */
 function scRenderStep1(){
   scSetStep(1);
   var b=scBody(); if(!b) return;
+  var room=SC_ROOMS[SC.room]||SC_ROOMS.kuchnia;
   b.innerHTML=
-    '<div style="font-family:\'JetBrains Mono\',monospace;font-size:.68rem;color:var(--muted);'+
-    'line-height:1.7;margin-bottom:8px;">'+
-    '1. Zrób zdjęcie kuchni lub szafki z boku (prostopadle)<br>'+
-    '2. Zaznaczysz krawędzie modułów klikając<br>'+
-    '3. Podasz 1 realny wymiar — reszta automatycznie'+
+    '<div style="font-family:\"JetBrains Mono\",monospace;font-size:.63rem;color:var(--muted);margin-bottom:14px;line-height:1.7;">'+
+    '① Wybierz typ zabudowy → ② Zdjęcie → ③ Zaznacz granice → ④ Skala → ⑤ Projekt'+
     '</div>'+
 
-    // Przyciski upload
+    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;" id="scRoomGrid">'+
+    scRoomBtnsLarge()+
+    '</div>'+
+
+    // Opis wybranego pomieszczenia
+    '<div id="scRoomDesc" style="background:'+room.color+';border:1px solid '+room.border+';'+
+    'border-radius:8px;padding:10px 12px;margin-bottom:14px;'+
+    'font-family:\"JetBrains Mono\",monospace;font-size:.65rem;color:var(--text2);line-height:1.7;">'+
+    scRoomDesc(SC.room)+
+    '</div>'+
+
+    '<button onclick="scRenderStep2()" '+
+    'style="width:100%;padding:13px;background:linear-gradient(160deg,#2e9955,#1a6633);'+
+    'border:none;border-radius:8px;color:#fff;font-family:\"Barlow Condensed\",sans-serif;'+
+    'font-weight:800;font-size:.98rem;letter-spacing:.12em;cursor:pointer;">'+
+    (SC.imgData?'Dalej → (zdjęcie już wczytane)':'Dalej → Wczytaj zdjęcie')+
+    '</button>';
+}
+
+function scRoomDesc(key){
+  var r=SC_ROOMS[key]||SC_ROOMS.kuchnia;
+  var types=r.types.slice(0,4).map(function(t){return t.l;}).join(' · ');
+  return r.icon+' <b style="color:#fff;">'+r.label+'</b><br>'+
+    'Wymiary: H='+r.defaultH+'mm D='+r.defaultD+'mm<br>'+
+    'Typy: '+types;
+}
+
+function scRoomBtnsLarge(){
+  return Object.entries(SC_ROOMS).map(function(entry){
+    var key=entry[0], room=entry[1];
+    var active=SC.room===key;
+    return '<button onclick="scSetRoomAndRefresh(\"'+key+'\")" id="scRoomBtn_'+key+'" '+
+      'style="padding:12px 8px;background:'+(active?room.color:'rgba(255,255,255,.04)')+';'+
+      'border:2px solid '+(active?room.border:'var(--border)')+';border-radius:10px;cursor:pointer;'+
+      'font-family:\"Barlow Condensed\",sans-serif;font-weight:700;'+
+      'color:'+(active?'#fff':'var(--text2)')+';text-align:center;transition:all .15s;">'+
+      '<div style="font-size:1.5rem;margin-bottom:2px;">'+room.icon+'</div>'+
+      '<div style="font-size:.82rem;letter-spacing:.04em;">'+room.label+'</div>'+
+      '</button>';
+  }).join('');
+}
+
+function scSetRoomAndRefresh(key){
+  scSetRoom(key);
+  // Aktualizuj przyciski
+  Object.keys(SC_ROOMS).forEach(function(k){
+    var btn=document.getElementById('scRoomBtn_'+k);
+    if(!btn) return;
+    var room=SC_ROOMS[k],active=k===key;
+    btn.style.background=active?room.color:'rgba(255,255,255,.04)';
+    btn.style.borderColor=active?room.border:'var(--border)';
+    btn.style.color=active?'#fff':'var(--text2)';
+  });
+  // Aktualizuj opis
+  var desc=document.getElementById('scRoomDesc');
+  if(desc){
+    var room=SC_ROOMS[key]||SC_ROOMS.kuchnia;
+    desc.style.background=room.color;
+    desc.style.borderColor=room.border;
+    desc.innerHTML=scRoomDesc(key);
+  }
+}
+
+/* -- STEP 2: Zdjęcie (dawny step1) -- */
+function scRenderStep2_Photo(){
+  scSetStep(2);
+  var b=scBody(); if(!b) return;
+  var room=SC_ROOMS[SC.room]||SC_ROOMS.kuchnia;
+  b.innerHTML=
+    '<div style="font-family:\"JetBrains Mono\",monospace;font-size:.62rem;color:var(--muted);'+
+    'margin-bottom:10px;line-height:1.7;">'+
+    room.icon+' <b style="color:'+room.border+';">'+room.label+'</b> · H='+room.defaultH+'mm D='+room.defaultD+'mm<br>'+
+    'Wczytaj zdjęcie frontalnie — cała ściana widoczna'+
+    '</div>'+
+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">'+
     '<label style="display:flex;flex-direction:column;align-items:center;justify-content:center;'+
     'gap:8px;padding:20px 10px;background:rgba(46,204,113,.07);border:2px dashed rgba(46,204,113,.3);'+
-    'border-radius:10px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;'+
+    'border-radius:10px;cursor:pointer;font-family:\"Barlow Condensed\",sans-serif;font-weight:700;'+
     'font-size:.9rem;letter-spacing:.08em;color:var(--success);">'+
     '<span style="font-size:2rem;">📷</span>Zrób zdjęcie'+
     '<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="scLoadImage(this)">'+
     '</label>'+
     '<label style="display:flex;flex-direction:column;align-items:center;justify-content:center;'+
     'gap:8px;padding:20px 10px;background:rgba(74,159,234,.07);border:2px dashed rgba(74,159,234,.3);'+
-    'border-radius:10px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;'+
+    'border-radius:10px;cursor:pointer;font-family:\"Barlow Condensed\",sans-serif;font-weight:700;'+
     'font-size:.9rem;letter-spacing:.08em;color:var(--info);">'+
     '<span style="font-size:2rem;">📂</span>Z galerii'+
     '<input type="file" accept="image/*" style="display:none;" onchange="scLoadImage(this)">'+
     '</label>'+
     '</div>'+
 
-    // Tip
     '<div style="background:rgba(200,152,64,.06);border:1px solid rgba(200,152,64,.2);'+
-    'border-radius:8px;padding:10px 12px;font-family:\'JetBrains Mono\',monospace;'+
+    'border-radius:8px;padding:10px 12px;font-family:\"JetBrains Mono\",monospace;'+
     'font-size:.62rem;color:var(--muted);line-height:1.7;">'+
-    '💡 <b style="color:var(--accent2);">Najlepsze zdjęcia:</b><br>'+
-    '&nbsp;· Prosty kąt, frontalne (nie z boku)<br>'+
-    '&nbsp;· Cała ściana widoczna<br>'+
-    '&nbsp;· Dobre oświetlenie, bez cieni<br>'+
-    '&nbsp;· Jeśli możliwe — z centymetrem/taśmą w kadrze'+
-    '</div>';
+    '💡 <b style="color:var(--accent2);">Wskazówki:</b><br>'+
+    '&nbsp;· Prosty kąt, frontalnie (nie z boku)<br>'+
+    '&nbsp;· Cała ściana/zabudowa widoczna<br>'+
+    '&nbsp;· Dobre oświetlenie, bez cieni'+
+    '</div>'+
+
+    '<button onclick="scRenderStep1()" style="margin-top:10px;width:100%;padding:9px;'+
+    'background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:7px;'+
+    'color:var(--text2);cursor:pointer;font-family:\"Barlow Condensed\",sans-serif;'+
+    'font-weight:700;font-size:.8rem;">← Zmień typ zabudowy</button>';
 }
 
 function scLoadImage(input){
@@ -6435,46 +6514,79 @@ function scLoadImage(input){
   var reader=new FileReader();
   reader.onload=function(e){
     SC.imgData=e.target.result;
-    scRenderStep2();
+    scRenderStep3_Points();
   };
   reader.readAsDataURL(file);
 }
 
-// ── STEP 2: Kliknij punkty ───────────────────────────────────────
-function scRenderStep2(){
-  scSetStep(2);
+// ── STEP 3: Kliknij punkty ─────────────────────────────────────
+function scRenderStep3_Points(){
+  scSetStep(3);
   var b=scBody(); if(!b) return;
   SC.points=[];
   SC.mode='points';
+  SC._firstClick=true; // dla animacji
 
   b.innerHTML=
-    '<div style="font-family:\'JetBrains Mono\',monospace;font-size:.62rem;color:var(--muted);'+
-    'margin-bottom:8px;line-height:1.7;">'+
-    '📍 Klikaj w <b style="color:var(--accent2);">krawędzie pionowe</b> szafek od lewej do prawej.<br>'+
-    'Minimum 2 punkty (lewa i prawa krawędź ściany).'+
+    // Dynamiczny hint — zmienia się z każdym klikiem
+    '<div id="scHintBox" style="background:rgba(74,159,234,.08);border:1px solid rgba(74,159,234,.25);'+
+    'border-radius:8px;padding:8px 12px;margin-bottom:8px;'+
+    'font-family:\"JetBrains Mono\",monospace;font-size:.63rem;color:var(--info);line-height:1.6;">'+
+    scGetHint(0)+
     '</div>'+
 
-    // Canvas container
+    // Przykladowy overlay (znika po 1 kliknięciu)
     '<div style="position:relative;border:1px solid var(--border);border-radius:8px;overflow:hidden;'+
-    'background:#000;margin-bottom:10px;" id="scCanvasWrap">'+
+    'background:#000;margin-bottom:8px;" id="scCanvasWrap">'+
     '<canvas id="scCanvas" style="width:100%;display:block;cursor:crosshair;touch-action:none;"></canvas>'+
+    // Canvas overlay — wzorzec kuchni
+    '<canvas id="scOverlayCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;'+
+    'pointer-events:none;opacity:.55;display:block;"></canvas>'+
+    // Przycisk toggle overlay
+    '<button id="scOverlayBtn" onclick="scToggleOverlay()" '+
+    'style="position:absolute;top:7px;right:7px;padding:5px 9px;background:rgba(0,0,0,.65);'+
+    'border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:.65rem;'+
+    'font-family:\'Barlow Condensed\',sans-serif;font-weight:700;letter-spacing:.05em;'+
+    'cursor:pointer;z-index:10;transition:all .2s;">'+
+    '👁 WZORZEC: ON</button>'+
+    // Strzalka "pierwszy klik" — widoczna przed pierwszym klikiem
+    '<div id="scClickArrow" style="position:absolute;top:50%;left:20%;transform:translateY(-50%);'+
+    'pointer-events:none;text-align:center;transition:opacity .4s;">'+
+    '<div style="font-size:1.6rem;animation:scPulse 1.2s infinite;">👆</div>'+
+    '<div style="background:rgba(0,0,0,.7);color:#2ecc71;font-family:\"JetBrains Mono\",monospace;'+
+    'font-size:.6rem;padding:3px 7px;border-radius:4px;margin-top:2px;white-space:nowrap;">'+
+    'Kliknij tu → lewa krawędź</div>'+
+    '</div>'+
     '</div>'+
 
-    // Info
-    '<div id="scPointsInfo" style="font-family:\'JetBrains Mono\',monospace;font-size:.65rem;'+
-    'color:var(--muted);margin-bottom:8px;">Kliknięto: <b id="scPointCount" style="color:var(--success);">0</b> punktów</div>'+
+    // Liveinfo
+    '<div style="display:flex;align-items:center;justify-content:space-between;'+
+    'margin-bottom:8px;font-family:\"JetBrains Mono\",monospace;font-size:.65rem;">'+
+    '<span style="color:var(--muted);">Zaznaczono: <b id="scPointCount" style="color:var(--success);">0</b> pkt</span>'+
+    '<span id="scSegInfo" style="color:var(--muted);"></span>'+
+    '</div>'+
+
+    // Podpowiedzi tekstowe pod canvas
+    '<div id="scTextHints" style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;">'+
+    scTextHints()+
+    '</div>'+
 
     // Buttons
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'+
     '<button onclick="scUndoPoint()" style="padding:10px;background:rgba(231,76,60,.1);'+
     'border:1px solid rgba(231,76,60,.3);border-radius:8px;color:#e74c3c;'+
-    'font-family:\'Barlow Condensed\',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;">'+
-    '← Cofnij punkt</button>'+
-    '<button onclick="scStep2Next()" id="scNextBtn" style="padding:10px;'+
+    'font-family:\"Barlow Condensed\",sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;">'+
+    '← Cofnij</button>'+
+    '<button onclick="scStep3Next()" id="scNextBtn" style="padding:10px;'+
     'background:linear-gradient(160deg,#2e9955,#1a6633);border:none;border-radius:8px;color:#fff;'+
-    'font-family:\'Barlow Condensed\',sans-serif;font-weight:800;font-size:.88rem;cursor:pointer;">'+
+    'font-family:\"Barlow Condensed\",sans-serif;font-weight:800;font-size:.88rem;cursor:pointer;">'+
     'Dalej →</button>'+
     '</div>';
+
+  // Animacja pulsowania
+  var style=document.createElement('style');
+  style.textContent='@keyframes scPulse{0%,100%{transform:scale(1) translateY(-50%)}50%{transform:scale(1.25) translateY(-50%)}}';
+  document.head&&document.head.appendChild(style);
 
   // Inicjalizuj canvas
   setTimeout(function(){
@@ -6492,38 +6604,252 @@ function scRenderStep2(){
       canvas.style.height=canvas.height+'px';
       SC.canvas=canvas;
       SC.ctx=canvas.getContext('2d');
+      // Inicjalizuj overlay canvas
+      var oc=document.getElementById('scOverlayCanvas');
+      if(oc){
+        oc.width=canvas.width;
+        oc.height=canvas.height;
+        SC.overlayCanvas=oc;
+        SC.overlayCtx=oc.getContext('2d');
+        SC.overlayOn=true;
+        scDrawOverlay();
+      }
       scDrawCanvas();
 
-      // Click handler
       canvas.addEventListener('click',scCanvasClick);
       canvas.addEventListener('touchend',function(e){
         e.preventDefault();
         var t=e.changedTouches[0];
         var rect=canvas.getBoundingClientRect();
-        var scaleX=canvas.width/rect.width;
-        var scaleY=canvas.height/rect.height;
-        scAddPoint((t.clientX-rect.left)*scaleX,(t.clientY-rect.top)*scaleY);
+        scAddPoint((t.clientX-rect.left)*(canvas.width/rect.width),
+                   (t.clientY-rect.top)*(canvas.height/rect.height));
       },{passive:false});
+
+      // Mousemove — pionowa linia "preview" przed klikiem
+      canvas.addEventListener('mousemove',function(e){
+        var rect=canvas.getBoundingClientRect();
+        var x=Math.round((e.clientX-rect.left)*(canvas.width/rect.width));
+        scDrawCanvas();
+        // Linia preview
+        var c=SC.ctx;
+        c.save();
+        c.strokeStyle='rgba(255,255,255,.3)';
+        c.lineWidth=1;
+        c.setLineDash([2,3]);
+        c.beginPath();
+        c.moveTo(x,0);
+        c.lineTo(x,canvas.height);
+        c.stroke();
+        c.restore();
+      });
     };
     img.src=SC.imgData;
   },100);
+}
+
+
+/* -- SCAN CABINET: Overlay wzorzec zabudowy -- */
+
+// Stan overlay
+SC.overlayCanvas = null;
+SC.overlayCtx    = null;
+SC.overlayOn     = true;
+
+// Wzorce zabudowy per pokój: [{x:0..1, label, icon, color}]
+var SC_OVERLAYS = {
+  kuchnia: [
+    {x:0.00, w:0.08, label:'słupek',  icon:'🗼', color:'rgba(156,89,182,.4)',  h:1.0,  dashed:false},
+    {x:0.08, w:0.20, label:'600',     icon:'🚰', color:'rgba(74,159,234,.35)', h:0.55, dashed:false},
+    {x:0.28, w:0.18, label:'500',     icon:'🗄', color:'rgba(46,204,113,.35)', h:0.55, dashed:true},
+    {x:0.46, w:0.22, label:'600',     icon:'🍳', color:'rgba(46,204,113,.35)', h:0.55, dashed:false},
+    {x:0.68, w:0.22, label:'600',     icon:'🗄', color:'rgba(200,152,64,.35)', h:0.55, dashed:true},
+    {x:0.90, w:0.10, label:'300',     icon:'📋', color:'rgba(74,159,234,.3)',  h:0.55, dashed:false},
+  ],
+  lazienka: [
+    {x:0.00, w:0.22, label:'szafka',  icon:'🚿', color:'rgba(74,159,234,.35)', h:0.45, dashed:false},
+    {x:0.22, w:0.28, label:'umyw.',   icon:'🚰', color:'rgba(46,204,113,.35)', h:0.45, dashed:false},
+    {x:0.50, w:0.22, label:'szafka',  icon:'🗄', color:'rgba(74,159,234,.35)', h:0.45, dashed:true},
+    {x:0.72, w:0.28, label:'słupek',  icon:'🗼', color:'rgba(156,89,182,.4)',  h:0.85, dashed:false},
+  ],
+  garderoba: [
+    {x:0.00, w:0.25, label:'szafa',   icon:'👗', color:'rgba(156,89,182,.35)', h:0.95, dashed:false},
+    {x:0.25, w:0.25, label:'szafa',   icon:'👔', color:'rgba(156,89,182,.3)',  h:0.95, dashed:false},
+    {x:0.50, w:0.25, label:'szuflady',icon:'🗄', color:'rgba(200,152,64,.35)', h:0.95, dashed:true},
+    {x:0.75, w:0.25, label:'szafa',   icon:'👗', color:'rgba(156,89,182,.35)', h:0.95, dashed:false},
+  ],
+  salon: [
+    {x:0.00, w:0.20, label:'regał',   icon:'📚', color:'rgba(46,204,113,.35)', h:0.90, dashed:false},
+    {x:0.20, w:0.30, label:'TV',      icon:'📺', color:'rgba(74,159,234,.35)', h:0.35, dashed:false},
+    {x:0.50, w:0.30, label:'TV',      icon:'📺', color:'rgba(74,159,234,.3)',  h:0.35, dashed:true},
+    {x:0.80, w:0.20, label:'regał',   icon:'📚', color:'rgba(46,204,113,.35)', h:0.90, dashed:false},
+  ],
+  sypialnia: [
+    {x:0.00, w:0.28, label:'szafa',   icon:'🧥', color:'rgba(156,89,182,.35)', h:0.95, dashed:false},
+    {x:0.28, w:0.22, label:'noc.',    icon:'🌙', color:'rgba(200,152,64,.3)',  h:0.30, dashed:false},
+    {x:0.50, w:0.22, label:'noc.',    icon:'🌙', color:'rgba(200,152,64,.3)',  h:0.30, dashed:true},
+    {x:0.72, w:0.28, label:'szafa',   icon:'🧥', color:'rgba(156,89,182,.35)', h:0.95, dashed:false},
+  ],
+  przedpokoj: [
+    {x:0.00, w:0.30, label:'szafa',   icon:'👗', color:'rgba(46,170,168,.35)', h:0.95, dashed:false},
+    {x:0.30, w:0.20, label:'ławka',   icon:'🪑', color:'rgba(200,152,64,.35)', h:0.30, dashed:false},
+    {x:0.50, w:0.20, label:'ławka',   icon:'🪑', color:'rgba(200,152,64,.3)',  h:0.30, dashed:true},
+    {x:0.70, w:0.30, label:'szafa',   icon:'👗', color:'rgba(46,170,168,.35)', h:0.95, dashed:false},
+  ],
+};
+
+function scDrawOverlay(){
+  var oc=SC.overlayCanvas, octx=SC.overlayCtx;
+  if(!oc||!octx||!SC.overlayOn) return;
+
+  var W=oc.width, H=oc.height;
+  octx.clearRect(0,0,W,H);
+
+  var room=SC.room||'kuchnia';
+  var modules=SC_OVERLAYS[room]||SC_OVERLAYS.kuchnia;
+
+  // Tło — linia podłogi i sufitu
+  octx.save();
+  octx.strokeStyle='rgba(255,255,255,.25)';
+  octx.lineWidth=1;
+  octx.setLineDash([8,4]);
+  // Linia podłogi (dół)
+  octx.beginPath(); octx.moveTo(0,H*0.9); octx.lineTo(W,H*0.9); octx.stroke();
+  // Linia blatu (kuchnia)
+  if(room==='kuchnia'){
+    octx.strokeStyle='rgba(200,152,64,.3)';
+    octx.beginPath(); octx.moveTo(0,H*0.35); octx.lineTo(W,H*0.35); octx.stroke();
+  }
+  octx.restore();
+
+  modules.forEach(function(m){
+    var x1=Math.round(m.x*W);
+    var mw=Math.round(m.w*W);
+    var mh=Math.round(m.h*H*0.85);
+    var y1=Math.round(H*0.9-mh); // od dołu
+
+    // Wypełnienie
+    octx.fillStyle=m.color;
+    octx.fillRect(x1,y1,mw,mh);
+
+    // Ramka
+    octx.strokeStyle=m.color.replace(/[\d.]+\)$/,'0.8)');
+    octx.lineWidth=1.5;
+    octx.setLineDash(m.dashed?[5,3]:[]);
+    octx.strokeRect(x1+1,y1+1,mw-2,mh-2);
+    octx.setLineDash([]);
+
+    // Ikona w środku
+    var cx=x1+mw/2, cy=y1+mh/2;
+    octx.font=Math.max(12,Math.min(22,mw*0.3))+'px serif';
+    octx.textAlign='center';
+    octx.textBaseline='middle';
+    octx.fillText(m.icon,cx,cy-8);
+
+    // Label (szerokość)
+    var labelSize=Math.max(8,Math.min(11,mw*0.13));
+    octx.font='bold '+labelSize+'px monospace';
+    octx.fillStyle='rgba(255,255,255,.9)';
+    octx.textBaseline='bottom';
+    octx.fillText(m.label,cx,y1+mh-3);
+  });
+
+  // Podpis "WZORZEC"
+  octx.font='bold 9px monospace';
+  octx.fillStyle='rgba(255,255,255,.35)';
+  octx.textAlign='right';
+  octx.textBaseline='top';
+  octx.fillText('WZORZEC '+((SC_ROOMS[room]||{}).icon||''),W-4,4);
+}
+
+function scToggleOverlay(){
+  SC.overlayOn=!SC.overlayOn;
+  var oc=SC.overlayCanvas;
+  if(oc){
+    if(SC.overlayOn){ scDrawOverlay(); }
+    else { SC.overlayCtx&&SC.overlayCtx.clearRect(0,0,oc.width,oc.height); }
+  }
+  var btn=document.getElementById('scOverlayBtn');
+  if(btn){
+    btn.textContent='👁 WZORZEC: '+(SC.overlayOn?'ON':'OFF');
+    btn.style.background=SC.overlayOn?'rgba(46,204,113,.3)':'rgba(0,0,0,.65)';
+    btn.style.borderColor=SC.overlayOn?'rgba(46,204,113,.5)':'rgba(255,255,255,.3)';
+  }
+}
+
+// Odswiezenie overlay gdy zmienia sie pokój
+var _scSetRoomOrig=window.scSetRoom;
+window.scSetRoom=function(key){
+  if(_scSetRoomOrig) _scSetRoomOrig(key);
+  if(SC.overlayOn) scDrawOverlay();
+};
+
+
+// Dynamiczny hint na podstawie liczby punktów
+function scGetHint(n){
+  var room=SC_ROOMS[SC.room]||SC_ROOMS.kuchnia;
+  if(n===0) return '👆 <b style="color:var(--info);">Krok 1:</b> Kliknij lewą krawędź pierwszej szafki / ściany';
+  if(n===1) return '👆 <b style="color:var(--info);">Krok 2:</b> Kliknij prawą krawędź pierwszej szafki — dodasz kolejne';
+  if(n===2) return '✅ <b style="color:var(--success);">Masz 2 punkty</b> — możesz przejść dalej lub dodać więcej granic szafek';
+  if(n<6)   return '📍 <b style="color:var(--accent2);">'+n+' punktów</b> — klikaj kolejne krawędzie lub → Dalej';
+  return '📐 <b style="color:var(--success);">'+n+' punktów</b> — wyglądaj dobrze! Naciśnij Dalej →';
+}
+
+// Stałe podpowiedzi z przykładami
+function scTextHints(){
+  var room=SC_ROOMS[SC.room]||SC_ROOMS.kuchnia;
+  var tips=[
+    {icon:'📍', color:'rgba(46,204,113,.8)',
+     text:'Klikaj <b>krawędzie pionowe</b> szafek od lewej do prawej'},
+    {icon:'📏', color:'rgba(200,152,64,.8)',
+     text:'Im więcej punktów → dokładniejsze wymiary segmentów'},
+    {icon:'💡', color:'rgba(74,159,234,.8)',
+     text:room.icon+' '+room.label+': typowe szerokości '+
+          (room.standards||[600,800]).slice(0,3).join(', ')+'mm'},
+  ];
+  return tips.map(function(t){
+    return '<div style="display:flex;align-items:flex-start;gap:7px;padding:5px 8px;'+
+      'background:rgba(255,255,255,.03);border-left:2px solid '+t.color+';border-radius:0 5px 5px 0;">'+
+      '<span style="font-size:.85rem;flex-shrink:0;">'+t.icon+'</span>'+
+      '<span style="font-family:\"JetBrains Mono\",monospace;font-size:.6rem;color:var(--text2);line-height:1.5;">'+t.text+'</span>'+
+      '</div>';
+  }).join('');
 }
 
 function scCanvasClick(e){
   var canvas=SC.canvas;
   if(!canvas) return;
   var rect=canvas.getBoundingClientRect();
-  var scaleX=canvas.width/rect.width;
-  var scaleY=canvas.height/rect.height;
-  scAddPoint((e.clientX-rect.left)*scaleX,(e.clientY-rect.top)*scaleY);
+  scAddPoint((e.clientX-rect.left)*(canvas.width/rect.width),
+             (e.clientY-rect.top)*(canvas.height/rect.height));
 }
 
 function scAddPoint(x,y){
   var n=SC.points.length+1;
   SC.points.push({x:Math.round(x),y:Math.round(y),label:'P'+n});
+
+  // Chowamy strzalkę po pierwszym kliknięciu (animacja fade)
+  var arrow=document.getElementById('scClickArrow');
+  if(arrow){ arrow.style.opacity='0'; setTimeout(function(){arrow.style.display='none';},400); }
+
   scDrawCanvas();
+
+  // Aktualizuj hint i info
   var cnt=document.getElementById('scPointCount');
   if(cnt) cnt.textContent=SC.points.length;
+  var hint=document.getElementById('scHintBox');
+  if(hint) hint.innerHTML=scGetHint(SC.points.length);
+  var segInfo=document.getElementById('scSegInfo');
+  if(segInfo && SC.points.length>=2){
+    var total=SC.points[SC.points.length-1].x-SC.points[0].x;
+    segInfo.innerHTML='segs: <b style="color:var(--accent2);">'+(SC.points.length-1)+'</b>';
+  }
+
+  // Podswietl przycisk Dalej po 2+ punktach
+  var nextBtn=document.getElementById('scNextBtn');
+  if(nextBtn && SC.points.length>=2){
+    nextBtn.style.boxShadow='0 0 12px rgba(46,204,113,.4)';
+    nextBtn.style.border='1px solid rgba(46,204,113,.3)';
+  }
 }
 
 function scUndoPoint(){
@@ -6531,6 +6857,13 @@ function scUndoPoint(){
   scDrawCanvas();
   var cnt=document.getElementById('scPointCount');
   if(cnt) cnt.textContent=SC.points.length;
+  var hint=document.getElementById('scHintBox');
+  if(hint) hint.innerHTML=scGetHint(SC.points.length);
+  var nextBtn=document.getElementById('scNextBtn');
+  if(nextBtn && SC.points.length<2){
+    nextBtn.style.boxShadow='';
+    nextBtn.style.border='none';
+  }
 }
 
 function scDrawCanvas(){
@@ -6540,86 +6873,117 @@ function scDrawCanvas(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   ctx.drawImage(img,0,0,canvas.width,canvas.height);
 
-  // Overlay ciemny
-  ctx.fillStyle='rgba(0,0,0,.15)';
+  // Lekki ciemny overlay
+  ctx.fillStyle='rgba(0,0,0,.12)';
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
   var pts=SC.points;
+  if(!pts.length) return;
 
-  // Linie między punktami
+  var avgY=pts.reduce(function(s,p){return s+p.y;},0)/pts.length;
+
+  // Pozioma linia referencyjna (blat)
   if(pts.length>=2){
-    ctx.strokeStyle='rgba(200,152,64,.7)';
-    ctx.lineWidth=1.5;
-    ctx.setLineDash([4,3]);
+    ctx.save();
+    ctx.strokeStyle='rgba(200,152,64,.5)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([6,4]);
     ctx.beginPath();
-    // Pozioma linia na średniej wysokości punktów
-    var avgY=pts.reduce(function(s,p){return s+p.y;},0)/pts.length;
-    for(var i=0;i<pts.length;i++){
-      if(i===0) ctx.moveTo(pts[i].x,avgY);
-      else ctx.lineTo(pts[i].x,avgY);
-    }
+    ctx.moveTo(pts[0].x, avgY);
+    ctx.lineTo(pts[pts.length-1].x, avgY);
     ctx.stroke();
-    ctx.setLineDash([]);
+    ctx.restore();
 
-    // Segmenty z wymiarami px
+    // Segmenty — kolorowe prostokaty
+    var COLORS=['rgba(46,204,113,.15)','rgba(74,159,234,.15)','rgba(200,152,64,.15)',
+                'rgba(231,76,60,.12)','rgba(156,89,182,.12)','rgba(241,196,15,.12)'];
     for(var i=0;i<pts.length-1;i++){
-      var px=Math.round(pts[i+1].x-pts[i].x);
-      var mx=(pts[i].x+pts[i+1].x)/2;
-      ctx.fillStyle='rgba(0,0,0,.65)';
-      ctx.beginPath();
-      ctx.roundRect&&ctx.roundRect(mx-18,avgY-22,36,14,3);
+      var x1=pts[i].x, x2=pts[i+1].x;
+      var segH=Math.min(canvas.height*0.6, 200);
+      var segY=avgY-segH/2;
+      ctx.fillStyle=COLORS[i%COLORS.length];
+      ctx.fillRect(x1,segY,x2-x1,segH);
+      ctx.strokeStyle=COLORS[i%COLORS.length].replace('.15','.5').replace('.12','.5');
+      ctx.lineWidth=1;
+      ctx.setLineDash([]);
+      ctx.strokeRect(x1,segY,x2-x1,segH);
+
+      // Wymiar px w segmencie
+      var px=Math.round(x2-x1);
+      var mx=(x1+x2)/2;
+      ctx.fillStyle='rgba(0,0,0,.7)';
+      var tw=Math.max(34, ctx.measureText(px+'px').width+10);
+      if(ctx.roundRect) ctx.roundRect(mx-tw/2,avgY-13,tw,13,3);
+      else ctx.rect(mx-tw/2,avgY-13,tw,13);
       ctx.fill();
       ctx.fillStyle='#e8b84a';
-      ctx.font='bold 9px monospace';
+      ctx.font='bold 10px monospace';
       ctx.textAlign='center';
-      ctx.fillText(px+'px',mx,avgY-12);
+      ctx.fillText(px+'px',mx,avgY-3);
     }
   }
 
-  // Punkty
+  // Pionowe linie i punkty
   pts.forEach(function(p,i){
-    // Linia pionowa
-    ctx.strokeStyle='rgba(46,204,113,.8)';
+    var isFirst=i===0, isLast=i===pts.length-1;
+    var lineColor=isFirst||isLast?'rgba(231,76,60,.9)':'rgba(46,204,113,.9)';
+    var dotColor=isFirst||isLast?'#e74c3c':'#2ecc71';
+
+    // Linia pionowa przez caly canvas
+    ctx.save();
+    ctx.strokeStyle=lineColor;
     ctx.lineWidth=1.5;
-    ctx.setLineDash([3,2]);
+    ctx.setLineDash(isFirst||isLast?[4,2]:[2,3]);
     ctx.beginPath();
     ctx.moveTo(p.x,0);
     ctx.lineTo(p.x,canvas.height);
     ctx.stroke();
-    ctx.setLineDash([]);
+    ctx.restore();
 
-    // Punkt
+    // Kolo punktu
     ctx.beginPath();
-    ctx.arc(p.x,p.y,6,0,Math.PI*2);
-    ctx.fillStyle='rgba(46,204,113,.3)';
+    ctx.arc(p.x,p.y,8,0,Math.PI*2);
+    ctx.fillStyle=dotColor.replace('#','rgba(').replace('e74c3c','231,76,60,.25)').replace('2ecc71','46,204,113,.25)');
     ctx.fill();
-    ctx.strokeStyle='#2ecc71';
-    ctx.lineWidth=2;
+    ctx.strokeStyle=dotColor;
+    ctx.lineWidth=2.5;
     ctx.stroke();
 
-    // Label
-    ctx.fillStyle='rgba(0,0,0,.7)';
+    // Krzyzyk w srodku
+    ctx.strokeStyle=dotColor;
+    ctx.lineWidth=1.5;
     ctx.beginPath();
-    ctx.roundRect&&ctx.roundRect(p.x-10,p.y-28,20,14,3);
+    ctx.moveTo(p.x-4,p.y);ctx.lineTo(p.x+4,p.y);
+    ctx.moveTo(p.x,p.y-4);ctx.lineTo(p.x,p.y+4);
+    ctx.stroke();
+
+    // Etykieta z numerem
+    var label=(isFirst?'P1 ◀':isLast?'▶ P'+p.label.slice(1):p.label);
+    var tw2=ctx.measureText(label).width+10;
+    var lx=p.x+(isLast?-tw2-4:4);
+    var ly=Math.max(16, p.y-14);
+    ctx.fillStyle='rgba(0,0,0,.8)';
+    if(ctx.roundRect) ctx.roundRect(lx,ly-11,tw2,13,3);
+    else ctx.rect(lx,ly-11,tw2,13);
     ctx.fill();
-    ctx.fillStyle='#2ecc71';
-    ctx.font='bold 9px monospace';
-    ctx.textAlign='center';
-    ctx.fillText(p.label,p.x,p.y-18);
+    ctx.fillStyle=dotColor;
+    ctx.font='bold 10px monospace';
+    ctx.textAlign='left';
+    ctx.fillText(label,lx+5,ly);
   });
 }
 
-function scStep2Next(){
+function scStep3Next(){
   if(SC.points.length<2){
-    showToast('⚠ Kliknij co najmniej 2 punkty (lewa i prawa krawędź)','#f0ad4e','#7d6010');
+    showToast('⚠ Kliknij co najmniej 2 punkty','#f0ad4e','#7d6010');
     return;
   }
-  scRenderStep3();
+  scRenderStep4_Scale();
 }
 
 // ── STEP 3: Podaj realny wymiar ───────────────────────────────────
-function scRenderStep3(){
-  scSetStep(3);
+function scRenderStep4_Scale(){
+  scSetStep(4);
   var b=scBody(); if(!b) return;
 
   // Szerokość w px między pierwszym i ostatnim punktem
@@ -6671,7 +7035,7 @@ function scRenderStep3(){
 
     // Buttons
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">'+
-    '<button onclick="scRenderStep2()" style="padding:10px;background:rgba(255,255,255,.05);'+
+    '<button onclick="scRenderStep3_Points()" style="padding:10px;background:rgba(255,255,255,.05);'+
     'border:1px solid var(--border);border-radius:8px;color:var(--text2);'+
     'font-family:\'Barlow Condensed\',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;">'+
     '← Wróć</button>'+
@@ -6724,7 +7088,7 @@ function scSetRef(btn,val){
   }
 }
 
-function scStep3Next(){
+function scStep4Next(){
   var inp=document.getElementById('scRealMm');
   var mm=parseInt((inp&&inp.value)||'0');
   if(mm<100){
@@ -6746,67 +7110,479 @@ function scStep3Next(){
     SC.segments.push({x1:pts[i].x,x2:pts[i+1].x,widthMm:widthMm,label:'Segment '+(i+1)});
   }
 
-  scRenderStep4();
+  scRenderStep5_Modules();
 }
 
 // ── STEP 4: Propozycja modułów ───────────────────────────────────
-function scRenderStep4(){
-  scSetStep(4);
-  var b=scBody(); if(!b) return;
 
-  // Dopasuj każdy segment do standardowej szerokości
-  var STANDARD=[1000,900,800,600,500,450,400,300];
+/* ===== SCAN CABINET — Baza pomieszczeń i typów zabudowy ===== */
 
-  var proposed=SC.segments.map(function(seg,idx){
-    var w=seg.widthMm;
-    // Znajdź najbliższy standard
-    var closest=STANDARD.reduce(function(a,b){ return Math.abs(b-w)<Math.abs(a-w)?b:a; });
-    var diff=Math.abs(closest-w);
-    var autoType='Dolna';
-    var autoCfg='Drzwi';
-    // Jeśli szerokość pasuje do zlewu (600), piekarnika (600) — pytamy
-    return {
-      idx:idx,
-      rawMm:w,
-      snapMm:closest,
-      diff:diff,
-      type:autoType,
-      config:autoCfg,
-      use:true
-    };
+// ── DEFINICJE POMIESZCZEŃ ─────────────────────────────────────────
+var SC_ROOMS = {
+  kuchnia: {
+    label:'🍳 Kuchnia', color:'rgba(200,152,64,.15)', border:'rgba(200,152,64,.4)',
+    icon:'🍳',
+    types:[
+      {v:'Dolna',              l:'🍳 Dolna',         tag:'dolne',   h:720, d:560, cfg:'Drzwi'},
+      {v:'Pod zmywarkę',       l:'🚰 Zlew',          tag:'dolne',   h:720, d:560, cfg:'Drzwi'},
+      {v:'AGD pod piekarnik + szuflada', l:'🔥 Piekarnik', tag:'dolne', h:720, d:560, cfg:'Drzwi'},
+      {v:'Dolna GOLA',         l:'📋 Dolna GOLA',   tag:'dolne',   h:720, d:560, cfg:'Drzwi'},
+      {v:'Wisząca',            l:'📦 Wisząca',       tag:'wiszace', h:610, d:320, cfg:'Drzwi'},
+      {v:'Wisząca z klapą',    l:'🔼 Z klapą',       tag:'wiszace', h:400, d:350, cfg:'Drzwi'},
+      {v:'Pod okap',           l:'💨 Pod okap',      tag:'wiszace', h:400, d:350, cfg:'Drzwi'},
+      {v:'Słupek pod piekarnik',l:'🗼 Słupek AGD',  tag:'slupki',  h:2130,d:560, cfg:'Drzwi'},
+      {v:'Słupek pełny (z półkami)',l:'🗼 Słupek',   tag:'slupki',  h:2130,d:560, cfg:'Drzwi'},
+      {v:'Cargo / Spacetower', l:'🗃 Cargo',         tag:'slupki',  h:2130,d:560, cfg:'Szuflady'},
+    ],
+    standards:[1000,900,800,600,500,450,400,300],
+    defaultH:720, defaultD:560,
+    hints:{
+      middle600:'Pod zmywarkę',
+      wideEdge:'Słupek pełny (z półkami)',
+      narrow:'Dolna GOLA',
+      center:'Szuflady',
+    }
+  },
+
+  lazienka: {
+    label:'🚿 Łazienka', color:'rgba(74,159,234,.15)', border:'rgba(74,159,234,.4)',
+    icon:'🚿',
+    types:[
+      {v:'Dolna',        l:'🚿 Szafka pod umywalkę', tag:'dolne',   h:600, d:450, cfg:'Drzwi'},
+      {v:'Dolna GOLA',   l:'📋 Pod umywalkę otwarta',tag:'dolne',   h:600, d:450, cfg:'Drzwi'},
+      {v:'Dolna',        l:'🗄 Szafka z szufladami', tag:'dolne',   h:600, d:450, cfg:'Szuflady'},
+      {v:'Wisząca',      l:'🪥 Szafka górna luster', tag:'wiszace', h:600, d:200, cfg:'Drzwi'},
+      {v:'Wisząca',      l:'📦 Wisząca',             tag:'wiszace', h:400, d:200, cfg:'Drzwi'},
+      {v:'Słupek pełny (z półkami)', l:'🗼 Słupek łazienkowy', tag:'slupki', h:1800, d:350, cfg:'Drzwi'},
+      {v:'Słupek pełny (z półkami)', l:'🗼 Słupek pralka',     tag:'slupki', h:2130, d:600, cfg:'Drzwi'},
+      {v:'Pod zmywarkę', l:'🧺 Wnęka na pralkę',    tag:'dolne',   h:850, d:600, cfg:'Drzwi'},
+    ],
+    standards:[900,800,600,500,450,400,350,300],
+    defaultH:600, defaultD:450,
+    hints:{
+      middle600:'Pod zmywalkę',
+      wideEdge:'Słupek pełny (z półkami)',
+      narrow:'Wisząca',
+      center:'Szuflady',
+    }
+  },
+
+  garderoba: {
+    label:'👔 Garderoba', color:'rgba(156,89,182,.15)', border:'rgba(156,89,182,.4)',
+    icon:'👔',
+    types:[
+      {v:'Słupek pełny (z półkami)', l:'👔 Szafa ubraniowa',  tag:'slupki', h:2200, d:600, cfg:'Drzwi'},
+      {v:'Słupek pełny (z półkami)', l:'📦 Moduł z półkami',  tag:'slupki', h:2200, d:600, cfg:'Drzwi'},
+      {v:'Cargo / Spacetower',       l:'🗄 Moduł szuflad',    tag:'slupki', h:2200, d:600, cfg:'Szuflady'},
+      {v:'Słupek pełny (z półkami)', l:'👠 Szafka na buty',   tag:'slupki', h:1200, d:400, cfg:'Drzwi'},
+      {v:'Wisząca',                  l:'📦 Półka wisząca',    tag:'wiszace', h:300, d:350, cfg:'Drzwi'},
+      {v:'Dolna',                    l:'🗃 Szafka dolna',     tag:'dolne',  h:500, d:550, cfg:'Drzwi'},
+    ],
+    standards:[1200,1000,900,800,600,500,450,400,300],
+    defaultH:2200, defaultD:600,
+    hints:{
+      middle600:'Szafa',
+      wideEdge:'Szafa',
+      narrow:'Cargo / Spacetower',
+      center:'Cargo / Spacetower',
+    }
+  },
+
+  salon: {
+    label:'🛋 Salon/TV', color:'rgba(46,204,113,.15)', border:'rgba(46,204,113,.4)',
+    icon:'🛋',
+    types:[
+      {v:'Dolna',        l:'📺 Szafka RTV/TV',      tag:'dolne',   h:400, d:450, cfg:'Drzwi'},
+      {v:'Dolna GOLA',   l:'🎮 Szafka otwarta RTV', tag:'dolne',   h:400, d:450, cfg:'Drzwi'},
+      {v:'Wisząca',      l:'📦 Półka wisząca',       tag:'wiszace', h:300, d:300, cfg:'Drzwi'},
+      {v:'Słupek pełny (z półkami)',l:'📚 Regał na książki',tag:'slupki',h:2200,d:350,cfg:'Drzwi'},
+      {v:'Dolna',        l:'🗄 Komoda z szufladami', tag:'dolne',   h:800, d:450, cfg:'Szuflady'},
+      {v:'Słupek pełny (z półkami)',l:'🗼 Witryna',  tag:'slupki',  h:2000, d:400, cfg:'Drzwi'},
+    ],
+    standards:[2000,1600,1200,1000,800,600,500,400],
+    defaultH:400, defaultD:450,
+    hints:{
+      middle600:'Szafka RTV',
+      wideEdge:'Regał na książki',
+      narrow:'Półka wisząca',
+      center:'Szuflady',
+    }
+  },
+
+  sypialnia: {
+    label:'🛏 Sypialnia', color:'rgba(241,196,15,.15)', border:'rgba(241,196,15,.4)',
+    icon:'🛏',
+    types:[
+      {v:'Słupek pełny (z półkami)',l:'🧥 Szafa ubraniowa',  tag:'slupki', h:2200, d:600, cfg:'Drzwi'},
+      {v:'Cargo / Spacetower',      l:'🗄 Komoda szuflady',  tag:'slupki', h:1200, d:550, cfg:'Szuflady'},
+      {v:'Wisząca',                 l:'🌙 Szafka nocna',     tag:'wiszace', h:400, d:350, cfg:'Drzwi'},
+      {v:'Dolna',                   l:'📚 Ławka/podłogowa',  tag:'dolne',   h:450, d:500, cfg:'Drzwi'},
+      {v:'Słupek pełny (z półkami)',l:'📦 Szafa z półkami',  tag:'slupki', h:2200, d:600, cfg:'Drzwi'},
+      {v:'Wisząca',                 l:'📦 Półka nad łóżkiem',tag:'wiszace', h:200, d:250, cfg:'Drzwi'},
+    ],
+    standards:[2400,2000,1800,1200,900,800,600,400,300],
+    defaultH:2200, defaultD:600,
+    hints:{
+      middle600:'Szafa',
+      wideEdge:'Szafa ubraniowa',
+      narrow:'Szafka nocna',
+      center:'Cargo / Spacetower',
+    }
+  },
+
+  przedpokoj: {
+    label:'🚪 Przedpokój', color:'rgba(46,170,168,.15)', border:'rgba(46,170,168,.4)',
+    icon:'🚪',
+    types:[
+      {v:'Słupek pełny (z półkami)',l:'👗 Szafa wejściowa',  tag:'slupki', h:2200, d:600, cfg:'Drzwi'},
+      {v:'Dolna',                   l:'👟 Szafka na buty',   tag:'dolne',   h:500, d:350, cfg:'Drzwi'},
+      {v:'Dolna GOLA',              l:'🧺 Ławka z schowkiem',tag:'dolne',   h:450, d:400, cfg:'Drzwi'},
+      {v:'Wisząca',                 l:'🪞 Lustro / półka',   tag:'wiszace', h:300, d:200, cfg:'Drzwi'},
+      {v:'Słupek pełny (z półkami)',l:'📦 Szafka wysoka',   tag:'slupki',  h:1800, d:350, cfg:'Drzwi'},
+      {v:'Cargo / Spacetower',      l:'🗄 Szafa z szufladami',tag:'slupki', h:2200, d:600, cfg:'Szuflady'},
+    ],
+    standards:[1200,1000,900,800,600,500,400,300],
+    defaultH:2200, defaultD:600,
+    hints:{
+      middle600:'Szafa wejściowa',
+      wideEdge:'Szafa wejściowa',
+      narrow:'Szafka na buty',
+      center:'Szuflady',
+    }
+  }
+};
+
+// ── Przyciski wyboru pokoju ───────────────────────────────────────
+function scRoomBtns(){
+  return Object.entries(SC_ROOMS).map(function(entry){
+    var key=entry[0], room=entry[1];
+    var active=SC.room===key;
+    return '<button onclick="scSetRoom(\''+key+'\')" id="scRoomBtn_'+key+'" '+
+      'style="padding:7px 4px;background:'+(active?room.color:'rgba(255,255,255,.04)')+';'+
+      'border:1px solid '+(active?room.border:'var(--border)')+';border-radius:7px;cursor:pointer;'+
+      'font-family:\'Barlow Condensed\',sans-serif;font-weight:700;font-size:.72rem;'+
+      'color:'+(active?'#fff':'var(--text2)')+';text-align:center;transition:all .2s;">'+
+      '<div style="font-size:1.1rem;">'+room.icon+'</div>'+
+      '<div style="font-size:.6rem;letter-spacing:.04em;">'+room.label.replace(/^.+\s/,'')+'</div>'+
+      '</button>';
+  }).join('');
+}
+
+function scSetRoom(key){
+  SC.room=key;
+  // Aktualizuj przyciski
+  Object.keys(SC_ROOMS).forEach(function(k){
+    var btn=document.getElementById('scRoomBtn_'+k);
+    if(!btn) return;
+    var room=SC_ROOMS[k];
+    var active=k===key;
+    btn.style.background=active?room.color:'rgba(255,255,255,.04)';
+    btn.style.borderColor=active?room.border:'var(--border)';
+    btn.style.color=active?'#fff':'var(--text2)';
+  });
+}
+
+// -- Analiza segmentu z uwzględnieniem pokoju --
+function scGetRoomTypes(room){
+  return (SC_ROOMS[room]||SC_ROOMS.kuchnia).types;
+}
+function scGetRoomStandards(room){
+  return (SC_ROOMS[room]||SC_ROOMS.kuchnia).standards;
+}
+function scGetRoomDefaults(room){
+  var r=SC_ROOMS[room]||SC_ROOMS.kuchnia;
+  return {h:r.defaultH, d:r.defaultD};
+}
+
+/* ===== SCAN CABINET — Inteligentna analiza segmentów ===== */
+
+/* -----------------------------------------------------------
+ * scAnalyzeSegment(widthMm, idx, totalSegments, totalMm)
+ * → zwraca {snapMm, type, config, tag, reason, confidence}
+ * Logika:
+ *  1. Snap do standardu PL
+ *  2. Heurystyki kontekstowe (pozycja, proporcje sąsiadów)
+ *  3. Confidence 0..1 → kolor w UI
+ * --------------------------------------------------------- */
+function scAnalyzeSegment(rawMm, idx, totalSegs, totalMm, allRaw){
+  var room   = SC.room || 'kuchnia';
+  var roomDef= SC_ROOMS[room] || SC_ROOMS.kuchnia;
+  var STANDARD = roomDef.standards;
+  var hints    = roomDef.hints || {};
+  var defaults = {h: roomDef.defaultH, d: roomDef.defaultD};
+
+  // 1. Snap do standardu pokoju
+  var snap = STANDARD.reduce(function(a,b){
+    return Math.abs(b-rawMm)<Math.abs(a-rawMm)?b:a;
+  });
+  var diff = Math.abs(snap-rawMm);
+
+  // 2. Kontekst pozycji
+  var isFirst  = idx===0;
+  var isLast   = idx===totalSegs-1;
+  var isMiddle = !isFirst&&!isLast;
+  var ratio    = rawMm/totalMm;
+
+  // 3. Rozmiary sąsiadów
+  var avgOthers = totalSegs>1 ? (totalMm-rawMm)/(totalSegs-1) : rawMm;
+  var isWide    = rawMm > avgOthers*1.3;
+  var isNarrow  = rawMm < avgOthers*0.6;
+
+  // 4. Typ domyślny z definicji pokoju
+  var firstType = roomDef.types[0];
+  var type   = firstType.v;
+  var config = firstType.cfg || 'Drzwi';
+  var tag    = firstType.tag || 'dolne';
+  var h      = defaults.h;
+  var d      = defaults.d;
+  var reason = '';
+  var confidence = 0.65;
+
+  // ── Kuchnia ──────────────────────────────────────────────────
+  if(room==='kuchnia'){
+    if(snap===600 && isMiddle && totalSegs>=3){
+      type='Pod zmywarkę'; config='Drzwi'; tag='dolne';
+      reason='Środkowy 600mm → zlew'; confidence=0.68;
+    } else if(isWide && (isFirst||isLast) && rawMm>700){
+      type='Słupek pod piekarnik'; config='Drzwi'; tag='slupki'; h=2130; d=560;
+      reason='Szeroki skrajny → słupek AGD'; confidence=0.6;
+    } else if(isNarrow || snap<=400){
+      type='Dolna GOLA'; config='Drzwi'; tag='dolne';
+      reason='Wąski → wypełnienie'; confidence=0.5;
+    } else if(isMiddle && snap===600){
+      type='Dolna'; config='Szuflady'; tag='dolne';
+      reason='Środkowy 600mm → szuflady'; confidence=0.65;
+    } else {
+      type='Dolna'; config=(isFirst||isLast)?'Drzwi':'Szuflady'; tag='dolne';
+      reason=(isFirst||isLast)?'Skrajny → drzwi':'Standardowa dolna';
+      confidence=0.7;
+    }
+    if(totalSegs===1 && rawMm>1200){
+      type='Dolna'; config='Szuflady'; reason='Długi segment → seria dolnych'; confidence=0.4;
+    }
+  }
+
+  // ── Łazienka ─────────────────────────────────────────────────
+  else if(room==='lazienka'){
+    h=600; d=450;
+    if(snap>=600 && isMiddle){
+      type='Dolna'; config='Drzwi'; tag='dolne';
+      reason='Środkowy → szafka pod umywalkę'; confidence=0.65;
+    } else if(isWide && (isFirst||isLast)){
+      type='Słupek pełny (z półkami)'; config='Drzwi'; tag='slupki'; h=1800; d=350;
+      reason='Skrajny szeroki → słupek łazienkowy'; confidence=0.6;
+    } else if(snap<=400){
+      type='Wisząca'; config='Drzwi'; tag='wiszace'; h=400; d=200;
+      reason='Wąski → szafka górna / lustro'; confidence=0.55;
+    } else if(snap>=600 && rawMm>620){
+      type='Pod zmywarkę'; config='Drzwi'; tag='dolne'; h=850; d=600;
+      reason='Szeroki dolny → wnęka na pralkę?'; confidence=0.45;
+    } else {
+      type='Dolna'; config='Szuflady'; tag='dolne';
+      reason='Dolna z szufladami'; confidence=0.6;
+    }
+  }
+
+  // ── Garderoba ─────────────────────────────────────────────────
+  else if(room==='garderoba'){
+    h=2200; d=600;
+    if(isNarrow || snap<=400){
+      type='Cargo / Spacetower'; config='Szuflady'; tag='slupki';
+      reason='Wąski → moduł szuflad'; confidence=0.6;
+    } else if(snap===600){
+      type='Słupek pełny (z półkami)'; config='Drzwi'; tag='slupki';
+      reason='600mm → standardowy moduł szafy'; confidence=0.75;
+    } else {
+      type='Słupek pełny (z półkami)'; config='Drzwi'; tag='slupki';
+      reason='Moduł szafy'; confidence=0.7;
+    }
+  }
+
+  // ── Salon/TV ──────────────────────────────────────────────────
+  else if(room==='salon'){
+    h=400; d=450;
+    if(isWide && (isFirst||isLast)){
+      type='Słupek pełny (z półkami)'; config='Drzwi'; tag='slupki'; h=2200; d=350;
+      reason='Skrajny wysoki → regał na książki'; confidence=0.6;
+    } else if(snap>=600 && isMiddle){
+      type='Dolna'; config='Drzwi'; tag='dolne'; h=400; d=450;
+      reason='Środkowy → szafka RTV'; confidence=0.65;
+    } else if(isNarrow){
+      type='Wisząca'; config='Drzwi'; tag='wiszace'; h=300; d=300;
+      reason='Wąski → półka wisząca'; confidence=0.55;
+    } else {
+      type='Dolna'; config='Drzwi'; tag='dolne';
+      reason='Szafka/komoda'; confidence=0.65;
+    }
+  }
+
+  // ── Sypialnia ─────────────────────────────────────────────────
+  else if(room==='sypialnia'){
+    h=2200; d=600;
+    if(snap<=400){
+      type='Wisząca'; config='Drzwi'; tag='wiszace'; h=400; d=350;
+      reason='Wąski → szafka nocna'; confidence=0.65;
+    } else if(snap===600){
+      type='Słupek pełny (z półkami)'; config='Drzwi'; tag='slupki';
+      reason='600mm → moduł szafy'; confidence=0.75;
+    } else if(isWide){
+      type='Słupek pełny (z półkami)'; config='Drzwi'; tag='slupki';
+      reason='Szeroki → szafa'; confidence=0.7;
+    } else {
+      type='Cargo / Spacetower'; config='Szuflady'; tag='slupki'; h=1200;
+      reason='Komoda z szufladami'; confidence=0.6;
+    }
+  }
+
+  // ── Przedpokój ────────────────────────────────────────────────
+  else if(room==='przedpokoj'){
+    h=2200; d=600;
+    if(snap<=400){
+      type='Dolna'; config='Drzwi'; tag='dolne'; h=500; d=350;
+      reason='Wąski → szafka na buty'; confidence=0.6;
+    } else if(snap===600 && (isFirst||isLast)){
+      type='Słupek pełny (z półkami)'; config='Drzwi'; tag='slupki';
+      reason='Skrajny → szafa wejściowa'; confidence=0.7;
+    } else if(isMiddle){
+      type='Dolna GOLA'; config='Drzwi'; tag='dolne'; h=450; d=400;
+      reason='Środkowy → ławka z schowkiem'; confidence=0.55;
+    } else {
+      type='Słupek pełny (z półkami)'; config='Drzwi'; tag='slupki';
+      reason='Szafa przedpokojowa'; confidence=0.65;
+    }
+  }
+
+  // Korekta confidence wg diff
+  if(diff>150) confidence=Math.max(0.25, confidence-0.3);
+  else if(diff>80) confidence=Math.max(0.35, confidence-0.15);
+  else if(diff<25) confidence=Math.min(0.95, confidence+0.15);
+
+  return {
+    idx:idx, rawMm:rawMm, snapMm:snap, diff:diff,
+    type:type, config:config, tag:tag,
+    h:h, d:d,
+    reason:reason, confidence:confidence, use:true
+  };
+}
+
+/* -----------------------------------------------------------
+ * scAnalyzeAll — analizuje wszystkie segmenty razem
+ * Dodaje globalne korekty po pojedynczej analizie
+ * --------------------------------------------------------- */
+function scAnalyzeAll(segments){
+  var totalMm = segments.reduce(function(s,sg){return s+sg.widthMm;},0);
+  var allRaw  = segments.map(function(sg){return sg.widthMm;});
+  var n       = segments.length;
+
+  var proposed = segments.map(function(seg,i){
+    return scAnalyzeSegment(seg.widthMm, i, n, totalMm, allRaw);
   });
 
-  SC._proposed=proposed;
+  // Globalna korekta: jeśli jest tylko 1 segment z typem "zlew"
+  // i jest kilka segmentów — OK, ale jeśli 2 segmenty = zlew, odwracamy jeden
+  var zlewCount = proposed.filter(function(p){return p.type==='Pod zmywarkę';}).length;
+  if(zlewCount>1){
+    var found=false;
+    proposed.forEach(function(p){
+      if(p.type==='Pod zmywarkę'&&!found){ found=true; } // pierwszy zostawiamy
+      else if(p.type==='Pod zmywarkę'){
+        p.type='Dolna'; p.config='Drzwi';
+        p.reason='Korekta: tylko 1 zlew w kuchni'; p.confidence=0.7;
+      }
+    });
+  }
 
-  b.innerHTML=
-    '<div style="font-family:\'JetBrains Mono\',monospace;font-size:.62rem;color:var(--muted);'+
-    'margin-bottom:10px;line-height:1.6;">'+
-    '📦 Skala: <b style="color:var(--success);">'+SC.scale.toFixed(2)+'mm/px</b>  '+
-    'Ściana: <b style="color:var(--accent2);">'+SC.realWidth+'mm</b>  '+
-    'Segmentów: <b style="color:var(--info);">'+SC.segments.length+'</b>'+
-    '</div>'+
+  // Korekta: jeśli total < 1800mm i wszystkie segmenty Dolna → może być aneks
+  if(totalMm<1800 && n<=3){
+    proposed.forEach(function(p){
+      if(p.reason==='') p.reason='Aneks kuchenny (mała przestrzeń)';
+    });
+  }
+
+  // Dopasowanie sumy do realWidth
+  var snapSum = proposed.filter(function(p){return p.use;})
+    .reduce(function(s,p){return s+p.snapMm;},0);
+  var gap = SC.realWidth - snapSum;
+
+  // Jeśli gap >=150mm → dodajemy sugestię dodatkowego modułu
+  proposed._gap = gap;
+  proposed._totalMm = totalMm;
+
+  return proposed;
+}
+
+/* -----------------------------------------------------------
+ * scRenderStep4 — UI wyników analizy
+ * --------------------------------------------------------- */
+function scRenderStep5_Modules(){
+  scSetStep(5);
+  var b=scBody(); if(!b) return;
+
+  // Analiza
+  var proposed = scAnalyzeAll(SC.segments);
+  SC._proposed = proposed;
+
+  var gap      = proposed._gap||0;
+  var totalMm  = proposed._totalMm||SC.realWidth;
+  var snapSum  = proposed.filter(function(p){return p.use;})
+    .reduce(function(s,p){return s+p.snapMm;},0);
+
+  // Confidence summary
+  var avgConf = proposed.reduce(function(s,p){return s+p.confidence;},0)/Math.max(1,proposed.length);
+  var confColor = avgConf>0.7?'var(--success)':avgConf>0.5?'var(--warn)':'var(--danger)';
+  var confLabel = avgConf>0.7?'Wysoka':'Średnia';
+
+  b.innerHTML =
+    // Header info
+    '<div style="background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);'+
+    'border-radius:8px;padding:10px 12px;margin-bottom:10px;">'+
+    '<div style="font-family:\'JetBrains Mono\',monospace;font-size:.6rem;color:var(--muted);'+
+    'letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">🤖 WYNIKI ANALIZY</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">'+
+    '<div style="text-align:center;">'+
+    '<div style="font-size:.9rem;font-weight:800;color:var(--accent2);font-family:\'JetBrains Mono\',monospace;">'+SC.scale.toFixed(1)+'</div>'+
+    '<div style="font-size:.52rem;color:var(--muted);">mm/px</div></div>'+
+    '<div style="text-align:center;">'+
+    '<div style="font-size:.9rem;font-weight:800;color:var(--success);font-family:\'JetBrains Mono\',monospace;">'+proposed.length+'</div>'+
+    '<div style="font-size:.52rem;color:var(--muted);">segmentów</div></div>'+
+    '<div style="text-align:center;">'+
+    '<div style="font-size:.9rem;font-weight:800;color:'+confColor+';font-family:\'JetBrains Mono\',monospace;">'+confLabel+'</div>'+
+    '<div style="font-size:.52rem;color:var(--muted);">pewność</div></div>'+
+    '</div></div>'+
 
     // Wizualizacja
     '<div style="background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:8px;'+
-    'padding:10px;margin-bottom:12px;overflow:hidden;" id="scViz">'+
+    'padding:10px;margin-bottom:10px;overflow:hidden;" id="scViz">'+
     scBuildViz(proposed)+
     '</div>'+
 
-    // Lista modułów do edycji
-    '<div id="scModList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">'+
-    proposed.map(function(p,i){ return scModRow(p,i); }).join('')+
+    // Gap warning
+    (Math.abs(gap)>50 ?
+    '<div style="background:rgba(200,152,64,.08);border:1px solid rgba(200,152,64,.25);'+
+    'border-radius:7px;padding:8px 12px;margin-bottom:10px;font-family:\'JetBrains Mono\',monospace;'+
+    'font-size:.63rem;color:var(--warn);">'+
+    (gap>0?'⚠ Pozostaje '+gap+'mm — rozważ dodanie modułu '+
+      (gap>=300?'<button onclick="scAddGapModule('+gap+')" style="margin-left:6px;padding:2px 7px;'+
+      'background:rgba(200,152,64,.15);border:1px solid rgba(200,152,64,.3);border-radius:4px;'+
+      'color:var(--accent2);font-family:\'JetBrains Mono\',monospace;font-size:.6rem;cursor:pointer;">+ dodaj '+gap+'mm</button>':''):
+    '⚠ Suma modułów o '+Math.abs(gap)+'mm za duża — zmniejsz szerokość jednego modułu')+
+    '</div>' : '')+
+
+    // Lista modułów
+    '<div id="scModList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">'+
+    proposed.map(function(p,i){ return scModRowV2(p,i); }).join('')+
     '</div>'+
 
-    // Wymiar całości
-    '<div style="font-family:\'JetBrains Mono\',monospace;font-size:.65rem;padding:6px 10px;'+
-    'background:rgba(255,255,255,.03);border-radius:6px;border:1px solid var(--border);'+
-    'margin-bottom:10px;" id="scTotalInfo">'+
+    // Suma
+    '<div id="scTotalInfo" style="font-family:\'JetBrains Mono\',monospace;font-size:.65rem;'+
+    'padding:7px 10px;background:rgba(255,255,255,.03);border-radius:6px;'+
+    'border:1px solid var(--border);margin-bottom:10px;">'+
     scTotalInfo(proposed)+
     '</div>'+
 
     // Buttons
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'+
-    '<button onclick="scRenderStep3()" style="padding:11px;background:rgba(255,255,255,.05);'+
+    '<button onclick="scRenderStep4_Scale()" style="padding:11px;background:rgba(255,255,255,.05);'+
     'border:1px solid var(--border);border-radius:8px;color:var(--text2);'+
     'font-family:\'Barlow Condensed\',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;">'+
     '← Wróć</button>'+
@@ -6817,49 +7593,91 @@ function scRenderStep4(){
     '</div>';
 }
 
-function scModRow(p,i){
-  var TYPES=['Dolna','Pod zmywarkę','AGD pod piekarnik + szuflada','Wisząca','Dolna GOLA','Słupek pełny (z półkami)'];
-  var CFGS=['Drzwi','Szuflady'];
-  var diffColor=p.diff<30?'var(--success)':p.diff<80?'var(--warn)':'var(--danger)';
+/* -----------------------------------------------------------
+ * scModRowV2 — wiersz modułu z powodem analizy i confidence
+ * --------------------------------------------------------- */
+function scModRowV2(p,i){
+  var confColor = p.confidence>0.7?'var(--success)':p.confidence>0.5?'var(--warn)':'var(--danger)';
+  var confPct   = Math.round(p.confidence*100);
+  var diffColor = p.diff<30?'var(--success)':p.diff<80?'var(--warn)':'var(--danger)';
+  var typeIcon  = p.type.includes('zmyw')?'🚰':p.type.includes('AGD')?'🔥':
+                  p.type.includes('upek')?'🗼':p.config==='Szuflady'?'🗄':
+                  p.type.includes('Wisz')?'📦':'🍳';
 
-  return '<div id="scRow'+i+'" style="background:var(--surface2);border:1px solid var(--border);'+
-    'border-radius:8px;padding:10px 12px;">'+
-    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'+
-    '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;flex:1;">'+
+  return '<div id="scRow'+i+'" style="background:var(--surface2);border:1px solid '+
+    (p.confidence>0.7?'rgba(46,204,113,.25)':p.confidence>0.5?'rgba(200,152,64,.2)':'rgba(231,76,60,.2)')+
+    ';border-radius:8px;padding:10px 12px;transition:all .2s;">'+
+
+    // Header wiersza
+    '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">'+
     '<input type="checkbox" '+(p.use?'checked':'')+' onchange="scToggle('+i+',this.checked)"'+
-    ' style="accent-color:var(--accent2);width:14px;height:14px;">'+
-    '<span style="font-family:\'JetBrains Mono\',monospace;font-size:.7rem;color:var(--text2);">'+
-    'Seg.'+(i+1)+' · <b style="color:var(--accent2);">'+p.rawMm+'mm</b> zmierzone</span>'+
-    '</label>'+
-    '<span style="font-size:.6rem;font-family:\'JetBrains Mono\',monospace;color:'+diffColor+';">'+
-    (p.diff===0?'✅ idealne':'±'+p.diff+'mm')+
-    '</span>'+
+    ' style="accent-color:var(--accent2);width:13px;height:13px;flex-shrink:0;">'+
+    '<span style="font-size:1rem;">'+typeIcon+'</span>'+
+    '<div style="flex:1;min-width:0;">'+
+    '<div style="font-family:\'JetBrains Mono\',monospace;font-size:.7rem;color:var(--text2);">'+
+    'Seg.'+(i+1)+
+    ' · <b style="color:var(--accent2);">'+p.rawMm+'mm</b>'+
+    (p.diff>0?' <span style="color:'+diffColor+';font-size:.6rem;">→ snap '+p.snapMm+'mm (±'+p.diff+')</span>':
+     ' <span style="color:var(--success);font-size:.6rem;">✅ standard</span>')+
     '</div>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr 80px;gap:6px;">'+
+    (p.reason?'<div style="font-size:.58rem;color:'+confColor+';font-family:\'JetBrains Mono\',monospace;'+
+    'margin-top:2px;">🤖 '+p.reason+' ('+confPct+'%)</div>':'')+
+    '</div>'+
+    '</div>'+
+
+    // Selecty
+    '<div style="display:grid;grid-template-columns:80px 1fr 70px;gap:5px;">'+
+
+    // Szerokość
     '<select onchange="scUpdateField('+i+',\'snapMm\',parseInt(this.value))" '+
-    'style="padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;'+
-    'color:var(--text);font-family:\'JetBrains Mono\',monospace;font-size:.72rem;">'+
-    [1000,900,800,600,500,450,400,300,'custom'].map(function(w){
-      if(w==='custom') return '<option value="'+p.rawMm+'" '+(![1000,900,800,600,500,450,400,300].includes(p.snapMm)?'selected':'')+'>niestd. '+p.rawMm+'</option>';
+    'style="padding:5px 6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;'+
+    'color:var(--text);font-family:\'JetBrains Mono\',monospace;font-size:.7rem;">'+
+    [1000,900,800,600,500,450,400,300].map(function(w){
       return '<option value="'+w+'" '+(p.snapMm===w?'selected':'')+'>'+w+'mm</option>';
     }).join('')+
+    '<option value="'+p.rawMm+'" '+
+    (![1000,900,800,600,500,450,400,300].includes(p.snapMm)?'selected':'')+'>~'+p.rawMm+'mm</option>'+
     '</select>'+
-    '<select onchange="scUpdateField('+i+',\'type\',this.value)" '+
-    'style="padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;'+
-    'color:var(--text);font-family:\'JetBrains Mono\',monospace;font-size:.65rem;">'+
-    ['Dolna','Pod zmywarkę','AGD pod piekarnik + szuflada','Wisząca','Dolna GOLA','Słupek pełny (z półkami)'].map(function(t){
-      return '<option value="'+t+'" '+(p.type===t?'selected':'')+'>'+t.replace('AGD pod piekarnik + szuflada','AGD piecyk').replace('Słupek pełny (z półkami)','Słupek').replace('Pod zmywarkę','Zlew')+'</option>';
+
+    // Typ
+    '<select onchange="scUpdateField('+i+',\'type\',this.value);scUpdateField('+i+',\'config\',this.value===\'Dolna GOLA\'||this.value===\'Wisząca\'||this.value===\'Pod zmywarkę\'?\'Drzwi\':scGetConfig('+i+'))" '+
+    'style="padding:5px 6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;'+
+    'color:var(--text);font-family:\'JetBrains Mono\',monospace;font-size:.63rem;">'+
+    (scGetRoomTypes(SC.room||'kuchnia')).map(function(t){
+      return '<option value="'+t.v+'" '+(p.type===t.v?'selected':'')+'>'+t.l+'</option>';
     }).join('')+
     '</select>'+
-    '<select onchange="scUpdateField('+i+',\'config\',this.value)" '+
-    'style="padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;'+
-    'color:var(--text);font-family:\'JetBrains Mono\',monospace;font-size:.72rem;">'+
-    '<option value="Drzwi" '+(p.config==='Drzwi'?'selected':'')+'>Drzwi</option>'+
-    '<option value="Szuflady" '+(p.config==='Szuflady'?'selected':'')+'>Szufl.</option>'+
+
+    // Config
+    '<select id="scCfg'+i+'" onchange="scUpdateField('+i+',\'config\',this.value)" '+
+    'style="padding:5px 6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;'+
+    'color:var(--text);font-family:\'JetBrains Mono\',monospace;font-size:.7rem;">'+
+    '<option value="Drzwi" '+(p.config==='Drzwi'?'selected':'')+'>🚪 Drz.</option>'+
+    '<option value="Szuflady" '+(p.config==='Szuflady'?'selected':'')+'>🗄 Szuf.</option>'+
     '</select>'+
-    '</div>'+
-    '</div>';
+
+    '</div></div>';
 }
+
+function scGetConfig(i){
+  if(!SC._proposed||!SC._proposed[i]) return 'Drzwi';
+  return SC._proposed[i].config||'Drzwi';
+}
+
+// Dodaj moduł uzupełniający dla pozostałości
+function scAddGapModule(gapMm){
+  var STANDARD=[1000,900,800,600,500,450,400,300];
+  var snap=STANDARD.reduce(function(a,b){return Math.abs(b-gapMm)<Math.abs(a-gapMm)?b:a;});
+  SC._proposed.push({
+    idx:SC._proposed.length, rawMm:gapMm, snapMm:snap,
+    diff:Math.abs(snap-gapMm), type:'Dolna', config:'Drzwi',
+    tag:'dolne', reason:'Dodany ręcznie jako uzupełnienie',
+    confidence:0.9, use:true
+  });
+  scRenderStep5_Modules();
+}
+
+
 
 function scBuildViz(proposed){
   var active=proposed.filter(function(p){return p.use;});
@@ -6924,55 +7742,198 @@ function scRefreshViz(){
 }
 
 // ── CONFIRM — dodaj do projektu ───────────────────────────────────
+// Buduj tablicę modułów z proposed
+function scBuildMods(active){
+  var isWiszList=['Wisząca','Wisząca z klapą','Pod okap','Narożna górna'];
+  return active.map(function(p){
+    var isWisz=isWiszList.indexOf(p.type)>=0;
+    var isSlupek=(p.type||'').indexOf('upek')>=0||(p.type||'').indexOf('Cargo')>=0;
+    return {
+      type:    p.type||'Dolna',
+      width:   p.snapMm||600,
+      height:  p.h||(isWisz?610:isSlupek?2130:720),
+      depth:   p.d||(isWisz?320:isSlupek?560:560),
+      config:  p.config||'Drzwi',
+      tag:     isWisz?'wiszace':isSlupek?'slupki':'dolne',
+      system:  'Antaro', runner:500,
+      qty:     p.config==='Szuflady'?3:0,
+      drawers: p.config==='Szuflady'?3:0,
+      frontHeights:[], drawerTypes:[],
+      legType:  isWisz?'none':(isSlupek?'uni_h150':'uni_h100'),
+      legQty:   isWisz?0:4,
+      hingeType:'blum110', hingeQty:2,
+      frontCount:1, shelfCount:0, shelves:0,
+      tipOn:false, led:false, cokol:false,
+      cokolH:100, cokolMat:'hdf',
+      blindPanelW:0, blendaH:0, matCorpus:'', matFront:'none',
+      note:'[SCAN '+SC.realWidth+'mm '+((SC_ROOMS[SC.room]||{}).icon||'')+']'
+    };
+  });
+}
+
+// Step5 — potwierdzenie → pokazujemy inline podgląd projektu
 function scConfirm(){
   if(!SC._proposed) return;
   var active=SC._proposed.filter(function(p){return p.use;});
   if(!active.length){ showToast('⚠ Brak aktywnych modułów','#f0ad4e','#7d6010'); return; }
 
   _historyPush();
-
-  var isWiszList=['Wisząca','Wisząca z klapą','Pod okap','Narożna górna'];
-  var newMods=active.map(function(p){
-    var isWisz=isWiszList.indexOf(p.type)>=0;
-    var isSlupek=(p.type||'').indexOf('upek')>=0||(p.type||'').indexOf('Cargo')>=0;
-    return {
-      type:    p.type||'Dolna',
-      width:   p.snapMm||600,
-      height:  isWisz?610:p.type.includes('Słupek')?2130:720,
-      depth:   isWisz?320:p.type.includes('Słupek')?560:560,
-      config:  p.config||'Drzwi',
-      tag:     isWisz?'wiszace':isSlupek?'slupki':'dolne',
-      system:  'Antaro',
-      runner:  500,
-      qty:     p.config==='Szuflady'?3:0,
-      drawers: p.config==='Szuflady'?3:0,
-      frontHeights: [],
-      drawerTypes:  [],
-      legType:  isWisz?'none':(isSlupek?'uni_h150':'uni_h100'),
-      legQty:   isWisz?0:4,
-      hingeType:'blum110',
-      hingeQty: 2,
-      frontCount:1, shelfCount:0, shelves:0,
-      tipOn:false, led:false, cokol:false, cokolH:100, cokolMat:'hdf',
-      blindPanelW:0, blendaH:0, matCorpus:'', matFront:'none',
-      note:'[SCAN '+SC.realWidth+'mm]'
-    };
-  });
-
+  var newMods=scBuildMods(active);
   project=newMods;
   updateCounter();
-  showProject();
+
+  // Pokazuj step5 — inline preview + akcje
+  scSetStep(5);
+  var b=scBody(); if(!b){ scClose(); showProject(); return; }
+
+  // Buduj minimalny BOM
+  var totalM2=0, totalHDF=0, totalParts=0;
+  newMods.forEach(function(m){
+    try{
+      var d=generateModuleData(m);
+      totalParts+=(d.parts||[]).filter(function(p){return p.t>0;}).length;
+      (d.parts||[]).forEach(function(p){
+        if(p.t===18||p.t===16) totalM2+=p.w*p.h/1e6;
+        else if(p.t<=6) totalHDF+=p.w*p.h/1e6;
+      });
+    }catch(e){}
+  });
+
+  var room=SC_ROOMS[SC.room]||SC_ROOMS.kuchnia;
+  var byTag={};
+  newMods.forEach(function(m){ var t=m.tag||'dolne'; if(!byTag[t])byTag[t]=[]; byTag[t].push(m); });
+  var tagColors={dolne:'var(--accent)',wiszace:'var(--info)',slupki:'var(--success)',agd:'#8b44ac'};
+  var tagLabels={dolne:'↓ Dolne',wiszace:'↑ Wiszące',slupki:'║ Słupki',agd:'⚙ AGD'};
+
+  var modListHtml='';
+  Object.entries(byTag).forEach(function(e){
+    var tag=e[0], mods=e[1];
+    modListHtml+='<div style="font-size:.6rem;font-weight:700;color:'+(tagColors[tag]||'var(--muted)')+
+      ';letter-spacing:.1em;text-transform:uppercase;margin:6px 0 3px;">'+
+      (tagLabels[tag]||tag)+' ('+mods.length+')</div>';
+    mods.forEach(function(m,i){
+      var icon=m.tag==='wiszace'?'📦':m.tag==='slupki'?'🗼':m.config==='Szuflady'?'🗄':'🍳';
+      modListHtml+='<div style="display:flex;align-items:center;justify-content:space-between;'+
+        'padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);'+
+        'margin-bottom:3px;font-family:\"JetBrains Mono\",monospace;font-size:.65rem;color:var(--text2);">'+
+        '<span>'+icon+' <b style="color:var(--text);">'+m.type.split(' ')[0]+'</b> '+m.width+'mm</span>'+
+        '<span style="color:var(--muted);">'+m.config+'</span>'+
+        '</div>';
+    });
+  });
+
+  b.innerHTML=
+    // Sukces banner
+    '<div style="background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.35);'+
+    'border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;">'+
+    '<div style="font-size:1.4rem;margin-bottom:4px;">✅</div>'+
+    '<div style="font-family:\"Barlow Condensed\",sans-serif;font-weight:800;font-size:1rem;'+
+    'letter-spacing:.1em;color:#fff;text-transform:uppercase;">Projekt gotowy!</div>'+
+    '<div style="font-family:\"JetBrains Mono\",monospace;font-size:.62rem;color:var(--muted);margin-top:3px;">'+
+    room.icon+' '+room.label+' · '+newMods.length+' modułów · '+SC.realWidth+'mm'+
+    '</div></div>'+
+
+    // Statystyki
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;">'+
+    '<div style="background:rgba(200,152,64,.07);border:1px solid rgba(200,152,64,.2);border-radius:7px;padding:8px;text-align:center;">'+
+    '<div style="font-size:.95rem;font-weight:800;color:var(--accent2);font-family:\"JetBrains Mono\",monospace;">'+newMods.length+'</div>'+
+    '<div style="font-size:.52rem;color:var(--muted);">modułów</div></div>'+
+    '<div style="background:rgba(46,204,113,.07);border:1px solid rgba(46,204,113,.2);border-radius:7px;padding:8px;text-align:center;">'+
+    '<div style="font-size:.95rem;font-weight:800;color:var(--success);font-family:\"JetBrains Mono\",monospace;">'+totalM2.toFixed(1)+'</div>'+
+    '<div style="font-size:.52rem;color:var(--muted);">m² płyta</div></div>'+
+    '<div style="background:rgba(74,159,234,.07);border:1px solid rgba(74,159,234,.2);border-radius:7px;padding:8px;text-align:center;">'+
+    '<div style="font-size:.95rem;font-weight:800;color:var(--info);font-family:\"JetBrains Mono\",monospace;">'+totalParts+'</div>'+
+    '<div style="font-size:.52rem;color:var(--muted);">detali</div></div>'+
+    '</div>'+
+
+    // Lista modułów
+    '<div style="max-height:180px;overflow-y:auto;margin-bottom:12px;padding:2px;">'+
+    modListHtml+
+    '</div>'+
+
+    // Pole nazwy projektu
+    '<div style="margin-bottom:10px;">'+
+    '<div style="font-family:\"JetBrains Mono\",monospace;font-size:.6rem;color:var(--muted);'+
+    'letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">💾 Nazwa projektu (opcjonalnie)</div>'+
+    '<input type="text" id="scProjName" '+
+    'placeholder="np. Kuchnia Kowalski 2025" '+
+    'value="'+room.label+' '+new Date().toLocaleDateString('pl-PL')+'" '+
+    'style="width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);'+
+    'border-radius:7px;color:var(--text);font-family:\"JetBrains Mono\",monospace;font-size:.8rem;'+
+    'box-sizing:border-box;">'+
+    '</div>'+
+
+    // Przyciski akcji
+    '<div style="display:flex;flex-direction:column;gap:7px;">'+
+
+    // Główne: Zapisz + Przeglądaj
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;">'+
+    '<button onclick="scSaveAndView()" '+
+    'style="padding:12px 8px;background:linear-gradient(160deg,#d4a840,#a07820);border:none;'+
+    'border-radius:8px;color:#fff;font-family:\"Barlow Condensed\",sans-serif;font-weight:800;'+
+    'font-size:.88rem;letter-spacing:.08em;cursor:pointer;">'+
+    '💾 ZAPISZ PROJEKT</button>'+
+    '<button onclick="scViewProject()" '+
+    'style="padding:12px 8px;background:rgba(74,159,234,.15);border:1px solid rgba(74,159,234,.35);'+
+    'border-radius:8px;color:var(--info);font-family:\"Barlow Condensed\",sans-serif;font-weight:800;'+
+    'font-size:.88rem;letter-spacing:.08em;cursor:pointer;">'+
+    '👁 PRZEGLĄDAJ</button>'+
+    '</div>'+
+
+    // Druk
+    '<button onclick="scPrintProject()" '+
+    'style="padding:11px;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);'+
+    'border-radius:8px;color:var(--success);font-family:\"Barlow Condensed\",sans-serif;font-weight:800;'+
+    'font-size:.88rem;letter-spacing:.08em;cursor:pointer;">'+
+    '🖨 DRUKUJ / PDF</button>'+
+
+    // Dodatkowe
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;">'+
+    '<button onclick="scRenderStep5_Modules()" '+
+    'style="padding:9px;background:rgba(255,255,255,.05);border:1px solid var(--border);'+
+    'border-radius:7px;color:var(--text2);font-family:\"Barlow Condensed\",sans-serif;'+
+    'font-weight:700;font-size:.78rem;cursor:pointer;">← Wróć do modułów</button>'+
+    '<button onclick="scClose()" '+
+    'style="padding:9px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.25);'+
+    'border-radius:7px;color:#e74c3c;font-family:\"Barlow Condensed\",sans-serif;'+
+    'font-weight:700;font-size:.78rem;cursor:pointer;">✕ Zamknij</button>'+
+    '</div>'+
+
+    '</div>';
+}
+
+// Zapisz projekt do localStorage
+function scSaveAndView(){
+  var nameEl=document.getElementById('scProjName');
+  var name=(nameEl&&nameEl.value.trim())||('SCAN '+(SC_ROOMS[SC.room]||{label:''}).label);
+  // Zapisz przez istniejący mechanizm
+  try{
+    var projs=JSON.parse(localStorage.getItem('r4_projects')||'[]');
+    projs.push({name:name, modules:JSON.parse(JSON.stringify(project)),
+      saved:new Date().toLocaleString('pl-PL'), count:project.length,
+      room:SC.room, source:'scan'});
+    localStorage.setItem('r4_projects',JSON.stringify(projs));
+    showToast('💾 Zapisano: "'+name+'" ('+project.length+' modułów)','#2ecc71','#1a4a2e');
+  }catch(e){
+    showToast('⚠ Błąd zapisu: '+e.message,'#e05050','#3a1010');
+  }
+}
+
+// Przeglądaj projekt w głównym widoku
+function scViewProject(){
   scClose();
-
-  showToast(
-    '✅ Dodano '+newMods.length+' modułów ze SCAN (skala: '+SC.scale.toFixed(2)+'mm/px)',
-    '#2ecc71','#1a4a2e'
-  );
-
+  showProject();
   setTimeout(function(){
     var el=document.getElementById('projectView');
     if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
-  },300);
+  },200);
+  showToast('✅ Projekt wczytany — '+project.length+' modułów','#2ecc71','#1a4a2e');
+}
+
+// Drukuj bezpośrednio
+function scPrintProject(){
+  scClose();
+  setTimeout(function(){ printProject(); }, 300);
 }
 
 /* ===== END SCAN CABINET ===== */
@@ -9722,10 +10683,10 @@ function handleImportJSON(input){
 
 <!-- ── BOTTOM NAV ── -->
 <nav id="bottomNav">
-  <button class="bnav-btn active" id="bnav-konfig"   onclick="bnav('konfig')"><span class="bnav-icon">&#9881;</span>Konfig</button>
-  <button class="bnav-btn"        id="bnav-rozm"     onclick="bnav('rozm')"><span class="bnav-icon">&#128208;</span>Rozm</button>
-  <button class="bnav-btn"        id="bnav-rozkroj"  onclick="bnav('rozkroj')"><span class="bnav-icon">&#9986;</span>Rozkr&oacute;j</button>
-  <button class="bnav-btn"        id="bnav-projekt"  onclick="bnav('projekt')"><span class="bnav-icon">&#128218;</span>Projekt</button>
+  <button class="bnav-btn active" id="bnav-konfig" onclick="bnav('konfig')"><span class="bnav-icon">&#9881;</span>Konfig</button>
+  <button class="bnav-btn" id="bnav-rozm" onclick="bnav('rozm')"><span class="bnav-icon">&#128208;</span>Rozm</button>
+  <button class="bnav-btn" id="bnav-rozkroj" onclick="bnav('rozkroj')"><span class="bnav-icon">&#9986;</span>Rozkr&oacute;j</button>
+  <button class="bnav-btn" id="bnav-projekt" onclick="bnav('projekt')"><span class="bnav-icon">&#128218;</span>Projekt</button>
 </nav>
 <script>
 function bnav(tab){
@@ -9777,5 +10738,714 @@ function bnav(tab){
       ✕ ZAMKNIJ NARZĘDZIA
     </button>
   </div>
+
+
+
+
+
+<script id="appShellScript">
+/* ================================================================
+ * MEBLE PRO — App Shell v1.0
+ * Home screen + Projects cards +  
+ *    HTML   engine
+ * ================================================================ */
+
+/* -- CSS App Shell ------------------------------------------------ */
+var _APP_CSS = `
+/*  App Shell */
+#appHome,#appProjects,#appSettings {
+  display:none;
+  padding:14px 14px 80px;
+  min-height:100vh;
+  box-sizing:border-box;
+  animation:appFadeIn .18s ease;
+}
+@keyframes appFadeIn {
+  from{opacity:0;transform:translateY(6px)}
+  to  {opacity:1;transform:translateY(0)}
+}
+
+/* Bottom Nav —  5- */
+#bottomNav {
+  position:fixed;bottom:0;left:0;right:0;z-index:9000;
+  background:rgba(10,12,20,.97);
+  border-top:1px solid rgba(200,152,64,.15);
+  display:flex;align-items:stretch;
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  box-shadow:0 -4px 24px rgba(0,0,0,.5);
+  padding-bottom:env(safe-area-inset-bottom,0);
+}
+.bnav-btn {
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:7px 2px 9px;gap:2px;
+  border:none;background:transparent;color:var(--muted);
+  font-family:'Barlow Condensed',sans-serif;font-size:.5rem;
+  font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  cursor:pointer;position:relative;transition:color .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.bnav-btn.active { color:var(--accent2); }
+.bnav-btn.active::before {
+  content:'';position:absolute;top:0;left:15%;right:15%;
+  height:2px;background:var(--accent2);
+  border-radius:0 0 3px 3px;box-shadow:0 0 8px var(--accent2);
+}
+.bnav-icon { font-size:1.2rem;line-height:1; }
+
+/*  +  */
+#bnav-new {
+  background:linear-gradient(160deg,#d4a840,#a07820);
+  border-radius:50%;width:44px;height:44px;
+  margin:-10px auto 0;padding:0!important;
+  box-shadow:0 4px 16px rgba(200,152,64,.4);
+  flex:0 0 56px;
+}
+#bnav-new .bnav-icon { font-size:1.5rem; }
+
+/* Home screen */
+.app-greeting {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:300;font-size:1rem;color:var(--muted);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px;
+}
+.app-title {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:1.8rem;color:var(--text);
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;
+}
+.app-title span { color:var(--accent2); }
+
+/* Quick actions */
+.quick-grid {
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;
+}
+.quick-btn {
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:16px 8px;border-radius:12px;
+  border:1px solid var(--border);background:var(--surface2);
+  cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:.82rem;letter-spacing:.06em;color:var(--text2);
+  text-transform:uppercase;
+}
+.quick-btn:active { transform:scale(.97); }
+.quick-btn .qi { font-size:1.7rem;line-height:1; }
+.quick-btn.primary {
+  background:linear-gradient(160deg,rgba(200,152,64,.2),rgba(160,120,32,.1));
+  border-color:rgba(200,152,64,.35);color:var(--accent2);
+  grid-column:1/-1;flex-direction:row;padding:14px 20px;
+}
+.quick-btn.primary .qi { font-size:1.4rem; }
+
+/* Last project card */
+.last-project-card {
+  background:var(--surface2);border:1px solid rgba(200,152,64,.25);
+  border-radius:12px;padding:14px 16px;margin-bottom:18px;cursor:pointer;
+  transition:all .15s;
+}
+.last-project-card:active { transform:scale(.99); }
+.lpc-label {
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;
+  color:var(--muted);letter-spacing:.12em;text-transform:uppercase;
+  margin-bottom:6px;
+}
+.lpc-name {
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:1.1rem;color:var(--text);letter-spacing:.06em;margin-bottom:4px;
+}
+.lpc-meta {
+  font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);
+}
+.lpc-arrow {
+  float:right;font-size:1.2rem;color:var(--accent2);margin-top:-28px;
+}
+
+/* Stats strip */
+.stats-strip {
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;
+}
+.stat-card {
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;padding:10px 8px;text-align:center;
+}
+.stat-val {
+  font-family:'JetBrains Mono',monospace;font-weight:800;
+  font-size:1.2rem;color:var(--accent2);display:block;
+}
+.stat-lbl {
+  font-family:'JetBrains Mono',monospace;font-size:.52rem;
+  color:var(--muted);letter-spacing:.08em;text-transform:uppercase;
+  display:block;margin-top:2px;
+}
+
+/* Section header */
+.section-hdr {
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;
+}
+.section-hdr-title {
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text2);
+}
+.section-hdr-link {
+  font-family:'JetBrains Mono',monospace;font-size:.6rem;
+  color:var(--accent2);cursor:pointer;letter-spacing:.05em;
+}
+
+/* Project cards */
+.proj-grid {
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;
+}
+.proj-card {
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;cursor:pointer;transition:all .15s;
+  display:flex;flex-direction:column;
+}
+.proj-card:active { transform:scale(.98); }
+.proj-card-top {
+  padding:14px 12px 10px;flex:1;
+}
+.proj-card-room {
+  font-size:1.6rem;display:block;margin-bottom:4px;
+}
+.proj-card-name {
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:.9rem;letter-spacing:.05em;color:var(--text);
+  display:block;margin-bottom:3px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.proj-card-meta {
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;
+  color:var(--muted);display:block;
+}
+.proj-card-bottom {
+  border-top:1px solid var(--border);
+  display:flex;
+}
+.proj-card-btn {
+  flex:1;padding:8px 4px;background:transparent;border:none;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:.7rem;letter-spacing:.05em;cursor:pointer;
+  transition:background .15s;color:var(--text2);
+}
+.proj-card-btn:active { background:rgba(255,255,255,.06); }
+.proj-card-btn.danger { color:rgba(231,76,60,.7); }
+.proj-card-btn:not(:last-child) { border-right:1px solid var(--border); }
+
+/* New project card */
+.proj-card-new {
+  background:rgba(200,152,64,.06);
+  border:2px dashed rgba(200,152,64,.3);
+  border-radius:12px;min-height:120px;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:6px;cursor:pointer;
+  transition:all .15s;
+}
+.proj-card-new:active { background:rgba(200,152,64,.12); }
+
+/* Settings */
+.settings-group {
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;margin-bottom:14px;
+}
+.settings-row {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 16px;border-bottom:1px solid var(--border);
+  gap:10px;
+}
+.settings-row:last-child { border-bottom:none; }
+.settings-row-label {
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;
+  color:var(--text2);flex:1;
+}
+.settings-row-val {
+  font-family:'JetBrains Mono',monospace;font-size:.7rem;
+  color:var(--accent2);
+}
+.settings-group-title {
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);padding:8px 16px 4px;
+}
+`;
+
+/* -- INJECT CSS --------------------------------------------------- */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=_APP_CSS;
+  document.head.appendChild(s);
+})();
+
+/* ================================================================
+ * APP STATE
+ * ================================================================ */
+var APP = {
+  screen: 'konfig',  // home|konfig|projects|settings
+  prevScreen: null,
+};
+
+/* ================================================================
+ * NAVIGATION —   bnav
+ * ================================================================ */
+function appNav(screen){
+  // / 
+  var screens = {
+    home:     document.getElementById('appHome'),
+    konfig:   document.getElementById('sectionKonfig'),
+    projects: document.getElementById('appProjects'),
+    settings: document.getElementById('appSettings'),
+    rozm:     document.getElementById('sectionRozm'),
+    rozkroj:  document.getElementById('sectionRozkroj'),
+  };
+
+  //  
+  Object.values(screens).forEach(function(el){
+    if(el) el.style.display='none';
+  });
+
+  //  
+  var target = screens[screen];
+  if(target) target.style.display='';
+
+  //  konfig —  tab tabs 
+  if(screen==='konfig'){
+    var mainTabBar=document.getElementById('mainTabBar');
+    if(mainTabBar) mainTabBar.style.display='';
+    switchMainTab('konfig');
+  }
+
+  APP.screen=screen;
+
+  //  nav 
+  document.querySelectorAll('.bnav-btn').forEach(function(b){
+    b.classList.remove('active');
+  });
+  var activeId = 'bnav-'+
+    (screen==='konfig'||screen==='rozm'||screen==='rozkroj' ? 'konfig' :
+     screen==='projects' ? 'projects' :
+     screen==='settings' ? 'settings' : 'home');
+  var activeBtn=document.getElementById(activeId);
+  if(activeBtn) activeBtn.classList.add('active');
+
+  //    
+  if(screen==='home')     appRenderHome();
+  if(screen==='projects') appRenderProjects();
+  if(screen==='settings') appRenderSettings();
+
+  // Scroll 
+  window.scrollTo({top:0,behavior:'instant'});
+}
+
+/* ================================================================
+ * HOME SCREEN
+ * ================================================================ */
+function appRenderHome(){
+  var el=document.getElementById('appHome');
+  if(!el) return;
+
+  //  
+  var projs=[];
+  try{ projs=JSON.parse(localStorage.getItem('r4_projects')||'[]'); }catch(e){}
+  var totalMods=projs.reduce(function(s,p){return s+(p.count||0);},0);
+  var lastProj=projs[projs.length-1]||null;
+
+  //   
+  var h=new Date().getHours();
+  var greet=h<12?'Dzień dobry':h<18?'Dobry dzień':'Dobry wieczór';
+
+  //   
+  var currentCount=typeof project!=='undefined'?project.length:0;
+
+  el.innerHTML=
+    // Header
+    '<div class="app-greeting">'+greet+'</div>'+
+    '<div class="app-title">Meble <span>PRO</span></div>'+
+
+    //   (    ')
+    (currentCount>0 ?
+      '<div class="last-project-card" onclick="appNav(\'konfig\')">' +
+      '<div class="lpc-label">⚡ Aktywny projekt</div>'+
+      '<div class="lpc-name">'+currentCount+' modułów w pamięci</div>'+
+      '<div class="lpc-meta">Kliknij aby kontynuować edycję</div>'+
+      '<div class="lpc-arrow">→</div>'+
+      '</div>'
+    :
+      //  
+      (lastProj ?
+        '<div class="last-project-card" onclick="appLoadAndGo(\''+projs.length-1+'\')">' +
+        '<div class="lpc-label">📁 Ostatni projekt</div>'+
+        '<div class="lpc-name">'+(lastProj.name||'Bez nazwy')+'</div>'+
+        '<div class="lpc-meta">'+(lastProj.count||0)+' mod · '+(lastProj.saved||'')+'</div>'+
+        '<div class="lpc-arrow">→</div>'+
+        '</div>'
+      : '')
+    )+
+
+    // Statystyki
+    '<div class="stats-strip">'+
+    '<div class="stat-card"><span class="stat-val">'+projs.length+'</span><span class="stat-lbl">Projekty</span></div>'+
+    '<div class="stat-card"><span class="stat-val">'+totalMods+'</span><span class="stat-lbl">Moduły</span></div>'+
+    '<div class="stat-card"><span class="stat-val">'+currentCount+'</span><span class="stat-lbl">Aktywne</span></div>'+
+    '</div>'+
+
+    // Szybki start
+    '<div class="section-hdr">'+
+    '<div class="section-hdr-title">Szybki start</div>'+
+    '</div>'+
+    '<div class="quick-grid">'+
+
+    // Główna akcja
+    '<button class="quick-btn primary" onclick="appNav(\'konfig\')">'+
+    '<span class="qi">⚙</span>'+
+    '<span>Konfigurator szafek</span>'+
+    '</button>'+
+
+    // Auto-kuchnia
+    '<button class="quick-btn" onclick="appNav(\'konfig\');setTimeout(function(){toggleToolsPanel();setTimeout(showAutoKitchen,200);},100)">'+
+    '<span class="qi">🏗</span>'+
+    '<span>Auto-kuchnia</span>'+
+    '</button>'+
+
+    // Scan
+    '<button class="quick-btn" onclick="appNav(\'konfig\');setTimeout(function(){toggleToolsPanel();setTimeout(showScanCabinet,200);},100)">'+
+    '<span class="qi">📷</span>'+
+    '<span>Scan Cabinet</span>'+
+    '</button>'+
+
+    // Nowy projekt
+    '<button class="quick-btn" onclick="appNewProject()">'+
+    '<span class="qi">✨</span>'+
+    '<span>Nowy projekt</span>'+
+    '</button>'+
+
+    '</div>'+
+
+    // Ostatnie projekty
+    (projs.length>0 ?
+      '<div class="section-hdr">'+
+      '<div class="section-hdr-title">Ostatnie projekty</div>'+
+      '<div class="section-hdr-link" onclick="appNav(\'projects\')">Wszystkie →</div>'+
+      '</div>'+
+      '<div class="proj-grid">'+
+      projs.slice(-4).reverse().map(function(p,i){
+        var ridx=projs.length-1-i;
+        var room=p.room||'kuchnia';
+        var icon=(typeof SC_ROOMS!=='undefined'&&SC_ROOMS[room])?SC_ROOMS[room].icon:'📦';
+        return '<div class="proj-card" onclick="appLoadAndGo('+ridx+')">'+
+          '<div class="proj-card-top">'+
+          '<span class="proj-card-room">'+icon+'</span>'+
+          '<span class="proj-card-name">'+(p.name||'Projekt '+(ridx+1))+'</span>'+
+          '<span class="proj-card-meta">'+(p.count||0)+' mod</span>'+
+          '</div>'+
+          '<div class="proj-card-bottom">'+
+          '<button class="proj-card-btn" onclick="event.stopPropagation();appLoadAndGo('+ridx+')">Otwórz</button>'+
+          '<button class="proj-card-btn" onclick="event.stopPropagation();appPrintProj('+ridx+')">🖨</button>'+
+          '</div>'+
+          '</div>';
+      }).join('')+
+      '</div>'
+    : '<div style="text-align:center;padding:20px;font-family:\'JetBrains Mono\',monospace;font-size:.7rem;color:var(--muted);">'+
+      'Brak zapisanych projektów<br>Zacznij od Konfiguratora ↑</div>'
+    );
+}
+
+/* ================================================================
+ * PROJECTS SCREEN
+ * ================================================================ */
+function appRenderProjects(){
+  var el=document.getElementById('appProjects');
+  if(!el) return;
+
+  var projs=[];
+  try{ projs=JSON.parse(localStorage.getItem('r4_projects')||'[]'); }catch(e){}
+
+  el.innerHTML=
+    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-weight:800;'+
+    'font-size:1.4rem;letter-spacing:.1em;text-transform:uppercase;'+
+    'color:var(--text);margin-bottom:16px;">'+
+    '📁 Moje projekty '+
+    '<span style="color:var(--muted);font-size:.9rem;">('+projs.length+')</span>'+
+    '</div>'+
+
+    '<div class="proj-grid">'+
+
+    // Karta "nowy projekt"
+    '<div class="proj-card-new" onclick="appNewProject()">'+
+    '<span style="font-size:1.8rem;color:var(--accent2);">＋</span>'+
+    '<span style="font-family:\'Barlow Condensed\',sans-serif;font-weight:700;'+
+    'font-size:.8rem;letter-spacing:.06em;color:var(--accent2);">NOWY PROJEKT</span>'+
+    '</div>'+
+
+    // Kartki projektów (najnowsze pierwsze)
+    projs.slice().reverse().map(function(p,i){
+      var ridx=projs.length-1-i;
+      var room=p.room||'kuchnia';
+      var icon=(typeof SC_ROOMS!=='undefined'&&SC_ROOMS[room])?SC_ROOMS[room].icon:'📦';
+      var dateStr=p.saved?p.saved.split(',')[0]:'';
+      return '<div class="proj-card">'+
+        '<div class="proj-card-top" onclick="appLoadAndGo('+ridx+')">'+
+        '<span class="proj-card-room">'+icon+'</span>'+
+        '<span class="proj-card-name">'+(p.name||'Projekt '+(ridx+1))+'</span>'+
+        '<span class="proj-card-meta">'+(p.count||0)+' modułów · '+dateStr+'</span>'+
+        '</div>'+
+        '<div class="proj-card-bottom">'+
+        '<button class="proj-card-btn" onclick="appLoadAndGo('+ridx+')">✏ Edytuj</button>'+
+        '<button class="proj-card-btn" onclick="appPrintProj('+ridx+')">🖨</button>'+
+        '<button class="proj-card-btn danger" onclick="appDeleteProj('+ridx+')">✕</button>'+
+        '</div>'+
+        '</div>';
+    }).join('')+
+
+    '</div>';
+}
+
+/* ================================================================
+ * SETTINGS SCREEN
+ * ================================================================ */
+function appRenderSettings(){
+  var el=document.getElementById('appSettings');
+  if(!el) return;
+
+  var board=localStorage.getItem('kosztorys_board')||'BIAŁY W960 18mm';
+  var labor=localStorage.getItem('kosztorys_labor')||'0';
+  var markup=localStorage.getItem('kosztorys_markup')||'0';
+
+  el.innerHTML=
+    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-weight:800;'+
+    'font-size:1.4rem;letter-spacing:.1em;text-transform:uppercase;'+
+    'color:var(--text);margin-bottom:16px;">⚙ Ustawienia</div>'+
+
+    // Materiały
+    '<div class="settings-group-title">Materiały i ceny</div>'+
+    '<div class="settings-group">'+
+    '<div class="settings-row">'+
+    '<span class="settings-row-label">Płyta korpusowa</span>'+
+    '<span class="settings-row-val" style="font-size:.6rem;max-width:120px;text-align:right;">'+board+'</span>'+
+    '</div>'+
+    '<div class="settings-row">'+
+    '<span class="settings-row-label">Robocizna (zł/h)</span>'+
+    '<input type="number" value="'+labor+'" min="0" max="500" '+
+    'onchange="localStorage.setItem(\'kosztorys_labor\',this.value);showToast(\'Zapisano\',\'#2ecc71\',\'#1a4a2e\')" '+
+    'style="width:70px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);'+
+    'border-radius:6px;color:var(--text);font-family:\'JetBrains Mono\',monospace;font-size:.75rem;text-align:right;">'+
+    '</div>'+
+    '<div class="settings-row">'+
+    '<span class="settings-row-label">Narzut marży (%)</span>'+
+    '<input type="number" value="'+markup+'" min="0" max="200" '+
+    'onchange="localStorage.setItem(\'kosztorys_markup\',this.value);showToast(\'Zapisano\',\'#2ecc71\',\'#1a4a2e\')" '+
+    'style="width:70px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);'+
+    'border-radius:6px;color:var(--text);font-family:\'JetBrains Mono\',monospace;font-size:.75rem;text-align:right;">'+
+    '</div>'+
+    '</div>'+
+
+    // Aplikacja
+    '<div class="settings-group-title">Aplikacja</div>'+
+    '<div class="settings-group">'+
+    '<div class="settings-row">'+
+    '<span class="settings-row-label">Wersja</span>'+
+    '<span class="settings-row-val">R4.0 App Shell</span>'+
+    '</div>'+
+    '<div class="settings-row">'+
+    '<span class="settings-row-label">Zapisane projekty</span>'+
+    '<span class="settings-row-val" id="settProjCount">…</span>'+
+    '</div>'+
+    '<div class="settings-row" style="cursor:pointer;" onclick="appExportAll()">'+
+    '<span class="settings-row-label">📤 Eksport wszystkich projektów</span>'+
+    '<span class="settings-row-val">→</span>'+
+    '</div>'+
+    '<div class="settings-row" style="cursor:pointer;" onclick="appClearAll()">'+
+    '<span class="settings-row-label" style="color:rgba(231,76,60,.8);">🗑 Usuń wszystkie projekty</span>'+
+    '<span class="settings-row-val" style="color:rgba(231,76,60,.7);">→</span>'+
+    '</div>'+
+    '</div>'+
+
+    // Skróty
+    '<div class="settings-group-title">Szybkie akcje</div>'+
+    '<div class="settings-group">'+
+    '<div class="settings-row" style="cursor:pointer;" onclick="appNav(\'konfig\');setTimeout(showAutoKitchen,100)">'+
+    '<span class="settings-row-label">🏗 Otwórz Auto-kuchnię</span>'+
+    '<span class="settings-row-val">→</span>'+
+    '</div>'+
+    '<div class="settings-row" style="cursor:pointer;" onclick="appNav(\'konfig\');setTimeout(showScanCabinet,100)">'+
+    '<span class="settings-row-label">📷 Otwórz Scan Cabinet</span>'+
+    '<span class="settings-row-val">→</span>'+
+    '</div>'+
+    '</div>';
+
+  //  
+  var projs=[];
+  try{ projs=JSON.parse(localStorage.getItem('r4_projects')||'[]'); }catch(e){}
+  var cnt=document.getElementById('settProjCount');
+  if(cnt) cnt.textContent=projs.length+' szt';
+}
+
+/* ================================================================
+ * PROJECT ACTIONS
+ * ================================================================ */
+function appLoadAndGo(idx){
+  var projs=[];
+  try{ projs=JSON.parse(localStorage.getItem('r4_projects')||'[]'); }catch(e){}
+  var p=projs[idx];
+  if(!p){ showToast('⚠ Nie znaleziono projektu','#f0ad4e','#7d6010'); return; }
+  if(typeof _historyPush==='function') _historyPush();
+  project=JSON.parse(JSON.stringify(p.modules||[]));
+  if(typeof updateCounter==='function') updateCounter();
+  appNav('konfig');
+  setTimeout(function(){
+    if(typeof showProject==='function') showProject();
+    showToast('✅ Wczytano: "'+p.name+'" ('+project.length+' mod.)','#2ecc71','#1a4a2e');
+    var pv=document.getElementById('projectView');
+    if(pv) pv.scrollIntoView({behavior:'smooth',block:'start'});
+  },150);
+}
+
+function appNewProject(){
+  if(typeof project!=='undefined'&&project.length>0){
+    if(!confirm('Masz aktywny projekt ('+project.length+' mod.).\nUtwórzyć nowy?')) return;
+  }
+  if(typeof _historyPush==='function') _historyPush();
+  project=[];
+  if(typeof updateCounter==='function') updateCounter();
+  if(typeof showProject==='function') showProject();
+  appNav('konfig');
+  showToast('✨ Nowy projekt','#2ecc71','#1a4a2e');
+}
+
+function appDeleteProj(idx){
+  var projs=[];
+  try{ projs=JSON.parse(localStorage.getItem('r4_projects')||'[]'); }catch(e){}
+  var p=projs[idx];
+  if(!p) return;
+  if(!confirm('Usunąć projekt "'+p.name+'"?')) return;
+  projs.splice(idx,1);
+  localStorage.setItem('r4_projects',JSON.stringify(projs));
+  appRenderProjects();
+  showToast('🗑 Usunięto projekt','#e05050','#3a1010');
+}
+
+function appPrintProj(idx){
+  var projs=[];
+  try{ projs=JSON.parse(localStorage.getItem('r4_projects')||'[]'); }catch(e){}
+  var p=projs[idx];
+  if(!p) return;
+  if(typeof _historyPush==='function') _historyPush();
+  project=JSON.parse(JSON.stringify(p.modules||[]));
+  if(typeof printProject==='function') printProject();
+  else showToast('⚠ Funkcja druku niedostępna','#f0ad4e','#7d6010');
+}
+
+function appExportAll(){
+  var projs=[];
+  try{ projs=JSON.parse(localStorage.getItem('r4_projects')||'[]'); }catch(e){}
+  if(!projs.length){ showToast('Brak projektów do eksportu','#f0ad4e','#7d6010'); return; }
+  var blob=new Blob([JSON.stringify({projects:projs,exported:new Date().toISOString()},null,2)],
+    {type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='meble-pro-projekty-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+
+function appClearAll(){
+  var projs=[];
+  try{ projs=JSON.parse(localStorage.getItem('r4_projects')||'[]'); }catch(e){}
+  if(!confirm('Usunąć wszystkie '+projs.length+' projektów?\nTej operacji nie można cofnąć!')) return;
+  localStorage.removeItem('r4_projects');
+  appRenderSettings();
+  showToast('🗑 Usunięto wszystkie projekty','#e05050','#3a1010');
+}
+
+/* ================================================================
+ * REBUILD BOTTOM NAV
+ * ================================================================ */
+function appRebuildNav(){
+  var nav=document.getElementById('bottomNav');
+  if(!nav) return;
+
+  nav.innerHTML=
+    '<button class="bnav-btn" id="bnav-home" onclick="appNav(\'home\')">'+
+    '<span class="bnav-icon">🏠</span>Home</button>'+
+
+    '<button class="bnav-btn" id="bnav-projects" onclick="appNav(\'projects\')">'+
+    '<span class="bnav-icon">📁</span>Projekty</button>'+
+
+    '<button class="bnav-btn" id="bnav-new" onclick="appNewProject()">'+
+    '<span class="bnav-icon">＋</span></button>'+
+
+    '<button class="bnav-btn active" id="bnav-konfig" onclick="appNav(\'konfig\')">'+
+    '<span class="bnav-icon">⚙</span>Konfig</button>'+
+
+    '<button class="bnav-btn" id="bnav-settings" onclick="appNav(\'settings\')">'+
+    '<span class="bnav-icon">☰</span>Ustaw.</button>';
+}
+
+/* ================================================================
+ * CREATE DYNAMIC SCREENS
+ * ================================================================ */
+function appCreateScreens(){
+  var body=document.body;
+
+  // Home screen div
+  if(!document.getElementById('appHome')){
+    var home=document.createElement('div');
+    home.id='appHome';
+    home.style.display='none';
+    body.insertBefore(home, body.firstChild);
+  }
+
+  // Projects screen div
+  if(!document.getElementById('appProjects')){
+    var proj=document.createElement('div');
+    proj.id='appProjects';
+    proj.style.display='none';
+    body.insertBefore(proj, body.firstChild);
+  }
+
+  // Settings screen div
+  if(!document.getElementById('appSettings')){
+    var sett=document.createElement('div');
+    sett.id='appSettings';
+    sett.style.display='none';
+    body.insertBefore(sett, body.firstChild);
+  }
+}
+
+/* ================================================================
+ * INIT —   window.load
+ * ================================================================ */
+function appShellInit(){
+  appCreateScreens();
+  appRebuildNav();
+
+  //   bnav  
+  window.bnav=function(tab){
+    var map={konfig:'konfig',rozm:'rozm',rozkroj:'rozkroj',projekt:'konfig'};
+    appNav(map[tab]||tab);
+  };
+
+  // Patch switchMainTab     
+  var origSMT=window.switchMainTab;
+  window.switchMainTab=function(tab){
+    if(origSMT) origSMT.call(this,tab);
+    // Sync nav
+    if(APP.screen!=='konfig'&&APP.screen!=='rozm'&&APP.screen!=='rozkroj') return;
+    document.querySelectorAll('.bnav-btn').forEach(function(b){b.classList.remove('active');});
+    var btn=document.getElementById('bnav-konfig');
+    if(btn) btn.classList.add('active');
+  };
+
+  //   Home
+  appNav('home');
+}
+
+/* ================================================================
+ * 
+ * ================================================================ */
+window.addEventListener('load',function(){
+  setTimeout(appShellInit, 400); //  splash
+});
+
+</script>
 </body>
 </html>
