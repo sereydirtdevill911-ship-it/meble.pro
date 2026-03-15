@@ -3,37 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MEBLE PRO — Konfigurator R4.0</title>
+<title>ModulPRO — Konfigurator R4.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root{
-  --bg:#0e1017;
-  --bg2:#13161f;
-  --surface:#1a1e2b;
-  --surface2:#1f2435;
-  --surface3:#252a3d;
-  --glass:rgba(255,255,255,.04);
-  --glass2:rgba(255,255,255,.07);
-  --border:rgba(255,255,255,.07);
-  --border2:rgba(255,255,255,.12);
-  --border3:rgba(255,255,255,.18);
-  --accent:#c89840;
-  --accent2:#e8b84a;
-  --accent3:#2ecc8a;
-  --danger:#e05050;
-  --warn:#c49a3c;
-  --success:#2ecc8a;
-  --info:#4a9fea;
-  --text:#e8eaf2;
-  --text2:#9aa0b8;
-  --muted:#5a6080;
-  --radius:8px;
-  --radius2:14px;
-  --glow-gold:rgba(200,152,64,.25);
-  --glow-green:rgba(46,204,138,.2);
-  --glow-blue:rgba(74,159,234,.2);
+  /* === ModulPRO — Neon Dark Theme === */
+  --bg:      #07080c;
+  --bg2:     #0b0c12;
+  --surface: #0f1118;
+  --surface2:#141720;
+  --surface3:#191d28;
+  --glass:   rgba(255,255,255,.03);
+  --glass2:  rgba(255,255,255,.06);
+  --border:  rgba(255,255,255,.06);
+  --border2: rgba(255,255,255,.10);
+  --border3: rgba(255,255,255,.16);
+
+  /* Electric Blue —   */
+  --accent:  #00c8ff;
+  --accent2: #40d8ff;
+  --accent3: #7c3aed;
+
+  /* Amber —    */
+  --warn:    #ffb400;
+
+  /* Semantic */
+  --danger:  #ff3d5a;
+  --success: #00e676;
+  --info:    #00c8ff;
+
+  /* Text */
+  --text:    #eef0f8;
+  --text2:   #6b728f;
+  --muted:   #353a52;
+
+  --radius:  10px;
+  --radius2: 16px;
+
+  /* Glow — compat aliases */
+  --glow-gold:  rgba(0,200,255,.15);
+  --glow-green: rgba(0,230,118,.15);
+  --glow-blue:  rgba(0,200,255,.2);
+  --glow-cyan:  rgba(0,200,255,.2);
+  --glow-violet:rgba(124,58,237,.2);
 }
+
 
 *{box-sizing:border-box;margin:0;padding:0;}
 
@@ -44,63 +59,54 @@ body{
   min-height:100vh;
   padding:0 0 60px;
   background-image:
-    radial-gradient(ellipse at 20% 0%, rgba(200,152,64,.06) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 100%, rgba(74,159,234,.05) 0%, transparent 60%);
+    radial-gradient(ellipse 60% 40% at 5% 0%,  rgba(0,200,255,.05) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 30% at 95% 100%,rgba(124,58,237,.04) 0%, transparent 70%),
+    linear-gradient(rgba(0,200,255,.016) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,255,.016) 1px, transparent 1px);
+  background-size:auto,auto,40px 40px,40px 40px;
 }
 
 .container{ max-width:860px; margin:auto; padding:0 12px; }
 
 /* ── TOPBAR ── */
 .topbar{
-  background:linear-gradient(135deg, #1a1408 0%, #2a1e0a 40%, #1a1408 100%);
-  padding:0 20px;
-  display:flex;
-  align-items:center;
-  gap:16px;
-  height:56px;
-  margin-bottom:0;
-  border-bottom:1px solid rgba(200,152,64,.3);
-  box-shadow:0 4px 24px rgba(0,0,0,.5), 0 1px 0 rgba(200,152,64,.2);
-  position:sticky;
-  top:0;
-  z-index:100;
+  background:rgba(7,8,12,.95);
+  padding:0 16px;
+  display:flex;align-items:center;gap:10px;
+  height:52px;margin-bottom:0;
+  border-bottom:1px solid rgba(0,200,255,.1);
+  box-shadow:0 1px 0 rgba(0,200,255,.06),0 8px 40px rgba(0,0,0,.8);
+  position:sticky;top:0;z-index:100;
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
 }
 .topbar-logo{
   font-family:'Barlow Condensed',sans-serif;
-  font-size:1.45rem;
-  font-weight:800;
-  letter-spacing:.15em;
-  text-transform:uppercase;
-  color:#fff;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  text-shadow:0 0 20px rgba(200,152,64,.6);
+  font-size:1.25rem;font-weight:900;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:#fff;display:flex;align-items:center;gap:8px;
+  text-shadow:0 0 20px rgba(0,200,255,.45);
 }
 .topbar-logo-box{
-  width:36px; height:36px;
-  background:linear-gradient(135deg,rgba(200,152,64,.3),rgba(200,152,64,.1));
-  border:1.5px solid rgba(200,152,64,.6);
-  display:flex; align-items:center; justify-content:center;
-  font-size:1rem; font-weight:800; color:var(--accent2);
-  border-radius:6px;
-  box-shadow:0 0 12px rgba(200,152,64,.3), inset 0 1px 0 rgba(255,255,255,.1);
+  width:32px;height:32px;
+  background:linear-gradient(135deg,rgba(0,200,255,.18),rgba(0,200,255,.04));
+  border:1.5px solid rgba(0,200,255,.45);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.88rem;font-weight:900;color:var(--accent2);
+  border-radius:8px;
+  box-shadow:0 0 16px rgba(0,200,255,.2),inset 0 1px 0 rgba(255,255,255,.06);
 }
 .topbar-divider{
-  width:1px; height:28px;
-  background:linear-gradient(to bottom,transparent,rgba(200,152,64,.4),transparent);
-  margin:0 4px;
+  width:1px;height:22px;
+  background:linear-gradient(to bottom,transparent,rgba(0,200,255,.28),transparent);
+  margin:0 2px;
 }
 .topbar-badge{
   font-family:'JetBrains Mono',monospace;
-  font-size:.6rem;
-  background:rgba(200,152,64,.12);
-  color:var(--accent2);
-  padding:3px 9px;
-  border-radius:4px;
-  letter-spacing:.12em;
-  font-weight:700;
-  border:1px solid rgba(200,152,64,.25);
+  font-size:.56rem;font-weight:700;
+  background:rgba(0,200,255,.07);color:var(--accent2);
+  padding:3px 8px;border-radius:5px;letter-spacing:.14em;
+  border:1px solid rgba(0,200,255,.18);
+  text-shadow:0 0 8px rgba(0,200,255,.4);
 }
 
 /* breadcrumb */
@@ -148,17 +154,13 @@ h1 span.badge{display:none;}
   position:relative;
 }
 .main-tab-btn.active{
-  color:var(--accent2);
-  border-bottom-color:var(--accent2);
+  color:var(--accent2);border-bottom-color:var(--accent2);
   background:transparent;
-  text-shadow:0 0 12px rgba(200,152,64,.5);
+  text-shadow:0 0 12px rgba(0,200,255,.5);
 }
 .main-tab-btn.active::after{
-  content:'';
-  position:absolute;
-  bottom:0; left:0; right:0;
-  height:2px;
-  background:linear-gradient(90deg, transparent, var(--accent2), transparent);
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent2),transparent);
   box-shadow:0 0 8px var(--accent2);
 }
 .main-tab-btn:hover:not(.active){ color:var(--text2); }
@@ -181,26 +183,18 @@ h1 span.badge{display:none;}
 
 /* ── CARD ── */
 .card{
-  background:linear-gradient(160deg, var(--surface2) 0%, var(--surface) 100%);
+  background:var(--surface);
   border:1px solid var(--border);
-  border-top:1px solid var(--border2);
   border-radius:var(--radius2);
   padding:16px 18px;
   position:relative;
-  box-shadow:
-    0 4px 20px rgba(0,0,0,.35),
-    0 1px 0 rgba(255,255,255,.05) inset,
-    0 -1px 0 rgba(0,0,0,.3) inset;
-  margin-bottom:12px;
-  overflow:visible;
+  box-shadow:0 4px 24px rgba(0,0,0,.5);
+  margin-bottom:12px;overflow:visible;
 }
-.card::after{
-  content:'';
-  position:absolute;
-  top:0; left:16px; right:16px;
-  height:1px;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
-  border-radius:1px;
+.card::before{
+  content:'';position:absolute;
+  top:0;left:12px;right:12px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,200,255,.15),transparent);
 }
 
 .card h3{
@@ -291,40 +285,36 @@ button:hover{ filter:brightness(1.15); transform:translateY(-1px); }
 button:active{ transform:translateY(1px) scale(.98); filter:brightness(.95); }
 
 .btn-primary{
-  background:linear-gradient(160deg, #d4a840 0%, #a07820 60%, #8a6418 100%);
-  color:#fff;
-  grid-column:1/-1;
-  font-size:1rem;
-  padding:14px;
-  letter-spacing:.12em;
-  box-shadow:
-    0 4px 20px rgba(160,120,32,.45),
-    0 1px 0 rgba(255,255,255,.2) inset,
-    0 -2px 0 rgba(0,0,0,.3) inset;
-  text-shadow:0 1px 2px rgba(0,0,0,.4);
-  border:1px solid rgba(200,160,60,.4);
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,rgba(0,200,255,.18),rgba(0,200,255,.06));
+  border:1px solid rgba(0,200,255,.35);border-radius:var(--radius);
+  color:var(--accent2);font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:.95rem;letter-spacing:.14em;text-transform:uppercase;
+  cursor:pointer;box-shadow:0 0 20px rgba(0,200,255,.1);
+  transition:all .15s;
 }
 .btn-primary:hover{
-  box-shadow:0 6px 28px rgba(160,120,32,.6), 0 1px 0 rgba(255,255,255,.25) inset, 0 -2px 0 rgba(0,0,0,.3) inset;
+  background:linear-gradient(135deg,rgba(0,200,255,.28),rgba(0,200,255,.1));
+  box-shadow:0 0 32px rgba(0,200,255,.25);transform:translateY(-1px);
 }
 .btn-secondary{
-  background:linear-gradient(160deg, var(--surface3) 0%, var(--surface2) 100%);
-  color:var(--text2);
-  border:1px solid var(--border2);
-  box-shadow:0 2px 8px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.05);
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:var(--radius);color:var(--text2);
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:.9rem;letter-spacing:.08em;cursor:pointer;
+  transition:all .15s;padding:12px;
 }
 .btn-success{
-  background:linear-gradient(160deg, #2ecc8a 0%, #1a9260 100%);
-  color:#fff;
-  box-shadow:0 3px 14px rgba(46,204,138,.3), inset 0 1px 0 rgba(255,255,255,.2);
-  border:1px solid rgba(46,204,138,.3);
-  text-shadow:0 1px 2px rgba(0,0,0,.3);
+  background:rgba(0,230,118,.12);border:1px solid rgba(0,230,118,.3);
+  border-radius:var(--radius);color:var(--success);
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:.88rem;letter-spacing:.08em;cursor:pointer;padding:12px;
 }
 .btn-danger{
-  background:linear-gradient(160deg, #e05050 0%, #a02828 100%);
-  color:#fff;
-  box-shadow:0 3px 14px rgba(192,57,43,.3), inset 0 1px 0 rgba(255,255,255,.15);
-  border:1px solid rgba(192,57,43,.3);
+  background:rgba(255,61,90,.12);border:1px solid rgba(255,61,90,.3);
+  border-radius:var(--radius);color:var(--danger);
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:.88rem;cursor:pointer;padding:12px;
 }
 .btn-view-active{
   background:linear-gradient(160deg, #d4a840, #a07820)!important;
@@ -336,7 +326,7 @@ button:active{ transform:translateY(1px) scale(.98); filter:brightness(.95); }
 .drawer-block{
   background:var(--bg2);
   border:1px solid var(--border);
-  border-left:3px solid var(--accent);
+  border-left:3px solid var(--accent2);
   border-radius:var(--radius);
   padding:11px 13px;
   margin-bottom:8px;
@@ -356,25 +346,15 @@ button:active{ transform:translateY(1px) scale(.98); filter:brightness(.95); }
 
 /* ── RESULT CARD ── */
 .result-card{
-  background:linear-gradient(160deg, var(--surface2) 0%, var(--surface) 100%);
-  border:1px solid var(--border);
-  border-radius:var(--radius2);
-  padding:18px 20px;
-  margin-top:14px;
-  border-top:2px solid var(--accent3);
-  box-shadow:
-    0 8px 32px rgba(0,0,0,.4),
-    0 1px 0 rgba(255,255,255,.05) inset;
-  position:relative;
-  overflow:hidden;
+  background:var(--surface);
+  border:1px solid rgba(0,200,255,.15);
+  border-radius:var(--radius2);padding:16px 18px;
+  margin-bottom:12px;position:relative;overflow:hidden;
+  box-shadow:0 4px 24px rgba(0,0,0,.5),0 0 40px rgba(0,200,255,.04);
 }
 .result-card::before{
-  content:'';
-  position:absolute;
-  top:0; left:0; right:0;
-  height:2px;
-  background:linear-gradient(90deg, transparent, var(--accent3), transparent);
-  box-shadow:0 0 12px var(--accent3);
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,200,255,.4),transparent);
 }
 .result-card h2{
   font-size:.8rem;
@@ -426,17 +406,10 @@ tr:hover td{
 
 /* ── WARN ── */
 .warn{
-  background:rgba(192,57,43,.1);
-  border:1px solid rgba(192,57,43,.3);
-  border-left:3px solid var(--danger);
-  border-radius:var(--radius);
-  padding:12px 15px;
-  color:#e07070;
-  font-size:.82rem;
-  font-weight:600;
-  margin-top:12px;
-  font-family:'JetBrains Mono',monospace;
-  box-shadow:0 0 20px rgba(192,57,43,.1);
+  background:rgba(255,61,90,.07);border:1px solid rgba(255,61,90,.25);
+  border-radius:var(--radius);padding:10px 14px;
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;
+  color:var(--danger);margin-bottom:8px;
 }
 .warn::before{content:"⚠ ERR: ";}
 
@@ -653,7 +626,7 @@ tr:hover td{
 }
 .cat-card.cat-open{
   background:linear-gradient(135deg, rgba(200,152,64,.1) 0%, var(--surface2) 100%);
-  border-left:3px solid var(--accent);
+  border-left:3px solid var(--accent2);
   padding-left:15px;
   box-shadow:0 2px 12px rgba(0,0,0,.3);
 }
@@ -766,13 +739,11 @@ input[type=text]::placeholder{ color:var(--muted); }
 
 /* ── QUICK ACTION BUTTONS ── */
 .qa-btn{
-  flex:1;min-width:44px;padding:9px 5px;
-  background:linear-gradient(160deg,var(--surface3),var(--surface2));
-  border:1px solid var(--border2);border-radius:var(--radius);
-  color:var(--text2);font-family:'Barlow Condensed',sans-serif;font-weight:700;
-  font-size:.85rem;cursor:pointer;letter-spacing:.05em;text-transform:uppercase;
-  transition:all .18s;
-  box-shadow:0 2px 8px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.04);
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:var(--radius);color:var(--text2);
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:.8rem;letter-spacing:.05em;cursor:pointer;
+  padding:9px 4px;transition:all .15s;
 }
 .qa-btn:hover{border-color:rgba(200,152,64,.5);color:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.35),0 0 0 1px rgba(200,152,64,.12);}
 .qa-btn:active{transform:translateY(0);}
@@ -781,18 +752,16 @@ input[type=text]::placeholder{ color:var(--muted); }
 
 /* ── TAG BUTTONS ── */
 .tag-btn{
-  padding:6px 14px;border-radius:20px;border:1px solid var(--border2);
-  background:var(--surface2);color:var(--text2);font-size:.72rem;font-weight:700;
-  cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em;
-  text-transform:uppercase;transition:all .18s;
-  box-shadow:0 2px 6px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.04);
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:var(--radius);color:var(--text2);
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:.78rem;letter-spacing:.06em;cursor:pointer;
+  padding:9px 4px;transition:all .15s;text-align:center;
 }
 .tag-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.3);}
 .tag-btn.active-tag{
-  background:linear-gradient(135deg,var(--accent2),var(--accent));
-  border-color:rgba(200,152,64,.4);color:#111;
-  box-shadow:0 0 16px rgba(200,152,64,.4),0 2px 8px rgba(0,0,0,.3);
-  text-shadow:0 1px 1px rgba(255,255,255,.2);
+  background:rgba(0,200,255,.12);border-color:rgba(0,200,255,.35);
+  color:var(--accent2);box-shadow:0 0 12px rgba(0,200,255,.1);
 }
 
 /* ── PROJ SAVE/LOAD BUTTONS ── */
@@ -809,16 +778,14 @@ input[type=text]::placeholder{ color:var(--muted); }
 
 /* ── OUTLINE GOLD BUTTON ── */
 .btn-outline-gold{
-  width:100%;padding:11px;margin-bottom:8px;
-  border:1.5px solid rgba(200,152,64,.4);color:var(--accent2);
-  background:rgba(200,152,64,.05);font-size:.88rem;border-radius:var(--radius);
-  font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.09em;
-  cursor:pointer;text-transform:uppercase;transition:all .2s;
-  box-shadow:0 0 14px rgba(200,152,64,.06),inset 0 1px 0 rgba(255,255,255,.04);
+  background:rgba(0,200,255,.06);border:1px solid rgba(0,200,255,.25);
+  border-radius:var(--radius);color:var(--accent2);
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:.88rem;letter-spacing:.08em;cursor:pointer;
+  transition:all .15s;padding:12px;width:100%;
 }
 .btn-outline-gold:hover{
-  background:rgba(200,152,64,.1);border-color:rgba(200,152,64,.65);
-  box-shadow:0 0 22px rgba(200,152,64,.18);transform:translateY(-1px);
+  background:rgba(0,200,255,.12);box-shadow:0 0 20px rgba(0,200,255,.15);
 }
 
 /* ── BLUE BUTTON ── */
@@ -835,8 +802,10 @@ input[type=text]::placeholder{ color:var(--muted); }
 
 /* ── SECTION MICRO LABEL ── */
 .micro-label{
-  font-size:.62rem;color:var(--muted);letter-spacing:.1em;
-  font-family:'JetBrains Mono',monospace;margin-bottom:6px;text-transform:uppercase;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.58rem;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--text2);
+  display:block;margin-bottom:6px;
 }
 
 /* ── CANVAS ── */
@@ -871,8 +840,9 @@ input[type=text]::placeholder{ color:var(--muted); }
   cursor:pointer;transition:all .15s;white-space:nowrap;
 }
 .add-room-tab.active {
-  background:rgba(200,152,64,.15);border-color:rgba(200,152,64,.4);
+  background:rgba(0,200,255,.1);border-color:rgba(0,200,255,.35);
   color:var(--accent2);
+  box-shadow:0 0 10px rgba(0,200,255,.1);
 }
 .module-cards-grid {
   display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
@@ -883,7 +853,7 @@ input[type=text]::placeholder{ color:var(--muted); }
   transition:all .15s;-webkit-tap-highlight-color:transparent;
   display:flex;flex-direction:column;
 }
-.module-card:active{transform:scale(.97);border-color:rgba(200,152,64,.5);}
+.module-card:active{transform:scale(.97);border-color:rgba(0,200,255,.3);}
 .module-card-preview {
   width:100%;aspect-ratio:16/9;overflow:hidden;
   background:var(--bg);display:flex;align-items:center;justify-content:center;
@@ -904,13 +874,13 @@ input[type=text]::placeholder{ color:var(--muted); }
 .module-card-add {
   display:flex;align-items:center;justify-content:center;
   gap:5px;padding:6px 10px;margin:0 8px 8px;
-  background:rgba(200,152,64,.1);border:1px solid rgba(200,152,64,.3);
+  background:rgba(0,200,255,.07);border:1px solid rgba(0,200,255,.2);
   border-radius:7px;color:var(--accent2);
   font-family:'Barlow Condensed',sans-serif;font-weight:700;
   font-size:.75rem;letter-spacing:.06em;cursor:pointer;
   transition:all .15s;
 }
-.module-card-add:active{background:rgba(200,152,64,.2);}
+.module-card-add:active{background:rgba(0,200,255,.14);}
 /* Wide card (full row) */
 .module-card.wide{grid-column:1/-1;flex-direction:row;}
 .module-card.wide .module-card-preview{
@@ -926,7 +896,7 @@ input[type=text]::placeholder{ color:var(--muted); }
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Meble PRO">
+  <meta name="apple-mobile-web-app-title" content="ModulPRO">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <script>
     // SW only on real hosting (not preview)
@@ -939,18 +909,27 @@ input[type=text]::placeholder{ color:var(--muted); }
     }
   </script>
 <style>
-#bottomNav{position:fixed;bottom:0;left:0;right:0;z-index:9000;
-  background:rgba(13,15,23,.97);border-top:1px solid rgba(200,152,64,.18);
-  display:flex;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  box-shadow:0 -4px 24px rgba(0,0,0,.5);padding-bottom:env(safe-area-inset-bottom,0);}
+#bottomNav{
+  position:fixed;bottom:0;left:0;right:0;z-index:9000;
+  background:rgba(7,8,12,.97);
+  border-top:1px solid rgba(0,200,255,.08);
+  display:flex;align-items:stretch;
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  box-shadow:0 -4px 40px rgba(0,0,0,.7);
+  padding-bottom:env(safe-area-inset-bottom,0);
+}
 .bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:8px 2px 10px;gap:3px;cursor:pointer;border:none;background:transparent;
   color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:.52rem;
   font-weight:700;letter-spacing:.04em;text-transform:uppercase;transition:color .2s;
   -webkit-tap-highlight-color:transparent;position:relative;}
 .bnav-btn.active{color:var(--accent2);}
-.bnav-btn.active::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;
-  background:var(--accent2);border-radius:0 0 3px 3px;box-shadow:0 0 6px var(--accent2);}
+.bnav-btn.active::before{
+  content:'';position:absolute;top:0;left:15%;right:15%;
+  height:2px;background:var(--accent2);
+  border-radius:0 0 3px 3px;
+  box-shadow:0 0 10px var(--accent2),0 0 20px rgba(0,200,255,.3);
+}
 .bnav-icon{font-size:1.25rem;line-height:1;}
 body{padding-bottom:72px!important;}
 </style>
@@ -961,7 +940,7 @@ body{padding-bottom:72px!important;}
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="topbar-logo-box">M</div>
-  <div class="topbar-logo">MEBLE<span style="opacity:.5;">&thinsp;/&thinsp;</span>PRO</div>
+  <div class="topbar-logo">Modul<span style="color:var(--accent2);font-weight:900;">PRO</span></div>
   <div class="topbar-divider"></div>
   <span class="topbar-badge">R4.0</span>
   <span id="moduleCounter" onclick="showProject()" style="margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;color:rgba(255,255,255,.7);cursor:pointer;padding:4px 8px;border-radius:4px;border:1px solid rgba(255,255,255,.2);">📦 <span id="moduleCountNum">0</span></span>
@@ -984,6 +963,12 @@ body{padding-bottom:72px!important;}
 
 <!-- SEKCJA KONFIGURATOR -->
 <div id="sectionKonfig">
+<!-- Sticky back to Home in konfig -->
+<div id="konfig-back-bar" style="position:sticky;top:0;z-index:100;padding:6px 14px;background:rgba(7,8,12,.97);border-bottom:1px solid rgba(0,200,255,.08);display:flex;align-items:center;gap:8px;backdrop-filter:blur(20px);">
+<button onclick="appNav('home')" style="padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text2);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;">🏠 Home</button>
+<button onclick="appNav('projects')" style="padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text2);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;">📁 Projekty</button>
+<button onclick="appShowAddModule()" style="padding:5px 10px;background:rgba(200,152,64,.1);border:1px solid rgba(200,152,64,.3);border-radius:7px;color:var(--accent2);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;">＋ Szafka</button>
+</div>
 
   <!-- Typ szafy — visual category cards -->
   <div class="card" style="padding:0;overflow:hidden;">
@@ -1502,50 +1487,9 @@ body{padding-bottom:72px!important;}
     style="padding:14px 18px;border-radius:10px;font-size:1rem;">🗑</button>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════
-     TAGI — jednym dotknięciem
-     ═══════════════════════════════════════════════════════ -->
-<div style="margin-bottom:14px;">
-  <div class="micro-label">🏷 Grupa</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;">
-    <button id="tag_dolne"   class="tag-btn active-tag" onclick="setTag('dolne')"   style="padding:10px 4px;font-size:.78rem;">↓ DOLNE</button>
-    <button id="tag_wiszace" class="tag-btn"            onclick="setTag('wiszace')" style="padding:10px 4px;font-size:.78rem;">↑ WISZ.</button>
-    <button id="tag_slupki"  class="tag-btn"            onclick="setTag('slupki')"  style="padding:10px 4px;font-size:.78rem;">▐ SŁUP.</button>
-    <button id="tag_agd"     class="tag-btn"            onclick="setTag('agd')"     style="padding:10px 4px;font-size:.78rem;">⚙ AGD</button>
-  </div>
-</div>
 
-<!-- ═══════════════════════════════════════════════════════
-     SZYBKIE OPCJE
-     ═══════════════════════════════════════════════════════ -->
-<div style="margin-bottom:14px;">
-  <div class="micro-label">⚡ Szybko</div>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:6px;">
-    <button class="qa-btn" onclick="batchAdd(2)" style="padding:10px 4px;">×2</button>
-    <button class="qa-btn" onclick="batchAdd(3)" style="padding:10px 4px;">×3</button>
-    <button class="qa-btn" onclick="batchAdd(4)" style="padding:10px 4px;">×4</button>
-    <button class="qa-btn" onclick="batchAdd(5)" style="padding:10px 4px;">×5</button>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;">
-    <button class="qa-btn qa-btn-blue" onclick="addMirrored()"    style="padding:10px 4px;font-size:.72rem;">↔ LUSTRO</button>
-    <button class="qa-btn qa-btn-blue" onclick="swapConfig()"     style="padding:10px 4px;font-size:.72rem;">⇄ DR↔SZ</button>
-    <button class="qa-btn qa-btn-green" onclick="cloneToWiszaca()" style="padding:10px 4px;font-size:.72rem;">↑ WISZ.</button>
-  </div>
-</div>
 
-<!-- ═══════════════════════════════════════════════════════
-     ZAPIS
-     ═══════════════════════════════════════════════════════ -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-  <button id="btnSaveProject" class="proj-btn" onclick="saveProject()"
-    style="padding:12px;font-size:.85rem;border-radius:9px;">
-    💾 ZAPISZ
-  </button>
-  <button id="btnLoadProject" class="proj-btn" onclick="loadProject()"
-    style="padding:12px;font-size:.85rem;border-radius:9px;">
-    📂 OTWÓRZ
-  </button>
-</div>
+
 
 <!-- ═══════════════════════════════════════════════════════
      ⚙ NARZĘDZIA
@@ -1566,6 +1510,33 @@ body{padding-bottom:72px!important;}
       style="width:100%;padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;margin-bottom:6px;box-sizing:border-box;">
     <input type="text" id="moduleNote" placeholder="Uwagi np. szafka zlewozmywakowa"
       style="width:100%;padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;box-sizing:border-box;">
+  </div>
+
+  <!-- Grupa + Szybko — w narzędziach -->
+  <div style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:10px;">
+    <div class="micro-label" style="margin-bottom:6px;">🏷 GRUPA MODUŁU</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;">
+      <button id="tag_dolne"   class="tag-btn active-tag" onclick="setTag('dolne')"   style="padding:9px 4px;font-size:.72rem;">↓ DOLNE</button>
+      <button id="tag_wiszace" class="tag-btn"            onclick="setTag('wiszace')" style="padding:9px 4px;font-size:.72rem;">↑ WISZ.</button>
+      <button id="tag_slupki"  class="tag-btn"            onclick="setTag('slupki')"  style="padding:9px 4px;font-size:.72rem;">▐ SŁUP.</button>
+      <button id="tag_agd"     class="tag-btn"            onclick="setTag('agd')"     style="padding:9px 4px;font-size:.72rem;">⚙ AGD</button>
+    </div>
+  </div>
+
+  <!-- Szybkie opcje — w narzędziach -->
+  <div style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:10px;">
+    <div class="micro-label" style="margin-bottom:6px;">⚡ SZYBKO</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:5px;">
+      <button class="qa-btn" onclick="batchAdd(2)" style="padding:9px 4px;">×2</button>
+      <button class="qa-btn" onclick="batchAdd(3)" style="padding:9px 4px;">×3</button>
+      <button class="qa-btn" onclick="batchAdd(4)" style="padding:9px 4px;">×4</button>
+      <button class="qa-btn" onclick="batchAdd(5)" style="padding:9px 4px;">×5</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;">
+      <button class="qa-btn qa-btn-blue"  onclick="addMirrored()"     style="padding:9px 4px;font-size:.7rem;">↔ LUSTRO</button>
+      <button class="qa-btn qa-btn-blue"  onclick="swapConfig()"      style="padding:9px 4px;font-size:.7rem;">⇄ DR↔SZ</button>
+      <button class="qa-btn qa-btn-green" onclick="cloneToWiszaca()"  style="padding:9px 4px;font-size:.7rem;">↑ WISZ.</button>
+    </div>
   </div>
 
   <!-- Szablony + Kopia -->
@@ -1597,6 +1568,18 @@ body{padding-bottom:72px!important;}
     style="width:100%;margin-bottom:8px;padding:11px;font-size:.82rem;">
     🔧 TYLKO PODGLĄD (bez dodawania)
   </button>
+
+  <!-- Zapis projektu -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+    <button id="btnSaveProject" class="proj-btn" onclick="saveProject()"
+      style="padding:10px 6px;font-size:.78rem;border-radius:8px;">
+      💾 ZAPISZ
+    </button>
+    <button id="btnLoadProject" class="proj-btn" onclick="loadProject()"
+      style="padding:10px 6px;font-size:.78rem;border-radius:8px;">
+      📂 OTWÓRZ
+    </button>
+  </div>
 
   <!-- JSON / pliki — najrzadsze akcje -->
   <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;">
@@ -2243,7 +2226,7 @@ function autoLogic(){
     if(!_ti){
       _ti=document.createElement('div');
       _ti.id='_typoInfo';
-      _ti.style.cssText='font-size:.68rem;color:var(--accent2);padding:5px 10px;background:rgba(200,152,64,.07);border-left:2px solid var(--accent);border-radius:0 6px 6px 0;margin:4px 0 6px;font-family:monospace;line-height:1.4;';
+      _ti.style.cssText='font-size:.68rem;color:var(--accent2);padding:5px 10px;background:rgba(200,152,64,.07);border-left:2px solid rgba(0,200,255,.5);border-radius:0 6px 6px 0;margin:4px 0 6px;font-family:monospace;line-height:1.4;';
       const hEl=document.getElementById('height');
       if(hEl&&hEl.closest('.dim-card')){
         hEl.closest('.dim-card').before(_ti);
@@ -2463,7 +2446,7 @@ function alAutoHinges(){
     el.id='al_hinge_hint';
     el.style.cssText='font-size:.65rem;font-family:"JetBrains Mono",monospace;'+
       'margin:3px 0 0;padding:3px 7px;border-radius:4px;background:rgba(200,152,64,.07);'+
-      'border-left:2px solid var(--accent);color:var(--accent2);';
+      'border-left:2px solid rgba(0,200,255,.5);color:var(--accent2);';
     hEl.parentNode && hEl.parentNode.appendChild(el);
   }
   var cfgEl = document.getElementById('config');
@@ -2708,7 +2691,7 @@ function alAutoPlecySize(){
     el.id='al_plecy';
     el.style.cssText='font-size:.66rem;font-family:"JetBrains Mono",monospace;'+
       'margin:4px 0 0;padding:5px 9px;border-radius:5px;'+
-      'background:rgba(200,152,64,.07);border-left:2px solid var(--accent);color:var(--accent2);'+
+      'background:rgba(200,152,64,.07);border-left:2px solid rgba(0,200,255,.5);color:var(--accent2);'+
       'line-height:1.7;';
     wEl.parentNode && wEl.parentNode.appendChild(el);
   }
@@ -4135,10 +4118,104 @@ function _updateProjBadge(){
 }
 
 /* ===== UNIVERSAL BACK / NAVIGATION ===== */
+
+/* ================================================================
+ * UNIFIED BACK BAR — Android-style bottom navigation
+ * ================================================================ */
+var _backStack = []; //  : [{label, backFn, closeFn}]
+
+/*  back bar    */
+function appBackBarShow(label, backFn, closeFn){
+  var bar  = document.getElementById('appBackBar');
+  var lbl  = document.getElementById('appBackLabel');
+  var bBtn = document.getElementById('appBackBtn');
+  var cBtn = document.getElementById('appCloseBtn');
+  if(!bar) return;
+
+  if(lbl)  lbl.textContent  = label || 'Wróć';
+  if(bBtn) bBtn._backFn  = backFn  || function(){ appBackBarHide(); window.scrollTo({top:0,behavior:'smooth'}); };
+  if(cBtn) cBtn._closeFn = closeFn || function(){ appBackBarHide(); closeAllPanels(); };
+
+  bar.style.display = 'block';
+  //   bottomNav
+  var nav = document.getElementById('bottomNav');
+  if(nav) bar.style.bottom = nav.offsetHeight + 'px';
+}
+
+function appBackBarHide(){
+  var bar = document.getElementById('appBackBar');
+  if(bar) bar.style.display = 'none';
+}
+
+function appBackAction(){
+  var btn = document.getElementById('appBackBtn');
+  if(btn && btn._backFn) btn._backFn();
+  else { appBackBarHide(); window.scrollTo({top:0,behavior:'smooth'}); }
+}
+
+function appCloseAction(){
+  var btn = document.getElementById('appCloseBtn');
+  if(btn && btn._closeFn) btn._closeFn();
+  else { appBackBarHide(); closeAllPanels(); }
+}
+
+/* : arzędzia  */
+function appBackBarForTools(){
+  appBackBarShow(
+    'Zamknij narzędzia',
+    function(){ toggleToolsPanel(); appBackBarHide(); },
+    function(){ toggleToolsPanel(); appBackBarHide(); }
+  );
+}
+
+/* :    konfigu */
+function appBackBarForScroll(){
+  appBackBarShow(
+    'Na górę',
+    function(){ closeAllPanels(); window.scrollTo({top:0,behavior:'smooth'}); appBackBarHide(); },
+    function(){ closeAllPanels(); window.scrollTo({top:0,behavior:'smooth'}); appBackBarHide(); }
+  );
+}
+
+/* Scroll listener —   */
+(function initScrollBar(){
+  var ticking = false;
+  window.addEventListener('scroll', function(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){
+      var bar = document.getElementById('appBackBar');
+      if(!bar){ ticking=false; return; }
+
+      var y = window.pageYOffset||document.documentElement.scrollTop;
+      var toolsOpen = (function(){
+        var t=document.getElementById('toolsPanel');
+        return t && t.style.display!=='none';
+      })();
+
+      //   bar     tools  
+      var lbl = document.getElementById('appBackLabel');
+      var currentLabel = lbl ? lbl.textContent : '';
+      var isToolsBar = currentLabel.includes('narzędzia');
+      var isModalBar = currentLabel.includes('SCAN')||currentLabel.includes('Auto');
+
+      if(!isToolsBar && !isModalBar){
+        if(y > 300){
+          appBackBarForScroll();
+        } else if(y < 50){
+          appBackBarHide();
+        }
+      }
+      ticking = false;
+    });
+  }, {passive:true});
+})();
+
+
 function universalBack(){
-  // zamknij wszystko i przewiń w górę
   closeAllPanels();
   window.scrollTo({top:0,behavior:'smooth'});
+  appBackBarHide();
 }
 
 function closeAllPanels(){
@@ -4159,24 +4236,7 @@ function closeAllPanels(){
   if(pr) pr.innerHTML='';
 }
 
-// Pokazujemy "GÓRA" gdy przewijają w dół ponad 200px
-(function(){
-  var lastY=0;
-  var bar=null;
-  window.addEventListener('scroll',function(){
-    if(!bar) bar=document.getElementById('universalBackBar');
-    if(!bar) return;
-    var y=window.pageYOffset||document.documentElement.scrollTop;
-    // Pokaż jeśli przewinięto > 250px od góry I narzędzia nie są otwarte
-    var toolsOpen = document.getElementById('toolsPanel') && document.getElementById('toolsPanel').style.display!=='none';
-    if(y>250 && !toolsOpen){
-      bar.style.display='block';
-    } else if(y<=50){
-      bar.style.display='none';
-    }
-    lastY=y;
-  }, {passive:true});
-})();
+/* scroll listener moved to appBackBarForScroll */
 
 function toggleToolsPanel(){
   var p=document.getElementById('toolsPanel');
@@ -4186,7 +4246,8 @@ function toggleToolsPanel(){
   var open=p.style.display==='none';
   p.style.display=open?'block':'none';
   if(a) a.textContent=open?'▲':'▼';
-  if(bar) bar.style.display=open?'block':'none';
+  if(bar) bar.style.display='none'; // compat
+  if(open) appBackBarForTools(); else appBackBarHide();
   if(!open){
     var jp=document.getElementById('jsonPanel');
     var ja=document.getElementById('jsonPanelArrow');
@@ -4768,7 +4829,7 @@ function printProject(){
   const BODY = `
   <div class="header">
     <div>
-      <div class="logo">MEBLE<span>/</span>PRO</div>
+      <div class="logo">Modul<span style="color:var(--accent2);">PRO</span></div>
       <h1 style="font-size:13pt;margin-top:4px;">${fc.client||'Projekt meblowy'}</h1>
       ${fc.project?'<div style="font-size:8pt;color:#888;">Nr: '+fc.project+'</div>':''}
     </div>
@@ -4791,11 +4852,11 @@ function printProject(){
   </table>
   ${accRows?'<h2>Akcesoria</h2><table><tr><th>Nazwa</th><th>Ilo\u015b\u0107</th><th>Jed.</th></tr>'+accRows+'</table>':''}
   <div style="margin-top:20px;font-size:7pt;color:#aaa;border-top:1px solid #eee;padding-top:8px;">
-    Wygenerowano przez MEBLE.PRO Konfigurator \u2014 ${dateStr}
+    Wygenerowano przez ModulPRO Konfigurator \u2014 ${dateStr}
   </div>`;
 
   const html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    + '<title>MEBLE.PRO \u2014 '+(fc.client||'Projekt')+' \u2014 '+dateStr+'</title>'
+    + '<title>ModulPRO \u2014 '+(fc.client||'Projekt')+' \u2014 '+dateStr+'</title>'
     + '<style>' + CSS + '<\/style>'
     + '</head><body>'
     + BODY
@@ -4823,7 +4884,7 @@ function exportProjectCSV(){
   const csv=rows.map(r=>r.join(';')).join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-  a.download=`meble_projekt_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download=`modulpro_projekt_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
 }
 
@@ -6308,7 +6369,7 @@ function viewModule(idx){
       '<div style="font-family:"JetBrains Mono",monospace;font-size:.6rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">📌 POZYCJE PÓŁEK (od dna)</div>'+
       shelves.map(function(s,i){
         return '<div style="padding:3px 8px;font-family:"JetBrains Mono",monospace;font-size:.68rem;'+
-          'color:var(--text2);border-left:2px solid var(--accent);margin-bottom:3px;">'+
+          'color:var(--text2);border-left:2px solid rgba(0,200,255,.5);margin-bottom:3px;">'+
           'Półka '+(i+1)+': Y = <span style="color:var(--accent2);font-weight:700;">'+(s.y||s)+'mm</span>'+
           (s.h?' H='+s.h+'mm':'')+'</div>';
       }).join('')+
@@ -6469,6 +6530,8 @@ function showScanCabinet(){
   modal.id='scModal';
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;'+
     'display:flex;align-items:flex-end;justify-content:center;overflow-y:auto;';
+  //    
+  modal.addEventListener('click',function(e){ if(e.target===modal) scClose(); });
 
   modal.innerHTML=
     '<div id="scPanel" style="width:100%;max-width:520px;min-height:70vh;display:flex;'+
@@ -6485,9 +6548,9 @@ function showScanCabinet(){
     '<div style="font-family:\'JetBrains Mono\',monospace;font-size:.55rem;color:var(--muted);'+
     'letter-spacing:.1em;">Zdjęcie → punkty → skala → moduły</div>'+
     '</div>'+
-    '<button onclick="scClose()" style="width:30px;height:30px;background:rgba(231,76,60,.2);'+
-    'border:1px solid rgba(231,76,60,.4);border-radius:6px;color:#e74c3c;cursor:pointer;'+
-    'font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>'+
+    '<button onclick="scClose()" style="width:40px;height:40px;background:rgba(231,76,60,.25);'+
+    'border:2px solid rgba(231,76,60,.5);border-radius:8px;color:#e74c3c;cursor:pointer;'+
+    'font-size:1.3rem;font-weight:900;display:flex;align-items:center;justify-content:center;">✕</button>'+
     '</div>'+
 
     // Step indicator
@@ -6533,12 +6596,34 @@ function scSetStep(n){
 function scBody(){ return document.getElementById('scBody'); }
 
 function scClose(){
+  ['sc_inp_cam','sc_inp_gal'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) try{ el.parentNode.removeChild(el); }catch(e){}
+  });
   var m=document.getElementById('scModal');
   if(m) document.body.removeChild(m);
 }
 
 // ── STEP 1: Wczytaj zdjęcie ──────────────────────────────────────
 /* -- STEP 1: Wybór pokoju -- */
+
+/* Sticky back button — shown at bottom of every SCAN step */
+function scAddBackBtn(prevFn, label){
+  var b = scBody(); if(!b) return;
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'position:sticky;bottom:0;left:0;right:0;padding:8px 0 2px;'+
+    'background:linear-gradient(transparent,var(--bg2) 40%);margin-top:auto;z-index:2;';
+  var btn = document.createElement('button');
+  btn.textContent = label || '← Cofnij';
+  btn.style.cssText = 'width:100%;padding:11px;background:rgba(231,76,60,.12);'+
+    'border:1px solid rgba(231,76,60,.3);border-radius:8px;color:#e74c3c;'+
+    'font-family:\"Barlow Condensed\",sans-serif;font-weight:800;'+
+    'font-size:.88rem;letter-spacing:.08em;cursor:pointer;';
+  btn.addEventListener('click', prevFn);
+  wrap.appendChild(btn);
+  b.appendChild(wrap);
+}
+
 function scRenderStep1(){
   scSetStep(1);
   var b=scBody(); if(!b) return;
@@ -6565,6 +6650,7 @@ function scRenderStep1(){
     'font-weight:800;font-size:.98rem;letter-spacing:.12em;cursor:pointer;">'+
     (SC.imgData?'Dalej → (zdjęcie już wczytane)':'Dalej → Wczytaj zdjęcie')+
     '</button>';
+  scAddBackBtn(scClose,'✕ Zamknij SCAN');
 }
 
 function scRoomDesc(key){
@@ -6611,49 +6697,96 @@ function scSetRoomAndRefresh(key){
   }
 }
 
-/* -- STEP 2: Zdjęcie (dawny step1) -- */
+
+/* scRenderStep2 = alias dla scRenderStep2_Photo */
+function scRenderStep2(){
+  scRenderStep2_Photo();
+}
+
+/* -- STEP 2: Zdjęcie -- */
 function scRenderStep2_Photo(){
   scSetStep(2);
   var b=scBody(); if(!b) return;
   var room=SC_ROOMS[SC.room]||SC_ROOMS.kuchnia;
+
+  //     mobile: <label for="id"> + input  DOM
+  // input    ( display:none) — position:fixed  
   b.innerHTML=
-    '<div style="font-family:\"JetBrains Mono\",monospace;font-size:.62rem;color:var(--muted);'+
-    'margin-bottom:10px;line-height:1.7;">'+
-    room.icon+' <b style="color:'+room.border+';">'+room.label+'</b> · H='+room.defaultH+'mm D='+room.defaultD+'mm<br>'+
+    '<div style="font-family:\"JetBrains Mono\",monospace;font-size:.62rem;'+
+    'color:var(--muted);margin-bottom:12px;line-height:1.7;">'+
+    room.icon+' <b style="color:'+room.border+';">'+room.label+'</b>'+
+    ' · H='+room.defaultH+'mm D='+room.defaultD+'mm<br>'+
     'Wczytaj zdjęcie frontalnie — cała ściana widoczna'+
     '</div>'+
 
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">'+
-    '<label style="display:flex;flex-direction:column;align-items:center;justify-content:center;'+
-    'gap:8px;padding:20px 10px;background:rgba(46,204,113,.07);border:2px dashed rgba(46,204,113,.3);'+
-    'border-radius:10px;cursor:pointer;font-family:\"Barlow Condensed\",sans-serif;font-weight:700;'+
-    'font-size:.9rem;letter-spacing:.08em;color:var(--success);">'+
-    '<span style="font-size:2rem;">📷</span>Zrób zdjęcie'+
-    '<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="scLoadImage(this)">'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">'+
+
+    // Kamera — label for="sc_inp_cam"
+    '<label for="sc_inp_cam" style="display:flex;flex-direction:column;align-items:center;'+
+    'justify-content:center;gap:10px;padding:24px 10px;'+
+    'background:rgba(46,204,113,.1);border:2px solid rgba(46,204,113,.4);'+
+    'border-radius:12px;cursor:pointer;'+
+    'font-family:\"Barlow Condensed\",sans-serif;font-weight:800;'+
+    'font-size:.95rem;letter-spacing:.08em;color:#2ecc71;text-align:center;">'+
+    '<span style="font-size:2.2rem;line-height:1;">📷</span>'+
+    'ZRÓB ZDJĘCIE'+
     '</label>'+
-    '<label style="display:flex;flex-direction:column;align-items:center;justify-content:center;'+
-    'gap:8px;padding:20px 10px;background:rgba(74,159,234,.07);border:2px dashed rgba(74,159,234,.3);'+
-    'border-radius:10px;cursor:pointer;font-family:\"Barlow Condensed\",sans-serif;font-weight:700;'+
-    'font-size:.9rem;letter-spacing:.08em;color:var(--info);">'+
-    '<span style="font-size:2rem;">📂</span>Z galerii'+
-    '<input type="file" accept="image/*" style="display:none;" onchange="scLoadImage(this)">'+
+
+    // Galeria — label for="sc_inp_gal"
+    '<label for="sc_inp_gal" style="display:flex;flex-direction:column;align-items:center;'+
+    'justify-content:center;gap:10px;padding:24px 10px;'+
+    'background:rgba(74,159,234,.1);border:2px solid rgba(74,159,234,.4);'+
+    'border-radius:12px;cursor:pointer;'+
+    'font-family:\"Barlow Condensed\",sans-serif;font-weight:800;'+
+    'font-size:.95rem;letter-spacing:.08em;color:#4a9fea;text-align:center;">'+
+    '<span style="font-size:2.2rem;line-height:1;">📂</span>'+
+    'Z GALERII'+
     '</label>'+
+
     '</div>'+
 
     '<div style="background:rgba(200,152,64,.06);border:1px solid rgba(200,152,64,.2);'+
     'border-radius:8px;padding:10px 12px;font-family:\"JetBrains Mono\",monospace;'+
-    'font-size:.62rem;color:var(--muted);line-height:1.7;">'+
+    'font-size:.62rem;color:var(--muted);line-height:1.8;">'+
     '💡 <b style="color:var(--accent2);">Wskazówki:</b><br>'+
-    '&nbsp;· Prosty kąt, frontalnie (nie z boku)<br>'+
-    '&nbsp;· Cała ściana/zabudowa widoczna<br>'+
-    '&nbsp;· Dobre oświetlenie, bez cieni'+
+    '· Prosty kąt, frontalnie (nie z boku)<br>'+
+    '· Cała ściana/zabudowa widoczna<br>'+
+    '· Dobre oświetlenie, bez cieni'+
     '</div>'+
 
-    '<button onclick="scRenderStep1()" style="margin-top:10px;width:100%;padding:9px;'+
+    '<button onclick="scRenderStep1()" style="margin-top:10px;width:100%;padding:10px;'+
     'background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:7px;'+
     'color:var(--text2);cursor:pointer;font-family:\"Barlow Condensed\",sans-serif;'+
     'font-weight:700;font-size:.8rem;">← Zmień typ zabudowy</button>';
+
+  // Dodajemy inputs do body (nie do modal!) — position fixed poza ekranem
+  scEnsureFileInputs();
 }
+
+function scEnsureFileInputs(){
+  // Usuwamy stare jeśli są
+  ['sc_inp_cam','sc_inp_gal'].forEach(function(id){
+    var old=document.getElementById(id);
+    if(old) old.parentNode.removeChild(old);
+  });
+
+  // Kamera
+  var inp1=document.createElement('input');
+  inp1.type='file'; inp1.accept='image/*'; inp1.capture='environment';
+  inp1.id='sc_inp_cam';
+  inp1.style.cssText='position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0;z-index:-1;';
+  inp1.addEventListener('change',function(){ if(this.files&&this.files[0]) scLoadImage(this); });
+  document.body.appendChild(inp1);
+
+  // Galeria
+  var inp2=document.createElement('input');
+  inp2.type='file'; inp2.accept='image/*';
+  inp2.id='sc_inp_gal';
+  inp2.style.cssText='position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0;z-index:-1;';
+  inp2.addEventListener('change',function(){ if(this.files&&this.files[0]) scLoadImage(this); });
+  document.body.appendChild(inp2);
+}
+
 
 function scLoadImage(input){
   if(!input.files||!input.files[0]) return;
@@ -9285,7 +9418,7 @@ function renderCollisions(warnings){
   });
 
   warns.forEach(w=>{
-    out+=`<div style="background:rgba(232,160,32,.1);border-left:3px solid var(--accent);border-radius:4px;padding:8px 10px;margin-bottom:6px;font-size:.75rem;font-family:'JetBrains Mono',monospace;">
+    out+=`<div style="background:rgba(232,160,32,.1);border-left:3px solid var(--accent2);border-radius:4px;padding:8px 10px;margin-bottom:6px;font-size:.75rem;font-family:'JetBrains Mono',monospace;">
       <div style="color:var(--accent2);font-weight:700;">[${w.code}] ${w.msg}</div>
       <div style="color:var(--muted);margin-top:3px;">→ ${w.fix}</div>
     </div>`;
@@ -10741,7 +10874,7 @@ function exportProjectJSON(){
       mat_front:  localStorage.getItem('mat_front')||'none',
     }
   };
-  var name='meble_'+(data.projName||'projekt').replace(/\s+/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.json';
+  var name='modulpro_'+(data.projName||'projekt').replace(/\s+/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.json';
   var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click();
   showToast('📤 Zbiorowy '+name,'#2ecc71','#1a4a2e');
@@ -10864,27 +10997,33 @@ function bnav(tab){
 })();
 </script>
 
-  <!-- UNIVERSAL BACK BAR — widoczny przy przewijaniu w dół -->
-  <div id="universalBackBar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9998;padding:8px 12px 12px;background:rgba(15,20,35,.97);border-top:1px solid rgba(255,255,255,.1);display:none;">
-    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;">
-      <button onclick="universalBack()"
-        style="padding:13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:.9rem;letter-spacing:.1em;cursor:pointer;">
-        ⬆ GÓRA / WRÓĆ
+  <!-- UNIFIED BACK BAR — Android style, single bottom bar -->
+  <div id="appBackBar" style="display:none;position:fixed;bottom:0;left:0;right:0;
+    z-index:9998;background:rgba(7,8,12,.97);border-top:1px solid rgba(0,200,255,.08);
+    padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);">
+    <div style="display:flex;align-items:center;gap:8px;max-width:520px;margin:0 auto;">
+      <button id="appBackBtn" onclick="appBackAction()"
+        style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+        padding:12px;background:rgba(255,255,255,.07);
+        border:1px solid rgba(255,255,255,.12);border-radius:10px;
+        color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+        font-size:.92rem;letter-spacing:.08em;cursor:pointer;">
+        <span style="font-size:1.1rem;">←</span>
+        <span id="appBackLabel">Wróć</span>
       </button>
-      <button onclick="closeAllPanels()"
-        style="padding:13px 16px;background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.4);border-radius:8px;color:#e74c3c;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;">
+      <button id="appCloseBtn" onclick="appCloseAction()"
+        style="width:44px;height:44px;flex-shrink:0;
+        background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.35);
+        border-radius:10px;color:#e74c3c;font-size:1.2rem;
+        cursor:pointer;display:flex;align-items:center;justify-content:center;">
         ✕
       </button>
     </div>
   </div>
-
-  <!-- FIXED CLOSE BAR — dla narzędzi -->
-  <div id="fixedCloseBar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;padding:8px 12px 12px;background:rgba(15,20,35,.97);border-top:2px solid rgba(231,76,60,.5);">
-    <button onclick="toggleToolsPanel()"
-      style="width:100%;padding:13px;background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.4);border-radius:8px;color:#e74c3c;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:.9rem;letter-spacing:.14em;cursor:pointer;">
-      ✕ ZAMKNIJ NARZĘDZIA
-    </button>
-  </div>
+  <!-- compat aliases -->
+  <div id="universalBackBar" style="display:none;"></div>
+  <div id="fixedCloseBar"    style="display:none;"></div>
 
 
 
@@ -10892,7 +11031,7 @@ function bnav(tab){
 
 <script id="appShellScript">
 /* ================================================================
- * MEBLE PRO — App Shell v1.0
+ * ModulPRO — App Shell v1.0
  * Home screen + Projects cards +  
  *    HTML   engine
  * ================================================================ */
@@ -10940,12 +11079,12 @@ var _APP_CSS = `
 .bnav-icon { font-size:1.2rem;line-height:1; }
 
 /*  +  */
-#bnav-new {
-  background:linear-gradient(160deg,#d4a840,#a07820);
+#bnav-new{
+  background:linear-gradient(135deg,var(--accent),rgba(0,150,200,1));
   border-radius:50%;width:44px;height:44px;
   margin:-10px auto 0;padding:0!important;
-  box-shadow:0 4px 16px rgba(200,152,64,.4);
-  flex:0 0 56px;
+  box-shadow:0 0 24px rgba(0,200,255,.45),0 4px 16px rgba(0,0,0,.5);
+  flex:0 0 56px;border:none;cursor:pointer;color:#000;font-size:1.4rem;font-weight:900;
 }
 #bnav-new .bnav-icon { font-size:1.5rem; }
 
@@ -11135,6 +11274,44 @@ var APP = {
 /* ================================================================
  * NAVIGATION —   bnav
  * ================================================================ */
+
+/* ================================================================
+ * GLOBAL BACK HEADER —    App Shell 
+ * ================================================================ */
+function appHeader(title, backFnStr, backLabel){
+  backFnStr = backFnStr || "appNav('home')";
+  backLabel = backLabel || '←';
+  return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;'+
+    'position:sticky;top:0;background:var(--bg2);z-index:10;padding:10px 0 8px;'+
+    'border-bottom:1px solid var(--border);">'+
+    '<button onclick="'+backFnStr+'" '+
+    'style="width:38px;height:38px;flex-shrink:0;background:var(--surface2);'+
+    'border:1px solid var(--border);border-radius:10px;color:var(--text2);'+
+    'font-size:1.2rem;cursor:pointer;display:flex;align-items:center;'+
+    'justify-content:center;">'+backLabel+'</button>'+
+    '<div style="font-family:\\"Barlow Condensed\\",sans-serif;font-weight:800;'+
+    'font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text);">'+
+    title+'</div>'+
+    '</div>';
+}
+
+/* Sticky bottom action bar */
+function appBottomBar(buttons){
+  var cols = buttons.length;
+  var h = '<div style="position:sticky;bottom:0;padding:8px 0 2px;'+
+    'background:linear-gradient(transparent,var(--bg2) 35%);margin-top:12px;">'+
+    '<div style="display:grid;grid-template-columns:'+('1fr '.repeat(cols).trim())+';gap:8px;">';
+  buttons.forEach(function(b){
+    var s = b.style||'background:var(--surface2);border:1px solid var(--border);color:var(--text2);';
+    h += '<button onclick="'+b.fn+'" '+
+      'style="padding:12px 8px;border-radius:8px;cursor:pointer;'+
+      'font-family:\\"Barlow Condensed\\",sans-serif;font-weight:800;'+
+      'font-size:.88rem;letter-spacing:.06em;'+s+'">'+b.label+'</button>';
+  });
+  h += '</div></div>';
+  return h;
+}
+
 function appNav(screen){
   // / 
   appEnsureAddScreen();
@@ -11215,7 +11392,7 @@ function appRenderHome(){
   el.innerHTML=
     // Header
     '<div class="app-greeting">'+greet+'</div>'+
-    '<div class="app-title">Meble <span>PRO</span></div>'+
+    '<div class="app-title">Modul<span>PRO</span></div>'+
 
     //   (    ')
     (currentCount>0 ?
@@ -11323,12 +11500,7 @@ function appRenderProjects(){
   try{ projs=JSON.parse(localStorage.getItem('r4_projects')||'[]'); }catch(e){}
 
   el.innerHTML=
-    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-weight:800;'+
-    'font-size:1.4rem;letter-spacing:.1em;text-transform:uppercase;'+
-    'color:var(--text);margin-bottom:16px;">'+
-    '📁 Moje projekty '+
-    '<span style="color:var(--muted);font-size:.9rem;">('+projs.length+')</span>'+
-    '</div>'+
+    appHeader('📁 Projekty ('+projs.length+')',"appNav('home')")+
 
     '<div class="proj-grid">'+
 
@@ -11374,9 +11546,7 @@ function appRenderSettings(){
   var markup=localStorage.getItem('kosztorys_markup')||'0';
 
   el.innerHTML=
-    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-weight:800;'+
-    'font-size:1.4rem;letter-spacing:.1em;text-transform:uppercase;'+
-    'color:var(--text);margin-bottom:16px;">⚙ Ustawienia</div>'+
+    appHeader('⚙ Ustawienia',"appNav('home')")+
 
     // Materiały
     '<div class="settings-group-title">Materiały i ceny</div>'+
@@ -11505,7 +11675,7 @@ function appExportAll(){
     {type:'application/json'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='meble-pro-projekty-'+new Date().toISOString().slice(0,10)+'.json';
+  a.download='modulpro-projekty-'+new Date().toISOString().slice(0,10)+'.json';
   a.click();
 }
 
@@ -11733,14 +11903,7 @@ function appRenderAddModule(){
   var modules = APP_MODULE_DB[_addModRoom] || APP_MODULE_DB.kuchnia;
 
   el.innerHTML =
-    // Header z powrotem
-    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">'+
-    '<button onclick="appNav(\'konfig\')" style="width:32px;height:32px;background:var(--surface2);'+
-    'border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;'+
-    'font-size:1rem;display:flex;align-items:center;justify-content:center;">←</button>'+
-    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-weight:800;font-size:1.1rem;'+
-    'letter-spacing:.1em;text-transform:uppercase;color:var(--text);">Wybierz szafkę</div>'+
-    '</div>'+
+    appHeader('🗄 Wybierz szafkę',"appNav('konfig')")+
 
     // Taby pokoi
     '<div class="add-room-tabs">'+
