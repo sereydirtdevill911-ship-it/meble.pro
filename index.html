@@ -888,6 +888,65 @@ input[type=text]::placeholder{ color:var(--muted); }
 }
 .module-card.wide .module-card-info{padding:10px 12px;}
 
+
+/* === FLOW ANIMATIONS === */
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(16px);}
+  to  {opacity:1;transform:translateY(0);}
+}
+@keyframes slideIn{
+  from{opacity:0;transform:translateX(18px);}
+  to  {opacity:1;transform:translateX(0);}
+}
+@keyframes fadeIn{
+  from{opacity:0;}to{opacity:1;}
+}
+#appHome,#appProjects,#appSettings,#appAddModule,
+#sectionKonfig,#sectionRozm,#sectionRozkroj{
+  animation:slideUp .22s cubic-bezier(.22,1,.36,1) both;
+}
+/* Cards stagger */
+.card,.proj-card,.module-card,.quick-btn,.stat-card{
+  animation:slideUp .22s cubic-bezier(.22,1,.36,1) both;
+}
+.card:nth-child(2),.proj-card:nth-child(2),.module-card:nth-child(2){animation-delay:.04s;}
+.card:nth-child(3),.proj-card:nth-child(3),.module-card:nth-child(3){animation-delay:.07s;}
+.card:nth-child(4),.proj-card:nth-child(4),.module-card:nth-child(4){animation-delay:.1s;}
+/* Toast */
+#toast-container{
+  position:fixed;top:60px;left:50%;transform:translateX(-50%);
+  z-index:99999;display:flex;flex-direction:column;gap:6px;
+  pointer-events:none;width:90%;max-width:360px;
+}
+.toast-pill{
+  background:rgba(15,17,24,.95);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;padding:9px 16px;
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;
+  color:var(--text);text-align:center;
+  backdrop-filter:blur(20px);
+  animation:toastIn .2s cubic-bezier(.22,1,.36,1) both,
+             toastOut .2s cubic-bezier(.22,1,.36,1) both 2.3s;
+  box-shadow:0 4px 24px rgba(0,0,0,.5);
+}
+@keyframes toastIn{
+  from{opacity:0;transform:translateY(-10px) scale(.9);}
+  to  {opacity:1;transform:translateY(0) scale(1);}
+}
+@keyframes toastOut{
+  from{opacity:1;transform:scale(1);}
+  to  {opacity:0;transform:scale(.9);}
+}
+/* bnav active tab glow */
+.bnav-btn.active .bnav-icon{
+  text-shadow:0 0 12px currentColor;
+  transition:text-shadow .2s;
+}
+/* Button press feedback */
+button:active:not([disabled]){
+  transform:scale(.97);
+  transition:transform .08s;
+}
 </style>
 
   <link rel="manifest" href="./manifest.json">
@@ -1474,17 +1533,20 @@ body{padding-bottom:72px!important;}
   </button>
 </div>
 
-<!-- 3. PROJEKT + USUŃ -->
-<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:14px;">
+<!-- 3. PROJEKT + SAVE + UNDO + TRASH -->
+<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:8px;margin-bottom:14px;">
   <button class="btn-secondary proj-btn" onclick="showProject()"
     style="padding:14px;font-size:.95rem;border-radius:10px;letter-spacing:.08em;">
     📊 PROJEKT <span id="projCountBadge" style="background:var(--accent);color:#000;border-radius:4px;padding:1px 6px;font-size:.8rem;margin-left:4px;font-weight:900;display:none;">0</span>
   </button>
+  <button id="btnSaveProject" onclick="saveProject()"
+    style="padding:14px 14px;background:rgba(0,200,255,.1);border:1px solid rgba(0,200,255,.25);border-radius:10px;color:var(--accent2);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;"
+    title="Zapisz projekt">💾</button>
   <button id="btnUndo" onclick="_historyUndo()" disabled
-    style="padding:14px 16px;background:rgba(127,140,141,.1);border:1px solid rgba(127,140,141,.3);border-radius:10px;color:#7f8c8d;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;opacity:.35;"
+    style="padding:14px 14px;background:rgba(127,140,141,.1);border:1px solid rgba(127,140,141,.3);border-radius:10px;color:#7f8c8d;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;opacity:.35;"
     title="Cofnij">↩</button>
   <button class="btn-danger" onclick="clearProjectLS()"
-    style="padding:14px 18px;border-radius:10px;font-size:1rem;">🗑</button>
+    style="padding:14px 16px;border-radius:10px;font-size:1rem;">🗑</button>
 </div>
 
 
@@ -1539,49 +1601,17 @@ body{padding-bottom:72px!important;}
     </div>
   </div>
 
-  <!-- Szablony + Kopia -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;">
+  <!-- Kopia modułu -->
+  <div style="margin-bottom:8px;">
     <button class="btn-success" onclick="copyModule()"
-      style="padding:11px 6px;font-size:.8rem;border-radius:8px;">
+      style="width:100%;padding:10px;font-size:.8rem;border-radius:8px;">
       📋 KOPIA MODUŁU
     </button>
-    <button class="btn-blue" onclick="showTemplates()"
-      style="padding:11px 6px;font-size:.8rem;border-radius:8px;">
-      📦 SZABLONY
-    </button>
   </div>
 
-  <!-- Auto-kuchnia -->
-  <button class="btn-primary" onclick="showAutoKitchen()"
-    style="width:100%;margin-bottom:8px;padding:12px;font-size:.88rem;letter-spacing:.1em;">
-    🏗 AUTO-KUCHNIA (wymiary ścian)
-  </button>
 
-  <!-- Scan Cabinet -->
-  <button class="btn-outline-gold" onclick="showScanCabinet()"
-    style="width:100%;margin-bottom:8px;padding:11px;font-size:.85rem;letter-spacing:.1em;">
-    📷 SCAN CABINET (pomiar ze zdjęcia)
-  </button>
 
-  <!-- Tylko podgląd -->
-  <button class="btn-outline-gold" onclick="calculate()"
-    style="width:100%;margin-bottom:8px;padding:11px;font-size:.82rem;">
-    🔧 TYLKO PODGLĄD (bez dodawania)
-  </button>
-
-  <!-- Zapis projektu -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
-    <button id="btnSaveProject" class="proj-btn" onclick="saveProject()"
-      style="padding:10px 6px;font-size:.78rem;border-radius:8px;">
-      💾 ZAPISZ
-    </button>
-    <button id="btnLoadProject" class="proj-btn" onclick="loadProject()"
-      style="padding:10px 6px;font-size:.78rem;border-radius:8px;">
-      📂 OTWÓRZ
-    </button>
-  </div>
-
-  <!-- JSON / pliki — najrzadsze akcje -->
+  <!-- JSON / pliki -->
   <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;">
     <div class="micro-label" style="margin-bottom:6px;">JSON / pliki</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
@@ -2094,6 +2124,8 @@ let project=[];
 
 /* ===== AUTO LOGIC ===== */
 function autoLogic(){
+  try{ var _c=document.getElementById("config"),_z=document.getElementById("zawRow");
+    if(_z&&_c) _z.style.display=_c.value==="Szuflady"?"none":""; }catch(e){}
   const t=document.getElementById("type").value;
   const cfgEl=document.getElementById("config");
   const heightEl=document.getElementById("height");
@@ -2450,11 +2482,21 @@ function alAutoHinges(){
     hEl.parentNode && hEl.parentNode.appendChild(el);
   }
   var cfgEl = document.getElementById('config');
-  if(cfgEl && cfgEl.value==='Szuflady'){
-    el.style.display='none'; return;
+  var zawRow = document.getElementById('zawRow');
+  var klapaRow = document.getElementById('klapaRow');
+  var isSzuflady = cfgEl && cfgEl.value==='Szuflady';
+  var isKlapa = cfgEl && (cfgEl.value==='Klapa'||cfgEl.value==='Witryna');
+
+  // /  
+  if(zawRow)  zawRow.style.display  = isSzuflady ? 'none' : '';
+  if(klapaRow) klapaRow.style.display = isKlapa ? '' : 'none';
+
+  if(isSzuflady){
+    if(el) el.style.display='none';
+    return;
   }
-  el.style.display='block';
-  el.textContent='\u27a4 Zawiasy: '+perFront+' szt/front \u00d7 '+fc+' frontow = '+total+' szt';
+  if(el) el.style.display='block';
+  el.textContent='➤ Zawiasy: '+perFront+' szt/front × '+fc+' frontow = '+total+' szt';
 }
 
 // -- 5. Auto-sprawdzenie kolizji UI ─────────────────────────────────
@@ -3115,6 +3157,10 @@ function applyPreset(heights){
 
 /* ===== SZUFLADY SELECTORS ===== */
 function updateDrawerSelectors(){
+  //  wiasy  Szuflady
+  var _cfg=document.getElementById("config");
+  var _zr=document.getElementById("zawRow");
+  if(_zr) _zr.style.display=(_cfg&&_cfg.value==="Szuflady")?"none":"";
   const config=document.getElementById("config").value;
   const drawerSection=document.getElementById("drawerSection");
   const qty=parseInt(document.getElementById("qty").value)||3;
@@ -4126,20 +4172,17 @@ var _backStack = []; //  : [{label, backFn, closeFn}]
 
 /*  back bar    */
 function appBackBarShow(label, backFn, closeFn){
-  var bar  = document.getElementById('appBackBar');
-  var lbl  = document.getElementById('appBackLabel');
-  var bBtn = document.getElementById('appBackBtn');
-  var cBtn = document.getElementById('appCloseBtn');
+  var bar = document.getElementById('appBackBar');
   if(!bar) return;
-
-  if(lbl)  lbl.textContent  = label || 'Wróć';
-  if(bBtn) bBtn._backFn  = backFn  || function(){ appBackBarHide(); window.scrollTo({top:0,behavior:'smooth'}); };
-  if(cBtn) cBtn._closeFn = closeFn || function(){ appBackBarHide(); closeAllPanels(); };
-
+  var fn = closeFn || backFn || function(){
+    appBackBarHide();
+    closeAllPanels();
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+  bar._fn = fn;
   bar.style.display = 'block';
-  //   bottomNav
   var nav = document.getElementById('bottomNav');
-  if(nav) bar.style.bottom = nav.offsetHeight + 'px';
+  bar.style.bottom = (nav ? nav.offsetHeight + 4 : 58) + 'px';
 }
 
 function appBackBarHide(){
@@ -7253,6 +7296,8 @@ function scDrawCanvas(){
   });
 }
 
+function scOldStep5HTML(proposed){ return "<div style='padding:10px;color:var(--text2);font-family:JetBrains Mono,monospace;font-size:.7rem;'>Edycja reczna: "+proposed.length+" segmentow</div>"; }
+
 function scStep3Next(){
   if(SC.points.length<2){
     showToast('⚠ Kliknij co najmniej 2 punkty','#f0ad4e','#7d6010');
@@ -7794,84 +7839,394 @@ function scAnalyzeAll(segments){
 /* -----------------------------------------------------------
  * scRenderStep4 — UI wyników analizy
  * --------------------------------------------------------- */
+
 function scRenderStep5_Modules(){
   scSetStep(5);
   var b=scBody(); if(!b) return;
 
-  // Analiza
-  var proposed = scAnalyzeAll(SC.segments);
-  SC._proposed = proposed;
+  var room    = SC.room||'kuchnia';
+  var roomDef = SC_ROOMS[room]||SC_ROOMS.kuchnia;
+  var W       = SC.realWidth;       //     
+  var segs    = SC.segments||[];
+  var n       = segs.length;
 
-  var gap      = proposed._gap||0;
-  var totalMm  = proposed._totalMm||SC.realWidth;
-  var snapSum  = proposed.filter(function(p){return p.use;})
-    .reduce(function(s,p){return s+p.snapMm;},0);
+  // ── 1. Smart proposals — 3     ──────────
+  var proposals = scSmartProposals(W, room, segs);
+  SC._proposals = proposals;
+  SC._activeProposal = 0;
 
-  // Confidence summary
-  var avgConf = proposed.reduce(function(s,p){return s+p.confidence;},0)/Math.max(1,proposed.length);
-  var confColor = avgConf>0.7?'var(--success)':avgConf>0.5?'var(--warn)':'var(--danger)';
-  var confLabel = avgConf>0.7?'Wysoka':'Średnia';
+  b.innerHTML = scStep5HTML(proposals, W, room, roomDef);
+}
 
-  b.innerHTML =
-    // Header info
-    '<div style="background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);'+
-    'border-radius:8px;padding:10px 12px;margin-bottom:10px;">'+
-    '<div style="font-family:\'JetBrains Mono\',monospace;font-size:.6rem;color:var(--muted);'+
-    'letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">🤖 WYNIKI ANALIZY</div>'+
-    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">'+
-    '<div style="text-align:center;">'+
-    '<div style="font-size:.9rem;font-weight:800;color:var(--accent2);font-family:\'JetBrains Mono\',monospace;">'+SC.scale.toFixed(1)+'</div>'+
-    '<div style="font-size:.52rem;color:var(--muted);">mm/px</div></div>'+
-    '<div style="text-align:center;">'+
-    '<div style="font-size:.9rem;font-weight:800;color:var(--success);font-family:\'JetBrains Mono\',monospace;">'+proposed.length+'</div>'+
-    '<div style="font-size:.52rem;color:var(--muted);">segmentów</div></div>'+
-    '<div style="text-align:center;">'+
-    '<div style="font-size:.9rem;font-weight:800;color:'+confColor+';font-family:\'JetBrains Mono\',monospace;">'+confLabel+'</div>'+
-    '<div style="font-size:.52rem;color:var(--muted);">pewność</div></div>'+
+/* ── Smart proposals —   ─────────────────────────
+ *  3        
+ *   —     
+ * ─────────────────────────────────────────────────────────────*/
+function scSmartProposals(wallW, room, segs){
+  var props = [];
+
+  if(room==='kuchnia'){
+    props = scKuchniaProposals(wallW, segs);
+  } else if(room==='lazienka'){
+    props = scLazienkaProposals(wallW, segs);
+  } else if(room==='garderoba'||room==='sypialnia'){
+    props = scSzafaProposals(wallW, segs, room);
+  } else if(room==='salon'){
+    props = scSalonProposals(wallW, segs);
+  } else {
+    props = scGenericProposals(wallW, segs, room);
+  }
+
+  return props;
+}
+
+/* ── Kuchnia proposals ─────────────────────────────────────────*/
+function scKuchniaProposals(W, segs){
+  var props = [];
+
+  //  1:  L  
+  var v1mods = [];
+  var rem = W;
+  //  AGD   
+  if(W>=2400){ v1mods.push({type:'Słupek pod piekarnik',w:600,h:2130,d:560,cfg:'Drzwi',tag:'slupki',label:'Słupek AGD'}); rem-=600; }
+  //  
+  var fills = scFillWall(rem-300, [800,600,600,500,400], 'dolne');
+  fills.forEach(function(m){ v1mods.push(m); rem-=m.w; });
+  // 
+  v1mods.push({type:'Dolna GOLA',w:rem>0?rem:300,h:720,d:560,cfg:'Drzwi',tag:'dolne',label:'Wypełnienie'});
+  props.push({
+    id:'klasyczna', icon:'🍳',
+    title:'Klasyczna kuchnia',
+    desc:'Dolne z AGD · '+W+'mm ściany',
+    color:'rgba(0,200,255,.1)', border:'rgba(0,200,255,.3)',
+    mods: v1mods,
+    fit: scFitScore(v1mods, W)
+  });
+
+  //  2: Z wyspą / pod okno ( szuflad)
+  var v2mods = [];
+  var rem2 = W;
+  if(W>=1800){
+    v2mods.push({type:'Dolna',w:600,h:720,d:560,cfg:'Szuflady',tag:'dolne',label:'Szuflady'});
+    rem2-=600;
+    v2mods.push({type:'Pod zmywarkę',w:600,h:720,d:560,cfg:'Drzwi',tag:'dolne',label:'Zlew'});
+    rem2-=600;
+  }
+  var fills2 = scFillWall(rem2, [800,600,500,400], 'dolne');
+  fills2.forEach(function(m){ v2mods.push(m); rem2-=m.w; });
+  if(rem2>0) v2mods.push({type:'Dolna',w:rem2,h:720,d:560,cfg:'Drzwi',tag:'dolne',label:'Dolna'});
+  props.push({
+    id:'szuflady', icon:'🗄',
+    title:'Dużo szuflad',
+    desc:'Ergonomiczny układ · maks. szuflady',
+    color:'rgba(0,230,118,.08)', border:'rgba(0,230,118,.25)',
+    mods: v2mods,
+    fit: scFitScore(v2mods, W)
+  });
+
+  //  3: Z górnymi (dolne + wiszące)
+  var v3mods = [];
+  var rem3 = W;
+  var dolneW = Math.floor(W*0.7/100)*100;  // 70%   dolne
+  var fills3 = scFillWall(dolneW, [600,600,800,500,400], 'dolne');
+  fills3.forEach(function(m){ v3mods.push(m); });
+  var gorne = scFillWall(dolneW, [600,600,800,400], 'wiszace');
+  gorne.forEach(function(m){ v3mods.push(m); });
+  if(W>=2400){
+    v3mods.push({type:'Słupek pełny (z półkami)',w:600,h:2130,d:560,cfg:'Drzwi',tag:'slupki',label:'Słupek'});
+  }
+  props.push({
+    id:'pelna', icon:'🏗',
+    title:'Pełna zabudowa',
+    desc:'Dolne + górne + słupek',
+    color:'rgba(255,180,0,.07)', border:'rgba(255,180,0,.25)',
+    mods: v3mods,
+    fit: scFitScore(v3mods, W)*0.95
+  });
+
+  return props;
+}
+
+/* ── Łazienka proposals ────────────────────────────────────────*/
+function scLazienkaProposals(W, segs){
+  var props = [];
+
+  var v1=[
+    {type:'Dolna',w:Math.min(800,W-400),h:600,d:450,cfg:'Drzwi',tag:'dolne',label:'Pod umywalkę'},
+    {type:'Słupek pełny (z półkami)',w:350,h:1800,d:350,cfg:'Drzwi',tag:'slupki',label:'Słupek'}
+  ];
+  var v2=[
+    {type:'Dolna',w:Math.min(600,W-200),h:600,d:450,cfg:'Szuflady',tag:'dolne',label:'Szuflady'},
+    {type:'Wisząca',w:Math.min(600,W-200),h:600,d:200,cfg:'Drzwi',tag:'wiszace',label:'Lustro/szafka'}
+  ];
+  var v3=[
+    {type:'Dolna',w:W>1200?Math.floor(W/2/100)*100:W-200,h:600,d:450,cfg:'Drzwi',tag:'dolne',label:'Szafka'},
+    {type:'Pod zmywarkę',w:600,h:850,d:600,cfg:'Drzwi',tag:'dolne',label:'Pralka'},
+    {type:'Wisząca',w:400,h:600,d:200,cfg:'Drzwi',tag:'wiszace',label:'Szafka górna'}
+  ];
+
+  props.push({id:'standard',icon:'🚿',title:'Standard',desc:'Umywalka + słupek',color:'rgba(0,200,255,.1)',border:'rgba(0,200,255,.3)',mods:v1,fit:.82});
+  props.push({id:'szuflady',icon:'🗄',title:'Dużo szuflad',desc:'Szuflady + lustro',color:'rgba(0,230,118,.08)',border:'rgba(0,230,118,.25)',mods:v2,fit:.75});
+  props.push({id:'pralka',icon:'🏠',title:'Z pralką',desc:'Wnęka + szafka',color:'rgba(255,180,0,.07)',border:'rgba(255,180,0,.25)',mods:v3,fit:.68});
+
+  return props;
+}
+
+/* ── Szafa (garderoba/sypialnia) proposals ─────────────────────*/
+function scSzafaProposals(W, segs, room){
+  var h = room==='garderoba'?2200:2200;
+  var props = [];
+
+  var modW = 600;
+  var count = Math.max(2, Math.round(W/modW));
+  var fills1=[], fills2=[], fills3=[];
+  for(var i=0;i<count;i++){
+    var w=Math.round(W/count);
+    fills1.push({type:'Słupek pełny (z półkami)',w:w,h:h,d:600,cfg:'Drzwi',tag:'slupki',label:'Szafa '+(i+1)});
+  }
+  for(var i=0;i<count;i++){
+    var w=Math.round(W/count);
+    if(i===Math.floor(count/2)){
+      fills2.push({type:'Cargo / Spacetower',w:w,h:h,d:600,cfg:'Szuflady',tag:'slupki',label:'Szuflady'});
+    } else {
+      fills2.push({type:'Słupek pełny (z półkami)',w:w,h:h,d:600,cfg:'Drzwi',tag:'slupki',label:'Szafa'});
+    }
+  }
+  for(var i=0;i<count;i++){
+    var w=Math.round(W/count);
+    if(i===0||i===count-1){
+      fills3.push({type:'Słupek pełny (z półkami)',w:w,h:h,d:600,cfg:'Drzwi',tag:'slupki',label:'Szafa z lustem'});
+    } else {
+      fills3.push({type:'Cargo / Spacetower',w:w,h:h/2,d:600,cfg:'Szuflady',tag:'slupki',label:'Szuflady'});
+    }
+  }
+
+  props.push({id:'full',icon:'👗',title:'Pełna szafa',desc:count+' modułów po ~'+Math.round(W/count)+'mm',color:'rgba(167,139,250,.1)',border:'rgba(167,139,250,.3)',mods:fills1,fit:.9});
+  props.push({id:'mix',icon:'🗄',title:'Mix z szufladami',desc:'Szafy + centralne szuflady',color:'rgba(0,200,255,.1)',border:'rgba(0,200,255,.3)',mods:fills2,fit:.85});
+  props.push({id:'kombi',icon:'✨',title:'Kombi',desc:'Szafy boczne + środkowe szuflady',color:'rgba(0,230,118,.08)',border:'rgba(0,230,118,.25)',mods:fills3,fit:.8});
+
+  return props;
+}
+
+/* ── Salon proposals ───────────────────────────────────────────*/
+function scSalonProposals(W, segs){
+  var fills1=[
+    {type:'Słupek pełny (z półkami)',w:400,h:2200,d:350,cfg:'Drzwi',tag:'slupki',label:'Regał'},
+    {type:'Dolna',w:Math.max(400,W-800),h:400,d:450,cfg:'Drzwi',tag:'dolne',label:'Szafka RTV'},
+    {type:'Słupek pełny (z półkami)',w:400,h:2200,d:350,cfg:'Drzwi',tag:'slupki',label:'Regał'}
+  ];
+  var fills2=[
+    {type:'Dolna',w:W,h:400,d:450,cfg:'Drzwi',tag:'dolne',label:'Komoda TV full width'}
+  ];
+  var fills3=[
+    {type:'Dolna GOLA',w:Math.round(W*0.6),h:400,d:450,cfg:'Drzwi',tag:'dolne',label:'Otwarta szafka'},
+    {type:'Słupek pełny (z półkami)',w:Math.round(W*0.4),h:2000,d:350,cfg:'Drzwi',tag:'slupki',label:'Wysoki regał'}
+  ];
+
+  return [
+    {id:'symetryczny',icon:'📺',title:'Symetria RTV',desc:'Regały + szafka TV',color:'rgba(0,200,255,.1)',border:'rgba(0,200,255,.3)',mods:fills1,fit:.9},
+    {id:'minimalizm',icon:'▬',title:'Minimalizm',desc:'Jedna komoda na całą ścianę',color:'rgba(0,230,118,.08)',border:'rgba(0,230,118,.25)',mods:fills2,fit:.85},
+    {id:'asymetria',icon:'📚',title:'Asymetria',desc:'Otwarta + wysoki regał',color:'rgba(255,180,0,.07)',border:'rgba(255,180,0,.25)',mods:fills3,fit:.75}
+  ];
+}
+
+/* ── Generic proposals ─────────────────────────────────────────*/
+function scGenericProposals(W, segs, room){
+  var roomDef = SC_ROOMS[room]||SC_ROOMS.kuchnia;
+  var h = roomDef.defaultH||720;
+  var d = roomDef.defaultD||560;
+  var fills = scFillWall(W, [800,600,600,500,400], 'dolne', h, d);
+  return [{
+    id:'auto', icon:'🔧',
+    title:'Auto-zabudowa',
+    desc:'Automatyczny podział '+W+'mm',
+    color:'rgba(0,200,255,.1)', border:'rgba(0,200,255,.3)',
+    mods: fills, fit:.75
+  }];
+}
+
+/* ──   ─────────────────────────────────────────*/
+function scFillWall(wallW, widths, tag, h, d){
+  h = h||720; d = d||560;
+  var isWisz = tag==='wiszace';
+  var mods=[]; var rem=wallW;
+  for(var i=0;i<20&&rem>100;i++){
+    var w=widths[i%widths.length];
+    if(w>rem) w=Math.max(300,rem);
+    mods.push({
+      type: isWisz?'Wisząca':'Dolna',
+      w:w, h:isWisz?610:h, d:isWisz?320:d,
+      cfg: tag==='dolne'&&i%3===1?'Szuflady':'Drzwi',
+      tag: tag,
+      label: isWisz?'Wisząca '+(i+1):'Dolna '+(i+1)
+    });
+    rem-=w;
+  }
+  return mods;
+}
+
+function scFitScore(mods, W){
+  var sum=mods.reduce(function(s,m){return s+m.w;},0);
+  var diff=Math.abs(sum-W);
+  return Math.max(0.3, 1 - diff/W);
+}
+
+/* ── HTML Step 5 ───────────────────────────────────────────────*/
+function scStep5HTML(proposals, W, room){
+  var roomDef=SC_ROOMS[room]||SC_ROOMS.kuchnia;
+  var active=SC._activeProposal||0;
+
+  var html=
+    // Measurement summary
+    '<div style="background:rgba(0,200,255,.06);border:1px solid rgba(0,200,255,.15);'+
+    'border-radius:10px;padding:12px 14px;margin-bottom:14px;">'+
+    '<div style="font-family:\\"JetBrains Mono\\",monospace;font-size:.6rem;'+
+    'color:var(--accent2);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">'+
+    '📐 WYNIKI POMIARU</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">'+
+    '<div style="text-align:center;"><div style="font-family:\\"JetBrains Mono\\",monospace;'+
+    'font-weight:700;font-size:1.1rem;color:var(--accent2);">'+W+'</div>'+
+    '<div style="font-family:\\"JetBrains Mono\\",monospace;font-size:.52rem;color:var(--text2);">mm ściany</div></div>'+
+    '<div style="text-align:center;"><div style="font-family:\\"JetBrains Mono\\",monospace;'+
+    'font-weight:700;font-size:1.1rem;color:var(--success);">'+(SC.segments||[]).length+'</div>'+
+    '<div style="font-family:\\"JetBrains Mono\\",monospace;font-size:.52rem;color:var(--text2);">segmentów</div></div>'+
+    '<div style="text-align:center;"><div style="font-family:\\"JetBrains Mono\\",monospace;'+
+    'font-weight:700;font-size:1.1rem;color:var(--text2);">'+roomDef.icon+'</div>'+
+    '<div style="font-family:\\"JetBrains Mono\\",monospace;font-size:.52rem;color:var(--text2);">'+roomDef.label+'</div></div>'+
     '</div></div>'+
 
-    // Wizualizacja
-    '<div style="background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:8px;'+
-    'padding:10px;margin-bottom:10px;overflow:hidden;" id="scViz">'+
-    scBuildViz(proposed)+
-    '</div>'+
+    // AI Proposals header
+    '<div style="font-family:\\"JetBrains Mono\\",monospace;font-size:.58rem;'+
+    'color:var(--text2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">'+
+    '🤖 AI PROPOZYCJE ZABUDOWY</div>'+
 
-    // Gap warning
-    (Math.abs(gap)>50 ?
-    '<div style="background:rgba(200,152,64,.08);border:1px solid rgba(200,152,64,.25);'+
-    'border-radius:7px;padding:8px 12px;margin-bottom:10px;font-family:\'JetBrains Mono\',monospace;'+
-    'font-size:.63rem;color:var(--warn);">'+
-    (gap>0?'⚠ Pozostaje '+gap+'mm — rozważ dodanie modułu '+
-      (gap>=300?'<button onclick="scAddGapModule('+gap+')" style="margin-left:6px;padding:2px 7px;'+
-      'background:rgba(200,152,64,.15);border:1px solid rgba(200,152,64,.3);border-radius:4px;'+
-      'color:var(--accent2);font-family:\'JetBrains Mono\',monospace;font-size:.6rem;cursor:pointer;">+ dodaj '+gap+'mm</button>':''):
-    '⚠ Suma modułów o '+Math.abs(gap)+'mm za duża — zmniejsz szerokość jednego modułu')+
-    '</div>' : '')+
+    // Proposal cards
+    proposals.map(function(p,i){
+      var isActive=i===active;
+      var fitPct=Math.round(p.fit*100);
+      var fitColor=p.fit>0.85?'var(--success)':p.fit>0.7?'var(--warn)':'var(--danger)';
+      var modsSum=p.mods.reduce(function(s,m){return s+m.w;},0);
+      var diff=W-modsSum;
 
-    // Lista modułów
-    '<div id="scModList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">'+
-    proposed.map(function(p,i){ return scModRowV2(p,i); }).join('')+
-    '</div>'+
+      return '<div onclick="scSelectProposal('+i+')" style="'+
+        'border-radius:12px;border:2px solid '+(isActive?p.border:'var(--border)')+';'+
+        'background:'+(isActive?p.color:'var(--surface2)')+';'+
+        'padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .15s;'+
+        (isActive?'box-shadow:0 0 20px '+p.border.replace('.3','.2')+';':'')+'">'+
 
-    // Suma
-    '<div id="scTotalInfo" style="font-family:\'JetBrains Mono\',monospace;font-size:.65rem;'+
-    'padding:7px 10px;background:rgba(255,255,255,.03);border-radius:6px;'+
-    'border:1px solid var(--border);margin-bottom:10px;">'+
-    scTotalInfo(proposed)+
-    '</div>'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'+
+        '<div style="display:flex;align-items:center;gap:8px;">'+
+        '<span style="font-size:1.3rem;">'+p.icon+'</span>'+
+        '<div>'+
+        '<div style="font-family:\\"Barlow Condensed\\",sans-serif;font-weight:800;'+
+        'font-size:.95rem;letter-spacing:.05em;color:'+(isActive?'#fff':'var(--text)')+';">'+p.title+'</div>'+
+        '<div style="font-family:\\"JetBrains Mono\\",monospace;font-size:.58rem;color:var(--text2);">'+p.desc+'</div>'+
+        '</div></div>'+
+        '<div style="text-align:right;">'+
+        '<div style="font-family:\\"JetBrains Mono\\",monospace;font-weight:700;font-size:.85rem;color:'+fitColor+';">'+fitPct+'%</div>'+
+        '<div style="font-family:\\"JetBrains Mono\\",monospace;font-size:.52rem;color:var(--text2);">dopasowanie</div>'+
+        '</div></div>'+
 
-    // Buttons
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'+
-    '<button onclick="scRenderStep4_Scale()" style="padding:11px;background:rgba(255,255,255,.05);'+
-    'border:1px solid var(--border);border-radius:8px;color:var(--text2);'+
-    'font-family:\'Barlow Condensed\',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;">'+
-    '← Wróć</button>'+
-    '<button onclick="scConfirm()" style="padding:11px;'+
-    'background:linear-gradient(160deg,#d4a840,#a07820);border:none;border-radius:8px;color:#fff;'+
-    'font-family:\'Barlow Condensed\',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;">'+
-    '✅ DODAJ DO PROJEKTU</button>'+
+        // Module chips
+        '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:'+(isActive?'8':'0')+'px;">'+
+        p.mods.map(function(m){
+          var chipColor=m.tag==='wiszace'?'rgba(167,139,250,.2)':
+                        m.tag==='slupki'?'rgba(0,230,118,.15)':'rgba(0,200,255,.1)';
+          var chipBorder=m.tag==='wiszace'?'rgba(167,139,250,.4)':
+                         m.tag==='slupki'?'rgba(0,230,118,.3)':'rgba(0,200,255,.25)';
+          return '<span style="font-family:\\"JetBrains Mono\\",monospace;font-size:.55rem;'+
+            'background:'+chipColor+';border:1px solid '+chipBorder+';'+
+            'border-radius:4px;padding:2px 6px;color:var(--text2);">'+
+            m.w+'mm</span>';
+        }).join('')+
+        '</div>'+
+
+        // Gap info + CTA (  )
+        (isActive ?
+          '<div style="display:flex;align-items:center;justify-content:space-between;'+
+          'padding-top:8px;border-top:1px solid '+p.border+';">'+
+          '<span style="font-family:\\"JetBrains Mono\\",monospace;font-size:.6rem;color:var(--text2);">'+
+          p.mods.length+' modułów · '+modsSum+'mm'+(diff!==0?' ('+( diff>0?'+':'')+diff+'mm)':' ✓')+
+          '</span>'+
+          '<button onclick="event.stopPropagation();scApplyProposal('+i+')" '+
+          'style="padding:7px 14px;background:linear-gradient(135deg,rgba(0,200,255,.25),rgba(0,200,255,.1));'+
+          'border:1px solid rgba(0,200,255,.4);border-radius:8px;'+
+          'color:var(--accent2);font-family:\\"Barlow Condensed\\",sans-serif;font-weight:800;'+
+          'font-size:.78rem;letter-spacing:.08em;cursor:pointer;">'+
+          '✓ ZASTOSUJ</button>'+
+          '</div>'
+        : ''),
+
+      '</div>';
+    }).join('')+
+
+    // Edit modules button
+    '<div style="display:grid;grid-template-columns:1fr;gap:7px;">'+
+    '<button onclick="scEditModules()" '+
+    'style="padding:10px;background:var(--surface2);border:1px solid var(--border2);'+
+    'border-radius:8px;color:var(--text2);font-family:\\"Barlow Condensed\\",sans-serif;'+
+    'font-weight:700;font-size:.78rem;letter-spacing:.06em;cursor:pointer;">'+
+    '✏ Edytuj moduły ręcznie</button>'+
     '</div>';
+
+  return html;
 }
+
+function scSelectProposal(idx){
+  SC._activeProposal=idx;
+  var b=scBody(); if(!b) return;
+  // Re-render  proposal cards
+  var proposals=SC._proposals||[];
+  b.innerHTML=scStep5HTML(proposals, SC.realWidth, SC.room||'kuchnia');
+}
+
+function scApplyProposal(idx){
+  var proposals=SC._proposals||[];
+  var p=proposals[idx];
+  if(!p) return;
+
+  if(typeof _historyPush==='function') _historyPush();
+
+  var isWiszList=['Wisząca','Wisząca z klapą','Pod okap','Narożna górna'];
+  project = p.mods.map(function(m){
+    var isWisz=isWiszList.indexOf(m.type)>=0;
+    var isSlupek=(m.type||'').indexOf('upek')>=0||(m.type||'').indexOf('Cargo')>=0;
+    return {
+      type:m.type||'Dolna', width:m.w||600,
+      height:m.h||(isWisz?610:isSlupek?2130:720),
+      depth:m.d||(isWisz?320:560),
+      config:m.cfg||'Drzwi',
+      tag:isWisz?'wiszace':isSlupek?'slupki':m.tag||'dolne',
+      system:'Antaro',runner:500,
+      qty:m.cfg==='Szuflady'?3:0,
+      drawers:m.cfg==='Szuflady'?3:0,
+      frontHeights:[],drawerTypes:[],
+      legType:isWisz?'none':(isSlupek?'uni_h150':'uni_h100'),
+      legQty:isWisz?0:4,
+      hingeType:'blum110',hingeQty:2,
+      frontCount:1,shelfCount:0,shelves:0,
+      tipOn:false,led:false,cokol:false,cokolH:100,cokolMat:'hdf',
+      blindPanelW:0,blendaH:0,matCorpus:'',matFront:'none',
+      note:'[SCAN '+SC.realWidth+'mm · '+p.title+']'
+    };
+  });
+
+  if(typeof updateCounter==='function') updateCounter();
+
+  //  Step5 confirm
+  scConfirm();
+}
+
+function scEditModules(){
+  //   —  
+  var proposed = scAnalyzeAll(SC.segments||[]);
+  SC._proposed  = proposed;
+  var b=scBody(); if(!b) return;
+  b.innerHTML = scOldStep5HTML(proposed);
+}
+
+
+
 
 /* -----------------------------------------------------------
  * scModRowV2 — wiersz modułu z powodem analizy i confidence
@@ -10998,28 +11353,27 @@ function bnav(tab){
 </script>
 
   <!-- UNIFIED BACK BAR — Android style, single bottom bar -->
-  <div id="appBackBar" style="display:none;position:fixed;bottom:0;left:0;right:0;
-    z-index:9998;background:rgba(7,8,12,.97);border-top:1px solid rgba(0,200,255,.08);
-    padding:8px 12px calc(8px + env(safe-area-inset-bottom));
-    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);">
-    <div style="display:flex;align-items:center;gap:8px;max-width:520px;margin:0 auto;">
-      <button id="appBackBtn" onclick="appBackAction()"
-        style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
-        padding:12px;background:rgba(255,255,255,.07);
-        border:1px solid rgba(255,255,255,.12);border-radius:10px;
-        color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-        font-size:.92rem;letter-spacing:.08em;cursor:pointer;">
-        <span style="font-size:1.1rem;">←</span>
-        <span id="appBackLabel">Wróć</span>
-      </button>
-      <button id="appCloseBtn" onclick="appCloseAction()"
-        style="width:44px;height:44px;flex-shrink:0;
-        background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.35);
-        border-radius:10px;color:#e74c3c;font-size:1.2rem;
-        cursor:pointer;display:flex;align-items:center;justify-content:center;">
-        ✕
-      </button>
-    </div>
+  <div id="appBackBar" style="display:none;position:fixed;bottom:0;right:0;
+    z-index:9998;
+    padding:0 14px calc(6px + env(safe-area-inset-bottom));
+    pointer-events:none;">
+    <button id="appBackBtn" id2="appCloseBtn" onclick="appCloseAction()"
+      style="width:34px;height:34px;
+      background:rgba(0,200,255,.08);
+      border:1px solid rgba(0,200,255,.22);
+      border-radius:50%;
+      color:rgba(0,200,255,.75);
+      font-size:.82rem;
+      cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      box-shadow:0 0 12px rgba(0,200,255,.18);
+      pointer-events:all;
+      transition:all .15s;">
+      ✕
+    </button>
+    <span id="appBackLabel" style="display:none;"></span>
+    <span id="appCloseBtn" style="display:none;"></span>
   </div>
   <!-- compat aliases -->
   <div id="universalBackBar" style="display:none;"></div>
@@ -11079,13 +11433,7 @@ var _APP_CSS = `
 .bnav-icon { font-size:1.2rem;line-height:1; }
 
 /*  +  */
-#bnav-new{
-  background:linear-gradient(135deg,var(--accent),rgba(0,150,200,1));
-  border-radius:50%;width:44px;height:44px;
-  margin:-10px auto 0;padding:0!important;
-  box-shadow:0 0 24px rgba(0,200,255,.45),0 4px 16px rgba(0,0,0,.5);
-  flex:0 0 56px;border:none;cursor:pointer;color:#000;font-size:1.4rem;font-weight:900;
-}
+
 #bnav-new .bnav-icon { font-size:1.5rem; }
 
 /* Home screen */
@@ -11355,7 +11703,7 @@ function appNav(screen){
     (screen==='konfig'||screen==='rozm'||screen==='rozkroj' ? 'konfig' :
      screen==='projects' ? 'projects' :
      screen==='settings' ? 'settings' :
-     screen==='addModule' ? 'new' : 'home');
+     screen==='addModule' ? 'home' : 'home');
   var activeBtn=document.getElementById(activeId);
   if(activeBtn) activeBtn.classList.add('active');
 
@@ -11485,7 +11833,7 @@ function appRenderHome(){
       }).join('')+
       '</div>'
     : '<div style="text-align:center;padding:20px;font-family:\'JetBrains Mono\',monospace;font-size:.7rem;color:var(--muted);">'+
-      'Brak zapisanych projektów<br>Zacznij od Konfiguratora ↑</div>'
+      appEmptyState("appNav('konfig')","→ Zacznij od Konfiguratora")
     );
 }
 
@@ -11531,6 +11879,7 @@ function appRenderProjects(){
         '</div>';
     }).join('')+
 
+    (projs.length===0 ? appEmptyState("appNav('konfig')","→ Otwórz konfigurator") : '')+
     '</div>';
 }
 
@@ -11701,9 +12050,6 @@ function appRebuildNav(){
 
     '<button class="bnav-btn" id="bnav-projects" onclick="appNav(\'projects\')">'+
     '<span class="bnav-icon">📁</span>Projekty</button>'+
-
-    '<button class="bnav-btn" id="bnav-new" onclick="appShowAddModule()" title="Dodaj szafkę">'+
-    '<span class="bnav-icon">＋</span></button>'+
 
     '<button class="bnav-btn active" id="bnav-konfig" onclick="appNav(\'konfig\')">'+
     '<span class="bnav-icon">⚙</span>Konfig</button>'+
@@ -12077,6 +12423,167 @@ function appQuickAdd(modIdx, roomKey){
   showToast('✅ '+m.name+' dodano do projektu ('+project.length+' mod.)','#2ecc71','#1a4a2e');
 }
 
+
+/* ================================================================
+ * ONBOARDING — first launch welcome screen
+ * ================================================================ */
+var ONBOARD_KEY = 'modulpro_onboarded_v1';
+
+function appCheckOnboarding(){
+  if(localStorage.getItem(ONBOARD_KEY)) return false;
+  return true;
+}
+
+function appShowOnboarding(){
+  var modal = document.createElement('div');
+  modal.id  = 'onboardModal';
+  modal.style.cssText =
+    'position:fixed;inset:0;z-index:99999;background:rgba(7,8,12,.97);'+
+    'display:flex;flex-direction:column;align-items:center;justify-content:center;'+
+    'padding:24px 20px;animation:fadeIn .3s ease;';
+
+  var steps = [
+    { icon:'🏗', title:'ModulPRO',
+      text:'Profesjonalny konfigurator mebli modułowych. Obliczaj BOM, prowadnice i zawiasy w kilka sekund.' },
+    { icon:'📐', title:'Scan Cabinet',
+      text:'Zrób zdjęcie ściany → zaznacz granice → podaj 1 wymiar → AI dopasuje szafki automatycznie.' },
+    { icon:'⚙', title:'Konfigurator',
+      text:'Wybierz szafkę → ustaw wymiary → dodaj do projektu. Auto-logika sprawdzi standardy PL.' },
+    { icon:'🖨', title:'Gotowy projekt',
+      text:'Projekt → BOM z cenami → PDF do druku lub CSV do cięcia na CNC.' },
+  ];
+
+  var current = {i:0};
+
+  function render(){
+    var s = steps[current.i];
+    var isLast = current.i === steps.length-1;
+    modal.innerHTML =
+      // Logo
+      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-weight:900;'+
+      'font-size:1.1rem;letter-spacing:.2em;color:var(--text2);'+
+      'text-transform:uppercase;margin-bottom:32px;">'+
+      'Modul<span style="color:var(--accent2);">PRO</span></div>'+
+
+      // Step indicator dots
+      '<div style="display:flex;gap:6px;margin-bottom:32px;">'+
+      steps.map(function(_,i){
+        return '<div style="width:'+(i===current.i?'20px':'6px')+';height:6px;'+
+          'border-radius:3px;background:'+(i===current.i?'var(--accent2)':'rgba(255,255,255,.15)')+';'+
+          'transition:all .25s;"></div>';
+      }).join('')+
+      '</div>'+
+
+      // Icon
+      '<div style="font-size:3.5rem;margin-bottom:20px;'+
+      'animation:slideUp .25s cubic-bezier(.22,1,.36,1);">'+s.icon+'</div>'+
+
+      // Title
+      '<div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:1.4rem;'+
+      'color:#fff;text-align:center;margin-bottom:12px;letter-spacing:.04em;'+
+      'animation:slideUp .25s cubic-bezier(.22,1,.36,1) .04s both;">'+s.title+'</div>'+
+
+      // Text
+      '<div style="font-family:\'JetBrains Mono\',monospace;font-size:.72rem;'+
+      'color:var(--text2);text-align:center;line-height:1.7;max-width:280px;'+
+      'margin-bottom:40px;animation:slideUp .25s cubic-bezier(.22,1,.36,1) .08s both;">'+
+      s.text+'</div>'+
+
+      // CTA button
+      '<button onclick="appOnboardNext()" style="'+
+      'width:100%;max-width:280px;padding:16px;'+
+      'background:linear-gradient(135deg,rgba(0,200,255,.2),rgba(0,200,255,.08));'+
+      'border:1px solid rgba(0,200,255,.35);border-radius:14px;'+
+      'color:var(--accent2);font-family:\'Barlow Condensed\',sans-serif;'+
+      'font-weight:800;font-size:1rem;letter-spacing:.14em;text-transform:uppercase;'+
+      'cursor:pointer;box-shadow:0 0 24px rgba(0,200,255,.15);'+
+      'animation:slideUp .25s cubic-bezier(.22,1,.36,1) .12s both;">'+
+      (isLast ? '✓ ZACZYNAMY' : 'Dalej →')+
+      '</button>'+
+
+      // Skip
+      (!isLast ? '<button onclick="appOnboardFinish()" style="margin-top:12px;'+
+      'background:transparent;border:none;color:var(--muted);'+
+      'font-family:\'JetBrains Mono\',monospace;font-size:.6rem;'+
+      'letter-spacing:.1em;cursor:pointer;padding:8px;">POMIŃ</button>' : '');
+  }
+
+  window.appOnboardNext = function(){
+    if(current.i < steps.length-1){
+      current.i++;
+      render();
+    } else {
+      appOnboardFinish();
+    }
+  };
+
+  window.appOnboardFinish = function(){
+    localStorage.setItem(ONBOARD_KEY,'1');
+    modal.style.animation='fadeIn .25s ease reverse';
+    setTimeout(function(){ document.body.removeChild(modal); },250);
+  };
+
+  render();
+  document.body.appendChild(modal);
+}
+
+/* ================================================================
+ * EMPTY STATE —   
+ * ================================================================ */
+function appEmptyState(action, actionLabel){
+  return '<div style="text-align:center;padding:32px 20px;">'+
+    '<div style="font-size:2.5rem;margin-bottom:12px;opacity:.4;">📭</div>'+
+    '<div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:.9rem;'+
+    'color:var(--text2);margin-bottom:6px;letter-spacing:.06em;">Brak projektów</div>'+
+    '<div style="font-family:\'JetBrains Mono\',monospace;font-size:.62rem;'+
+    'color:var(--muted);margin-bottom:20px;line-height:1.6;">'+
+    'Zacznij od SCAN lub Konfiguratora<br>aby stworzyć pierwszy projekt</div>'+
+    '<button onclick="'+action+'" style="padding:10px 20px;'+
+    'background:rgba(0,200,255,.1);border:1px solid rgba(0,200,255,.25);'+
+    'border-radius:10px;color:var(--accent2);'+
+    'font-family:\'Barlow Condensed\',sans-serif;font-weight:700;'+
+    'font-size:.82rem;letter-spacing:.08em;cursor:pointer;">'+
+    actionLabel+'</button>'+
+    '</div>';
+}
+
+/* ================================================================
+ * IMPROVED TOAST —   showToast
+ * ================================================================ */
+var _toastContainer = null;
+function showToast(msg, bg, textColor){
+  //    
+  if(!_toastContainer){
+    _toastContainer = document.createElement('div');
+    _toastContainer.id = 'toast-container';
+    document.body.appendChild(_toastContainer);
+  }
+
+  var pill = document.createElement('div');
+  pill.className = 'toast-pill';
+
+  //      
+  var isSuccess = bg && (bg.includes('2ecc')||bg.includes('00e6'));
+  var isError   = bg && (bg.includes('e050')||bg.includes('ff3d'));
+  var isWarn    = bg && (bg.includes('f0ad')||bg.includes('ffb4'));
+
+  pill.style.borderColor = isSuccess?'rgba(0,230,118,.25)':
+                           isError?'rgba(255,61,90,.25)':
+                           isWarn?'rgba(255,180,0,.25)':
+                           'rgba(0,200,255,.2)';
+  pill.style.color = isSuccess?'var(--success)':
+                     isError?'var(--danger)':
+                     isWarn?'var(--warn)':
+                     'var(--text)';
+  pill.textContent = msg;
+
+  _toastContainer.appendChild(pill);
+  setTimeout(function(){
+    if(pill.parentNode) pill.parentNode.removeChild(pill);
+  }, 2600);
+}
+
+
 function appShellInit(){
   if(window._appShellReady) return; // guard —   
   window._appShellReady = true;
@@ -12112,6 +12619,7 @@ function appShellInit(){
   if(oldHeader) oldHeader.style.display='none';
 
   //  Home
+  if(appCheckOnboarding()) appShowOnboarding();
   appNav('home');
 }
 
